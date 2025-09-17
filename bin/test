@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+require 'byebug'
+
+# TODO: Find why do I need that?
+$LOAD_PATH.unshift(File.expand_path("#{__dir__}/../lib"))
+
+require 'numo/gnuplot'
+require 'ruby_neural_nets/accuracy'
+require 'ruby_neural_nets/dataset'
+require 'ruby_neural_nets/losses/cross_entropy'
+require 'ruby_neural_nets/models/one_layer'
+require 'ruby_neural_nets/models/n_layers'
+require 'ruby_neural_nets/optimizers/constant'
+require 'ruby_neural_nets/trainer'
+
+# dataset = RubyNeuralNets::Dataset.new('colors')
+dataset = RubyNeuralNets::Dataset.new('numbers')
+dataset.display_stats
+# dataset.display_sample(:train, dataset.classes.first)
+image_stats = dataset.image_stats
+puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats[:channels]}"
+
+# model = RubyNeuralNets::Models::OneLayer.new(
+#   image_stats[:rows],
+#   image_stats[:cols],
+#   image_stats[:channels],
+#   dataset.classes.size,
+#   optimizer: RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.002)
+# )
+model = RubyNeuralNets::Models::NLayers.new(
+  image_stats[:rows],
+  image_stats[:cols],
+  image_stats[:channels],
+  dataset.classes.size,
+  layers: [10],
+  optimizer: RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.002)
+)
+accuracy = RubyNeuralNets::Accuracy.new
+loss = RubyNeuralNets::Losses::CrossEntropy.new
+RubyNeuralNets::Trainer.new(
+  nbr_epochs: 100,
+  max_minibatch_size: 2000,
+  accuracy: accuracy,
+  loss: loss
+).train(model, dataset)
+
+# Validate on the dev set
+dataset.for_each_minibatch(:dev, 10000) do |minibatch_x, minibatch_y|
+  a_dev = model.forward_propagate(minibatch_x)
+  puts "Dev dataset accuracy: #{accuracy.measure(a_dev, minibatch_y) * 100}%"
+  puts 'Wait for user to close graphs'
+  Numo.gnuplot do
+    set title: 'Dev confusion matrix'
+    set palette: 'gray'
+    set xlabel: 'Predicted'
+    set ylabel: 'True'
+    max_idx = (dataset.classes.size - 0.5)
+    set xrange: -0.5..max_idx
+    set yrange: max_idx..-0.5
+    tics = "(#{dataset.classes.map.with_index { |class_name, idx| "\"#{class_name}\" #{idx}" }.join(', ')})"
+    set xtics: tics
+    set ytics: tics
+    plot(accuracy.confusion_matrix(a_dev, minibatch_y), w: 'image', t: '')
+    pause 'mouse close'
+  end
+end
