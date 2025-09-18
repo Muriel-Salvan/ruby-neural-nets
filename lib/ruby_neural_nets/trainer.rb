@@ -11,12 +11,20 @@ module RubyNeuralNets
     # * *nbr_epochs* (Integer): Number of epochs to use for training
     # * *max_minibatch_size* (Integer): Max size each minibatch should have
     # * *accuracy* (Accuracy): The accuracy measure [default: Accuracy.new]
-    # * *loss* (Loss): The loss measure [default: Loss::CrossEntropy.new]
-    def initialize(nbr_epochs:, max_minibatch_size:, accuracy: Accuracy.new, loss: Loss::CrossEntropy.new)
+    # * *loss* (Loss): The loss measure [default: Losses::CrossEntropy.new]
+    # * *optimizer* (Optimizer): The optimizer to be used [default: Optimizers::Constant.new(learning_rate: 0.001)]
+    def initialize(
+      nbr_epochs:,
+      max_minibatch_size:,
+      accuracy: Accuracy.new,
+      loss: Losses::CrossEntropy.new,
+      optimizer: Optimizers::Constant.new(learning_rate: 0.001)
+    )
       @nbr_epochs = nbr_epochs
       @max_minibatch_size = max_minibatch_size
       @accuracy = accuracy
       @loss = loss
+      @optimizer = optimizer
     end
 
     # Train a given model on a training dataset
@@ -57,6 +65,7 @@ module RubyNeuralNets
 
       @nbr_epochs.times do |idx_epoch|
         puts "[Trainer] - Training for epoch ##{idx_epoch}..."
+        @optimizer.start_epoch(idx_epoch)
         idx_minibatch = 0
         dataset.for_each_minibatch(dataset_type, @max_minibatch_size) do |minibatch_x, minibatch_y|
           m = minibatch_x.shape[1]

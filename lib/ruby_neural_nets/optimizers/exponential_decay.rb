@@ -4,14 +4,16 @@ module RubyNeuralNets
 
   module Optimizers
 
-    class Constant < Optimizer
+    class ExponentialDecay < Optimizer
 
       # Constructor
       #
       # Parameters::
       # * *learning_rate* (Float): Constant learning rate to apply while learning
-      def initialize(learning_rate:)
+      # * *decay* (Float): Decay to apply to the learning rate
+      def initialize(learning_rate:, decay:)
         @learning_rate = learning_rate
+        @decay = decay
       end
 
       # Adapt some parameters from their derivative and eventual optimization techniques.
@@ -23,8 +25,10 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: New parameters to take into account for next epoch
       def learn(params, dparams)
-        new_params = params - @learning_rate * dparams
-        puts '[Optimizer/Constant] !!! Learning has invalid values. There is numerical instability. !!!' unless new_params.isfinite.all?
+        learning_rate = @learning_rate * Numo::NMath.exp(-@decay * @idx_epoch).to_f
+        puts "[Optimizer/ExponentialDecay] Learning with rate #{learning_rate}"
+        new_params = params - dparams * learning_rate
+        puts '[Optimizer/ExponentialDecay] !!! Learning has invalid values. There is numerical instability. !!!' unless new_params.isfinite.all?
         new_params
       end
 
