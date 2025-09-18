@@ -20,14 +20,14 @@ module RubyNeuralNets
       # This method could be called in any layer's backward_propagate method to update trainable parameters.
       #
       # Parameters::
-      # * *params* (Numo::DFloat): Parameters to update
+      # * *parameter* (Parameter): Parameters to update
       # * *dparams* (Numo::DFloat): Corresponding derivatives of those parameters
       # Result::
-      # * Numo::DFloat: New parameters to take into account for next epoch
-      def learn(params, dparams)
+      # * Numo::DFloat: New parameter values to take into account for next epoch
+      def learn(parameter, dparams)
         learning_rate = @learning_rate * Numo::NMath.exp(-@decay * @idx_epoch).to_f
         puts "[Optimizer/ExponentialDecay] Learning with rate #{learning_rate}"
-        new_params = params - dparams * learning_rate
+        new_params = parameter.values - dparams * learning_rate
         puts '[Optimizer/ExponentialDecay] !!! Learning has invalid values. There is numerical instability. !!!' unless new_params.isfinite.all?
         new_params
       end

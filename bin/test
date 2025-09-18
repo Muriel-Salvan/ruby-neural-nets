@@ -15,7 +15,7 @@ require 'ruby_neural_nets/dataset'
 require 'ruby_neural_nets/losses/cross_entropy'
 require 'ruby_neural_nets/models/one_layer'
 require 'ruby_neural_nets/models/n_layers'
-require 'ruby_neural_nets/optimizers/exponential_decay'
+require 'ruby_neural_nets/optimizers/adam'
 require 'ruby_neural_nets/trainer'
 
 # dataset = RubyNeuralNets::Dataset.new('colors')
@@ -32,7 +32,7 @@ puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats
 #   dataset.classes.size,
 #   optimizer: RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.002)
 # )
-optimizer = RubyNeuralNets::Optimizers::ExponentialDecay.new(learning_rate: 0.0001, decay: 0.01)
+optimizer = RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.0001)
 model = RubyNeuralNets::Models::NLayers.new(
   image_stats[:rows],
   image_stats[:cols],

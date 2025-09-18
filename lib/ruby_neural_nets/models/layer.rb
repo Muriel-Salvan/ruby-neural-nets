@@ -19,18 +19,17 @@ module RubyNeuralNets
 
       private
 
-      # Adapt some parameters from their derivative and eventual optimization techniques.
-      # This method could be called in any layer's backward_propagate method to update trainable parameters.
+      # Register a new parameters tensor
       #
       # Parameters::
-      # * *params* (Numo::DFloat): Parameters to update
-      # * *dparams* (Numo::DFloat): Corresponding derivatives of those parameters
+      # * *shape* (Array): Shape of this parameter
+      # * *initializer* (Class): Initializer class
       # Result::
-      # * Numo::DFloat: New parameters to take into account for next epoch
-      def learn(params, dparams)
-        @model.learn(params, dparams)
+      # * Parameter: The corresponding parameters tensor
+      def register_parameters(shape, initializer)
+        @model.register_parameters(shape, initializer)
       end
-      
+
     end
 
   end

@@ -1,4 +1,6 @@
 require 'numo/narray'
+require 'ruby_neural_nets/initializers/glorot'
+require 'ruby_neural_nets/initializers/zero'
 require 'ruby_neural_nets/models/layer'
 
 module RubyNeuralNets
@@ -21,9 +23,9 @@ module RubyNeuralNets
           @nbr_units = nbr_units
           # Layer weights [nbr_units, n_x]
           # Use the Xavier Glorot normal initialization to avoid exploding gradients
-          @w = Numo::DFloat.new(nbr_units, n_x).rand * (2.0 / (n_x + nbr_units)) ** 0.5
+          @w = register_parameters([nbr_units, n_x], Initializers::Glorot)
           # Layer bias [nbr_units, 1]
-          @b = Numo::DFloat.zeros(nbr_units, 1)
+          @b = register_parameters([nbr_units, 1], Initializers::Zero)
         end
 
         # Forward propagate an input through this layer
@@ -34,7 +36,7 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
           @cache[:input] = input
-          @w.dot(input) + @b
+          @w.values.dot(input) + @b.values
         end
 
         # Backward propagate an input da (coming from next layers) through this layer.
@@ -49,9 +51,9 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
           m = @cache[:input].shape[1]
-          @w = learn(@w, da.dot(@cache[:input].transpose) / m)
-          @b = learn(@b, da.sum(axis: 1, keepdims: true) / m)
-          @w.transpose.dot(da)
+          @w.learn(da.dot(@cache[:input].transpose) / m)
+          @b.learn(da.sum(axis: 1, keepdims: true) / m)
+          @w.values.transpose.dot(da)
         end
 
       end
