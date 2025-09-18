@@ -82,4 +82,4 @@ This is a playground project for experimenting with neural networks in Ruby. Fee
 
 ## License
 
-[Add your license here]
+See LICENSE file.
