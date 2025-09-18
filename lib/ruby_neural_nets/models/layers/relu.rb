@@ -1,4 +1,3 @@
-require 'numo/narray'
 require 'ruby_neural_nets/models/layer'
 
 module RubyNeuralNets
@@ -7,24 +6,8 @@ module RubyNeuralNets
 
     module Layers
 
-      # Dense layer outputing a given number of units
-      class Dense < Layer
-
-        # Constructor
-        #
-        # Parameters::
-        # * *model* (Model): Model that is using this layer
-        # * *n_x* (Integer): Number of input units
-        # * *nbr_units* (Integer): The number of units for this dense layer
-        def initialize(model:, n_x:, nbr_units:)
-          super(model:, n_x:)
-          @nbr_units = nbr_units
-          # Layer weights [nbr_units, n_x]
-          # Use the Xavier Glorot normal initialization to avoid exploding gradients
-          @w = Numo::DFloat.new(nbr_units, n_x).rand * (2.0 / (n_x + nbr_units)) ** 0.5
-          # Layer bias [nbr_units, 1]
-          @b = Numo::DFloat.zeros(nbr_units, 1)
-        end
+      # Simple ReLU layer
+      class Relu < Layer
 
         # Forward propagate an input through this layer
         #
@@ -34,7 +17,7 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
           @cache[:input] = input
-          @w.dot(input) + @b
+          input.clip(0, nil)
         end
 
         # Backward propagate an input da (coming from next layers) through this layer.
@@ -48,10 +31,7 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
-          m = @cache[:input].shape[1]
-          @w = learn(@w, da.dot(@cache[:input].transpose) / m)
-          @b = learn(@b, da.sum(axis: 1, keepdims: true) / m)
-          @w.transpose.dot(da)
+          da * (@cache[:input] > 0)
         end
 
       end

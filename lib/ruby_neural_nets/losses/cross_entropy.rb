@@ -19,7 +19,7 @@ module RubyNeuralNets
       # Result::
       # * Float: The corresponding loss
       def compute_loss(a, y)
-        - (y * Numo::DFloat::Math.log(a)).sum
+        - (y * Numo::DFloat::Math.log(a + Epsilon)).sum
       end
 
       # Compute the loss gradient from a predicted output and a real one.

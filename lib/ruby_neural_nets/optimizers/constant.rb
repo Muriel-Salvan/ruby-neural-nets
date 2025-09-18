@@ -21,7 +21,9 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: New parameters to take into account for next epoch
       def learn(params, dparams)
-        params - @learning_rate * dparams
+        new_params = params - @learning_rate * dparams
+        puts '[Optimizer/Constant] !!! Learning has invalid values. There is numerical instability. !!!' unless new_params.isfinite.all?
+        new_params
       end
 
     end

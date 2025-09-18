@@ -1,6 +1,6 @@
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/models/layers/dense'
-require 'ruby_neural_nets/models/layers/sigmoid'
+require 'ruby_neural_nets/models/layers/relu'
 require 'ruby_neural_nets/models/layers/softmax'
 
 module RubyNeuralNets
@@ -25,7 +25,7 @@ module RubyNeuralNets
         @layers = layers.map do |nbr_units|
           layer = Layers::Dense.new(model: self, n_x:, nbr_units:)
           n_x = nbr_units
-          [layer, Layers::Sigmoid.new(model: self, n_x:)]
+          [layer, Layers::Relu.new(model: self, n_x:)]
         end.flatten(1) + [
           Layers::Dense.new(model: self, n_x:, nbr_units: nbr_classes),
           Layers::Softmax.new(model: self, n_x: nbr_classes)
@@ -42,9 +42,15 @@ module RubyNeuralNets
         # Forward propagate the minibatch
         a = x
         @layers.each do |layer|
-          puts "[Model/N-Layers] - Forward propagate #{a.shape[1]} => #{layer.class.name}..."
+          n_x = a.shape[0]
           a = layer.forward_propagate(a)
-          puts "[Model/N-Layers] - Forward propagate #{layer.class.name} => #{a.shape[1]}."
+          puts "[Model/N-Layers] - Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[0]}."
+          # Keep intermediate activations for debugging.
+          # This could be removed in case memory becomes an issue.
+          layer.instance_variable_set(:@output, a)
+          # Check for numerical instability.
+          # This could be removed in case processing power becomes an issue.
+          puts '[Model/N-Layers] !!! Forward propagation has invalid values. There is numerical instability. !!!' unless a.isfinite.all?
         end
         a
       end
@@ -58,7 +64,14 @@ module RubyNeuralNets
       # * *y* (Numo::DFloat): The real output
       def gradient_descent(da, a, y)
         # Backward propagate the minibatch
-        @layers.reverse.each { |layer| da = layer.backward_propagate(da) }
+        @layers.reverse.each do |layer|
+          # Check for numerical instability.
+          # This could be removed in case processing power becomes an issue.
+          puts '[Model/N-Layers] !!! Backward propagation has invalid values. There is numerical instability. !!!' unless da.isfinite.all?
+          n_x = da.shape[0]
+          da = layer.backward_propagate(da)
+          puts "[Model/N-Layers] - Backward propagate #{n_x} => #{layer.class.name.split('::').last} => #{da.shape[0]}."
+        end
       end
 
     end
