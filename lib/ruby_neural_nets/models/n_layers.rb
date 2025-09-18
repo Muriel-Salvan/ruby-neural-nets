@@ -44,7 +44,6 @@ module RubyNeuralNets
         @layers.each do |layer|
           puts "[Model/N-Layers] - Forward propagate #{a.shape[1]} => #{layer.class.name}..."
           a = layer.forward_propagate(a)
-          byebug
           puts "[Model/N-Layers] - Forward propagate #{layer.class.name} => #{a.shape[1]}."
         end
         a

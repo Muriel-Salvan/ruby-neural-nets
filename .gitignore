@@ -1,0 +1,6 @@
+# Don't include the bundler directories
+.bundle
+vendor
+
+# Don't include the datasets
+dataset
