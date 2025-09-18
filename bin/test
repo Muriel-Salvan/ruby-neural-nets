@@ -1,10 +1,15 @@
 #!/usr/bin/env ruby
+
 require 'byebug'
 
 # TODO: Find why do I need that?
 $LOAD_PATH.unshift(File.expand_path("#{__dir__}/../lib"))
 
 require 'numo/gnuplot'
+require 'numo/narray'
+Random.srand(0)
+Numo::NArray.srand(0)
+
 require 'ruby_neural_nets/accuracy'
 require 'ruby_neural_nets/dataset'
 require 'ruby_neural_nets/losses/cross_entropy'
@@ -33,7 +38,7 @@ model = RubyNeuralNets::Models::NLayers.new(
   image_stats[:channels],
   dataset.classes.size,
   layers: [10],
-  optimizer: RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.002)
+  optimizer: RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.00005)
 )
 accuracy = RubyNeuralNets::Accuracy.new
 loss = RubyNeuralNets::Losses::CrossEntropy.new
