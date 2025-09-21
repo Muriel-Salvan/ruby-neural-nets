@@ -1,3 +1,4 @@
+require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/optimizer'
 
 module RubyNeuralNets
@@ -36,7 +37,7 @@ module RubyNeuralNets
         diff_parameters = @learning_rate * v_corrected / (s_corrected ** 0.5 + @epsilon)
         puts "[Optimizer/Adam] - Learning with mean delta #{diff_parameters.mean}"
         new_params = parameter.values - diff_parameters
-        puts '[Optimizer/Adam] !!! Learning has invalid values. There is numerical instability. !!!' unless new_params.isfinite.all?
+        Helpers.check_instability(new_params)
         new_params
       end
 

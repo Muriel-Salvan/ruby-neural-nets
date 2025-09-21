@@ -1,3 +1,4 @@
+require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/models/layers/dense'
 require 'ruby_neural_nets/models/layers/relu'
@@ -48,9 +49,7 @@ module RubyNeuralNets
           # Keep intermediate activations for debugging.
           # This could be removed in case memory becomes an issue.
           layer.instance_variable_set(:@output, a)
-          # Check for numerical instability.
-          # This could be removed in case processing power becomes an issue.
-          puts '[Model/N-Layers] !!! Forward propagation has invalid values. There is numerical instability. !!!' unless a.isfinite.all?
+          Helpers.check_instability(a)
         end
         a
       end
@@ -65,9 +64,7 @@ module RubyNeuralNets
       def gradient_descent(da, a, y)
         # Backward propagate the minibatch
         @layers.reverse.each do |layer|
-          # Check for numerical instability.
-          # This could be removed in case processing power becomes an issue.
-          puts '[Model/N-Layers] !!! Backward propagation has invalid values. There is numerical instability. !!!' unless da.isfinite.all?
+          Helpers.check_instability(da)
           n_x = da.shape[0]
           da = layer.backward_propagate(da)
           puts "[Model/N-Layers] - Backward propagate #{n_x} => #{layer.class.name.split('::').last} => #{da.shape[0]}."

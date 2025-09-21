@@ -1,4 +1,6 @@
 require 'ruby_neural_nets/helpers'
+require 'ruby_neural_nets/initializers/rand'
+require 'ruby_neural_nets/initializers/zero'
 require 'ruby_neural_nets/model'
 
 module RubyNeuralNets
@@ -20,9 +22,9 @@ module RubyNeuralNets
         n_x = rows * cols * channels
         # Define a very simple neural net with 1 softmax layer to categorize the 10 numbers
         # Softmax layer weights [nbr_classes, n_x]
-        @w_1 = Numo::DFloat.new(nbr_classes, n_x).rand
+        @w_1 = register_parameters([nbr_classes, n_x], Initializers::Glorot)
         # Softmax layer bias [nbr_classes, 1]
-        @b_1 = Numo::DFloat.zeros(nbr_classes, 1)
+        @b_1 = register_parameters([nbr_classes, 1], Initializers::Zero)
       end
 
       # Perform the forward propagation given an input layer
@@ -36,9 +38,12 @@ module RubyNeuralNets
         @cache_x = x
         # Forward propagate the minibatch
         # Shape [nbr_classes, minibatch.size]
-        z_1 = @w_1.dot(x) + @b_1
+        z_1 = @w_1.values.dot(x) + @b_1.values
+        Helpers.check_instability(z_1)
         # Shape [nbr_classes, minibatch.size]
-        Helpers.softmax(z_1)
+        output = Helpers.softmax(z_1)
+        Helpers.check_instability(output, types: %i[not_finite zero one])
+        output
       end
 
       # Perform the gradient descent, given the predicted output and real one.
@@ -55,12 +60,14 @@ module RubyNeuralNets
         dz_1 = a - y
         # Shape [nbr_classes, n_x]
         dw_1 = dz_1.dot(@cache_x.transpose) / m
+        Helpers.check_instability(dw_1)
         # Shape [nbr_classes, 1]
         db_1 = dz_1.sum(axis: 1, keepdims: true) / m
+        Helpers.check_instability(db_1)
 
         # Perform gradient descent on parameters
-        @w_1 = learn(@w_1, dw_1)
-        @b_1 = learn(@b_1, db_1)
+        @w_1.learn(dw_1)
+        @b_1.learn(db_1)
       end
 
     end

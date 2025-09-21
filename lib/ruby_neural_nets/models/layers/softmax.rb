@@ -20,7 +20,7 @@ module RubyNeuralNets
         def forward_propagate(input)
           output = Helpers.softmax(input)
           @cache[:output] = output
-          puts '[Layer/Softmax] !!! Softmax outputs invalid values. There is numerical instability. !!!' if output.eq(0).any? || output.eq(1).any?
+          Helpers.check_instability(output, types: %i[zero one])
           output
         end
 

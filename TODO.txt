@@ -1,0 +1,2 @@
+* Add gradient checking and make it optional
+* Solve the OneLayer numerical instability (Batch normalization?)

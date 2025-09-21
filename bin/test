@@ -7,40 +7,42 @@ $LOAD_PATH.unshift(File.expand_path("#{__dir__}/../lib"))
 
 require 'numo/gnuplot'
 require 'numo/narray'
-Random.srand(0)
-Numo::NArray.srand(0)
 
 require 'ruby_neural_nets/accuracy'
 require 'ruby_neural_nets/dataset'
+require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/losses/cross_entropy'
 require 'ruby_neural_nets/models/one_layer'
 require 'ruby_neural_nets/models/n_layers'
 require 'ruby_neural_nets/optimizers/adam'
 require 'ruby_neural_nets/trainer'
 
-# dataset = RubyNeuralNets::Dataset.new('colors')
-dataset = RubyNeuralNets::Dataset.new('numbers')
+RubyNeuralNets::Helpers.init
+
+dataset = RubyNeuralNets::Dataset.new('colors')
+# dataset = RubyNeuralNets::Dataset.new('numbers')
 dataset.display_stats
 # dataset.display_sample(:train, dataset.classes.first)
 image_stats = dataset.image_stats
 puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats[:channels]}"
 
-# model = RubyNeuralNets::Models::OneLayer.new(
-#   image_stats[:rows],
-#   image_stats[:cols],
-#   image_stats[:channels],
-#   dataset.classes.size,
-#   optimizer: RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.002)
-# )
-optimizer = RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.0001)
-model = RubyNeuralNets::Models::NLayers.new(
+optimizer = RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.001)
+# optimizer = RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.002)
+model = RubyNeuralNets::Models::OneLayer.new(
   image_stats[:rows],
   image_stats[:cols],
   image_stats[:channels],
   dataset.classes.size,
-  layers: [10],
   optimizer:
 )
+# model = RubyNeuralNets::Models::NLayers.new(
+#   image_stats[:rows],
+#   image_stats[:cols],
+#   image_stats[:channels],
+#   dataset.classes.size,
+#   layers: [],
+#   optimizer:
+# )
 accuracy = RubyNeuralNets::Accuracy.new
 loss = RubyNeuralNets::Losses::CrossEntropy.new
 RubyNeuralNets::Trainer.new(
