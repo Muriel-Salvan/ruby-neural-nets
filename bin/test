@@ -17,7 +17,7 @@ require 'ruby_neural_nets/models/n_layers'
 require 'ruby_neural_nets/optimizers/adam'
 require 'ruby_neural_nets/trainer'
 
-RubyNeuralNets::Helpers.init
+RubyNeuralNets::Helpers.init(instability_checks: :byebug)
 
 dataset = RubyNeuralNets::Dataset.new('colors')
 # dataset = RubyNeuralNets::Dataset.new('numbers')
@@ -26,23 +26,23 @@ dataset.display_stats
 image_stats = dataset.image_stats
 puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats[:channels]}"
 
-optimizer = RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.001)
-# optimizer = RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.002)
-model = RubyNeuralNets::Models::OneLayer.new(
-  image_stats[:rows],
-  image_stats[:cols],
-  image_stats[:channels],
-  dataset.classes.size,
-  optimizer:
-)
-# model = RubyNeuralNets::Models::NLayers.new(
+# optimizer = RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.001)
+optimizer = RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.001)
+# model = RubyNeuralNets::Models::OneLayer.new(
 #   image_stats[:rows],
 #   image_stats[:cols],
 #   image_stats[:channels],
 #   dataset.classes.size,
-#   layers: [],
 #   optimizer:
 # )
+model = RubyNeuralNets::Models::NLayers.new(
+  image_stats[:rows],
+  image_stats[:cols],
+  image_stats[:channels],
+  dataset.classes.size,
+  layers: [],
+  optimizer:
+)
 accuracy = RubyNeuralNets::Accuracy.new
 loss = RubyNeuralNets::Losses::CrossEntropy.new
 RubyNeuralNets::Trainer.new(

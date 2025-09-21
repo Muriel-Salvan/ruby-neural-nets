@@ -20,7 +20,7 @@ module RubyNeuralNets
         def forward_propagate(input)
           output = Helpers.softmax(input)
           @cache[:output] = output
-          Helpers.check_instability(output, types: %i[zero one])
+          Helpers.check_instability(output, types: %i[not_finite zero one])
           output
         end
 

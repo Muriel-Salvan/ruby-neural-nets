@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/model'
+require 'ruby_neural_nets/models/layers/batch_normalization'
 require 'ruby_neural_nets/models/layers/dense'
 require 'ruby_neural_nets/models/layers/relu'
 require 'ruby_neural_nets/models/layers/softmax'
@@ -29,6 +30,7 @@ module RubyNeuralNets
           [layer, Layers::Relu.new(model: self, n_x:)]
         end.flatten(1) + [
           Layers::Dense.new(model: self, n_x:, nbr_units: nbr_classes),
+          Layers::BatchNormalization.new(model: self, n_x: nbr_classes),
           Layers::Softmax.new(model: self, n_x: nbr_classes)
         ]
       end
