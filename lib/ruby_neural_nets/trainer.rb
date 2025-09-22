@@ -14,18 +14,25 @@ module RubyNeuralNets
     # * *accuracy* (Accuracy): The accuracy measure [default: Accuracy.new]
     # * *loss* (Loss): The loss measure [default: Losses::CrossEntropy.new]
     # * *optimizer* (Optimizer): The optimizer to be used [default: Optimizers::Constant.new(learning_rate: 0.001)]
+    # * *gradient_checks* (Symbol): Behavior when wrong gradient checking is detected [default: :warning]
+    #   Possible values are the same as for Helpers.instability_checks
+    # * *nbr_gradient_checks_samples* (Integer): Max number of parameters per model's parameter tensor to be used for gradient checking [default: 2]
     def initialize(
       nbr_epochs:,
       max_minibatch_size:,
       accuracy: Accuracy.new,
       loss: Losses::CrossEntropy.new,
-      optimizer: Optimizers::Constant.new(learning_rate: 0.001)
+      optimizer: Optimizers::Constant.new(learning_rate: 0.001),
+      gradient_checks: :warning,
+      nbr_gradient_checks_samples: 2
     )
       @nbr_epochs = nbr_epochs
       @max_minibatch_size = max_minibatch_size
       @accuracy = accuracy
       @loss = loss
       @optimizer = optimizer
+      @gradient_checks = gradient_checks
+      @nbr_gradient_checks_samples = nbr_gradient_checks_samples
     end
 
     # Train a given model on a training dataset
@@ -85,12 +92,11 @@ module RubyNeuralNets
           # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
           gradient_checking_epsilon = 1e-7
           d_theta_approx = nil
-          if Helpers.gradient_checks != :off
-            nbr_samples_per_parameter = 1
+          if @gradient_checks != :off
             d_theta_approx = Numo::DFloat[
               *model.parameters.map do |parameter|
                 # Compute the indexes to select from the parameter
-                parameter.gradient_check_indices = nbr_samples_per_parameter.times.map { rand(parameter.values.size) }.sort.uniq
+                parameter.gradient_check_indices = @nbr_gradient_checks_samples.times.map { rand(parameter.values.size) }.sort.uniq
                 parameter.gradient_check_indices.map do |idx_param|
                   value_original = parameter.values[idx_param]
                   begin
@@ -110,7 +116,7 @@ module RubyNeuralNets
           # Gradient descent
           model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
 
-          if Helpers.gradient_checks != :off
+          if @gradient_checks != :off
             # Compute d_theta for gradient checking
             d_theta = nil
             model.parameters.map do |parameter|
@@ -123,7 +129,8 @@ module RubyNeuralNets
             end
             # Perform gradient checking
             gradient_distance = Helpers.norm_2(d_theta_approx - d_theta) / (Helpers.norm_2(d_theta_approx) + Helpers.norm_2(d_theta))
-            Helpers.handle_error("Gradient checking reports a distance of #{gradient_distance} for an epsilon of #{gradient_checking_epsilon}", Helpers.gradient_checks) if gradient_distance > gradient_checking_epsilon * 100
+            puts "[Trainer] - Gradient checking on #{d_theta.size} parameters got #{gradient_distance}"
+            Helpers.handle_error("Gradient checking reports a distance of #{gradient_distance} for an epsilon of #{gradient_checking_epsilon}", @gradient_checks) if gradient_distance > gradient_checking_epsilon * 100
           end
 
           idx_minibatch += 1

@@ -13,21 +13,10 @@ module RubyNeuralNets
     #   Possible values are:
     #   * *off*: Don't perform instability checks.
     #   * Any other value from the handle_error method's behavior parameter.
-    # * *gradient_checks* (Symbol): Behavior when wrong gradient checking is detected [default: :warning]
-    #   Possible values are the same as for instability_checks
-    def self.init(seed: 0, instability_checks: :warning, gradient_checks: :warning)
+    def self.init(seed: 0, instability_checks: :warning)
       @instability_checks = instability_checks
-      @gradient_checks = gradient_checks
       Random.srand(seed)
       Numo::NArray.srand(seed)
-    end
-
-    # Gradient checks behavior
-    #
-    # Result::
-    # * Symbol: The gradients checking behavior
-    def self.gradient_checks
-      @gradient_checks
     end
 
     # Compute sigmoid of an array

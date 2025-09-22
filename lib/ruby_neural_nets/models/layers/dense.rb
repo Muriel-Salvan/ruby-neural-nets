@@ -50,9 +50,8 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
-          m = @cache[:input].shape[1]
-          @w.learn(da.dot(@cache[:input].transpose) / m)
-          @b.learn(da.sum(axis: 1, keepdims: true) / m)
+          @w.learn(da.dot(@cache[:input].transpose))
+          @b.learn(da.sum(axis: 1, keepdims: true))
           @w.values.transpose.dot(da)
         end
 
