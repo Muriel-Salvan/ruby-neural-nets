@@ -1,1 +1,0 @@
-* Add gradient checking and make it optional
