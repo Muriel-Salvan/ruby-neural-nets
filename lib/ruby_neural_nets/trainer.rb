@@ -118,7 +118,7 @@ module RubyNeuralNets
               if d_theta.nil?
                 d_theta = dparams
               else
-                d_theta.concatenate(dparams)
+                d_theta = d_theta.concatenate(dparams)
               end
             end
             # Perform gradient checking

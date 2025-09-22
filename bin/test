@@ -17,7 +17,7 @@ require 'ruby_neural_nets/models/n_layers'
 require 'ruby_neural_nets/optimizers/adam'
 require 'ruby_neural_nets/trainer'
 
-RubyNeuralNets::Helpers.init(instability_checks: :byebug, gradient_checks: :warning)
+RubyNeuralNets::Helpers.init(instability_checks: :byebug, gradient_checks: :exception)
 
 dataset = RubyNeuralNets::Dataset.new('colors')
 # dataset = RubyNeuralNets::Dataset.new('numbers')
