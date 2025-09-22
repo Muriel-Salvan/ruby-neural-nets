@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/accuracy'
+require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/losses/cross_entropy'
 
 module RubyNeuralNets
@@ -36,16 +37,16 @@ module RubyNeuralNets
     # * *display_graphs* (Boolean): Do we want to display graphs of loss and accuracy at the end? [default: true]
     def train(model, dataset, dataset_type: :train, display_graphs: true)
       puts "[Trainer] - Train with minibatches of size #{@max_minibatch_size}, on #{@nbr_epochs} epochs"
-      losses = []
+      costs = []
       accuracies = []
 
-      loss_graph = nil
+      cost_graph = nil
       accuracy_graph = nil
       confusion_graph = nil
       if display_graphs
-        loss_graph = Numo::Gnuplot.new
-        loss_graph.set terminal: 'wxt 0 position 0,0 size 640,400'
-        loss_graph.set title: 'Loss'
+        cost_graph = Numo::Gnuplot.new
+        cost_graph.set terminal: 'wxt 0 position 0,0 size 640,400'
+        cost_graph.set title: 'Cost'
         accuracy_graph = Numo::Gnuplot.new
         accuracy_graph.set terminal: 'wxt 0 position 640,0 size 640,400'
         accuracy_graph.set title: 'Accuracy'
@@ -68,26 +69,62 @@ module RubyNeuralNets
         @optimizer.start_epoch(idx_epoch)
         idx_minibatch = 0
         dataset.for_each_minibatch(dataset_type, @max_minibatch_size) do |minibatch_x, minibatch_y|
-          m = minibatch_x.shape[1]
-
-          # Forward propagation
-          a = model.forward_propagate(minibatch_x)
-
           # Compute loss and accuracy
-          loss = @loss.compute_loss(a, minibatch_y) / m
+          cost, a = minibatch_cost(model, minibatch_x, minibatch_y)
           accuracy = @accuracy.measure(a, minibatch_y)
-          puts "[Trainer] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Loss #{loss}, Training accuracy #{accuracy * 100}%"
+          puts "[Trainer] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 
           if display_graphs
-            losses << loss
-            loss_graph.plot losses, w: 'lines', t: ''
+            costs << cost
+            cost_graph.plot costs, w: 'lines', t: ''
             accuracies << accuracy
             accuracy_graph.plot accuracies, w: 'lines', t: ''
             confusion_graph.plot @accuracy.confusion_matrix(a, minibatch_y), w: 'image', t: ''
           end
 
+          # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
+          gradient_checking_epsilon = 1e-7
+          d_theta_approx = nil
+          if Helpers.gradient_checks != :off
+            nbr_samples_per_parameter = 1
+            d_theta_approx = Numo::DFloat[
+              *model.parameters.map do |parameter|
+                # Compute the indexes to select from the parameter
+                parameter.gradient_check_indices = nbr_samples_per_parameter.times.map { rand(parameter.values.size) }.sort.uniq
+                parameter.gradient_check_indices.map do |idx_param|
+                  value_original = parameter.values[idx_param]
+                  begin
+                    parameter.values[idx_param] = value_original - gradient_checking_epsilon
+                    cost_minus, _a = minibatch_cost(model, minibatch_x, minibatch_y)
+                    parameter.values[idx_param] = value_original + gradient_checking_epsilon
+                    cost_plus, _a = minibatch_cost(model, minibatch_x, minibatch_y)
+                    (cost_plus - cost_minus) / (2 * gradient_checking_epsilon)
+                  ensure
+                    parameter.values[idx_param] = value_original
+                  end
+                end
+              end.flatten(1)
+            ]
+          end
+
           # Gradient descent
-          model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y), a, minibatch_y)
+          model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
+
+          if Helpers.gradient_checks != :off
+            # Compute d_theta for gradient checking
+            d_theta = nil
+            model.parameters.map do |parameter|
+              dparams = parameter.dparams[parameter.gradient_check_indices]
+              if d_theta.nil?
+                d_theta = dparams
+              else
+                d_theta.concatenate(dparams)
+              end
+            end
+            # Perform gradient checking
+            gradient_distance = Helpers.norm_2(d_theta_approx - d_theta) / (Helpers.norm_2(d_theta_approx) + Helpers.norm_2(d_theta))
+            Helpers.handle_error("Gradient checking reports a distance of #{gradient_distance} for an epsilon of #{gradient_checking_epsilon}", Helpers.gradient_checks) if gradient_distance > gradient_checking_epsilon * 100
+          end
 
           idx_minibatch += 1
         end
@@ -95,10 +132,26 @@ module RubyNeuralNets
 
       if display_graphs
         puts 'Wait for user to close graphs'
-        [loss_graph, accuracy_graph, confusion_graph].map do |gnuplot_graph|
+        [cost_graph, accuracy_graph, confusion_graph].map do |gnuplot_graph|
           Thread.new { gnuplot_graph.pause 'mouse close' }
         end.each(&:join)
       end
+    end
+
+    private
+
+    # Compute cost from an input minibatch and a true result minibatch
+    #
+    # Parameters::
+    # * *model* (Model): Model used to compute the cost
+    # * *minibath_x* (Numo::DFloat): The input minibatch
+    # * *minibath_y* (Numo::DFloat): The true output minibatch
+    # Result::
+    # * Float: Corresponding cost
+    # * Numo::DFloat: Output of the model
+    def minibatch_cost(model, minibatch_x, minibatch_y)
+      a = model.forward_propagate(minibatch_x)
+      [@loss.compute_loss(a, minibatch_y).sum / minibatch_x.shape[1], a]
     end
 
   end

@@ -35,7 +35,12 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
-          da * @cache[:output] * (1 - @cache[:output])
+          # TODO: Remove old formula if gradient checking is ok
+          # da * @cache[:output] * (1 - @cache[:output])
+          # Computes dz = J^T * da where J is the softmax Jacobian.
+          a = @cache[:output]
+          sum_term = (a * da).sum(axis: 0)
+          a * da - a * sum_term
         end
 
       end

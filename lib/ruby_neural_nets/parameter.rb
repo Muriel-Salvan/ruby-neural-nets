@@ -14,7 +14,15 @@ module RubyNeuralNets
     # Actual values of this parameter
     #   Numo::DFloat
     attr_reader :values
+
+    # Get the last derivative computed from gradient descent
+    #   Numo::DFloat
+    attr_reader :dparams
     
+    # Gradient check indices, used by the trainer to perform gradient checking
+    #   Array
+    attr_accessor :gradient_check_indices
+
     # Constructor
     #
     # Parameters::
@@ -35,6 +43,7 @@ module RubyNeuralNets
     # Parameters::
     # * *dparams* (Numo::DFloat): Corresponding derivatives of those parameters
     def learn(dparams)
+      @dparams = dparams
       @values = @optimizer.learn(self, dparams)
     end
     

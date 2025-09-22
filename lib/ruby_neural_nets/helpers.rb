@@ -2,7 +2,7 @@ module RubyNeuralNets
 
   module Helpers
 
-    class NumericalInstabilityError < StandardError
+    class ApplicationError < StandardError
     end
 
     # Initialize the project
@@ -12,13 +12,22 @@ module RubyNeuralNets
     # * *instability_checks* (Symbol): Behavior when numerical instability is detected [default: :warning]
     #   Possible values are:
     #   * *off*: Don't perform instability checks.
-    #   * *warning*: Display found instability in stdout.
-    #   * *prompt*: Invoke a byebug prompt at the time instability is found.
-    #   * *exception*: Raise an exception.
-    def self.init(seed: 0, instability_checks: :warning)
+    #   * Any other value from the handle_error method's behavior parameter.
+    # * *gradient_checks* (Symbol): Behavior when wrong gradient checking is detected [default: :warning]
+    #   Possible values are the same as for instability_checks
+    def self.init(seed: 0, instability_checks: :warning, gradient_checks: :warning)
       @instability_checks = instability_checks
+      @gradient_checks = gradient_checks
       Random.srand(seed)
       Numo::NArray.srand(seed)
+    end
+
+    # Gradient checks behavior
+    #
+    # Result::
+    # * Symbol: The gradients checking behavior
+    def self.gradient_checks
+      @gradient_checks
     end
 
     # Compute sigmoid of an array
@@ -43,6 +52,16 @@ module RubyNeuralNets
       exp_array = Numo::DFloat::Math.exp(safe_array)
       sums = exp_array.sum(axis: 0, keepdims: true)
       exp_array / sums
+    end
+
+    # Compute the euclidian norm of a tensor
+    #
+    # Parameters::
+    # * *tensor* (Numo::DFloat): The tensor to consider
+    # Result::
+    # * Float: The tensor's euclidian norm
+    def self.norm_2(tensor)
+      Math.sqrt(tensor.dot(tensor.transpose))
     end
 
     # Check numerical instability of a given tensor.
@@ -71,23 +90,35 @@ module RubyNeuralNets
         end
         unless errors.empty?
           error_msg = "Numerical instability detected: #{errors.join(', ')}"
-          case @instability_checks
-          when :warning
-            puts "!!! #{error_msg} !!!"
-          when :byebug
-            puts "!!! #{error_msg} !!!"
-            require 'byebug'
-            byebug
-            nil # Add this line just for byebug to not display stupid messages because we invoke it at the method's end
-          when :exception
-            raise NumericalInstabilityError.new(error_msg)
-          else
-            raise "Unknown instability checks type: #{@instability_checks}"
-          end
+          handle_error(error_msg, @instability_checks)
         end
       end
     end
   
+    # Handle an application error case, with a given behavior
+    #
+    # Parameters::
+    # * *error_msg* (String): The error message to handle
+    # * *behavior* (Symbol): The behavior to use:
+    #   * *warning*: Display found instability in stdout.
+    #   * *prompt*: Invoke a byebug prompt at the time instability is found.
+    #   * *exception*: Raise an exception.
+    def self.handle_error(error_msg, behavior)
+      case behavior
+      when :warning
+        puts "!!! #{error_msg} !!!"
+      when :byebug
+        puts "!!! #{error_msg} !!!"
+        require 'byebug'
+        byebug
+        nil # Add this line just for byebug to not display stupid messages because we invoke it at the method's end
+      when :exception
+        raise ApplicationError.new(error_msg)
+      else
+        raise "Unknown application error behavior: #{behavior}"
+      end
+    end
+
   end
 
 end

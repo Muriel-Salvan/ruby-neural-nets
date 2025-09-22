@@ -5,6 +5,10 @@ module RubyNeuralNets
 
   class Model
 
+    # Get all parameters for this model
+    #   Array<Parameter>
+    attr_reader :parameters
+
     # Define a model for processing images and outputting a given number of classes
     #
     # Parameters::
@@ -15,6 +19,7 @@ module RubyNeuralNets
     # * *optimizer* (Optimizer): The optimizer to be used [default: Optimizer::Constant.new(learning_rate: 0.001)]
     def initialize(rows, cols, channels, nbr_classes, optimizer: Optimizer::Constant.new(learning_rate: 0.001))
       @optimizer = optimizer
+      @parameters = []
     end
 
     # Perform the forward propagation given an input layer
@@ -46,7 +51,9 @@ module RubyNeuralNets
     # Result::
     # * Parameter: The corresponding parameters tensor
     def register_parameters(shape, initializer)
-      Parameter.new(shape, initializer, @optimizer)
+      param = Parameter.new(shape, initializer, @optimizer)
+      @parameters << param
+      param
     end
 
   end
