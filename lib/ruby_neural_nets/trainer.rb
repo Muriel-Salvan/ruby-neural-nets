@@ -17,6 +17,7 @@ module RubyNeuralNets
     # * *gradient_checks* (Symbol): Behavior when wrong gradient checking is detected [default: :warning]
     #   Possible values are the same as for Helpers.instability_checks
     # * *nbr_gradient_checks_samples* (Integer): Max number of parameters per model's parameter tensor to be used for gradient checking [default: 2]
+    # * *gradient_checks_epochs_interval* (Integer): Perform gradients checking every N epochs [default: 25]
     def initialize(
       nbr_epochs:,
       max_minibatch_size:,
@@ -24,7 +25,8 @@ module RubyNeuralNets
       loss: Losses::CrossEntropy.new,
       optimizer: Optimizers::Constant.new(learning_rate: 0.001),
       gradient_checks: :warning,
-      nbr_gradient_checks_samples: 2
+      nbr_gradient_checks_samples: 2,
+      gradient_checks_epochs_interval: 25
     )
       @nbr_epochs = nbr_epochs
       @max_minibatch_size = max_minibatch_size
@@ -33,6 +35,7 @@ module RubyNeuralNets
       @optimizer = optimizer
       @gradient_checks = gradient_checks
       @nbr_gradient_checks_samples = nbr_gradient_checks_samples
+      @gradient_checks_epochs_interval = gradient_checks_epochs_interval
     end
 
     # Train a given model on a training dataset
@@ -92,7 +95,7 @@ module RubyNeuralNets
           # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
           gradient_checking_epsilon = 1e-7
           d_theta_approx = nil
-          if @gradient_checks != :off
+            if @gradient_checks != :off && idx_epoch % @gradient_checks_epochs_interval == 0
             d_theta_approx = Numo::DFloat[
               *model.parameters.map do |parameter|
                 # Compute the indexes to select from the parameter
@@ -116,11 +119,9 @@ module RubyNeuralNets
           # Gradient descent
           # Make sure gradient descent uses caches computed by the normal forward propagation
           model.back_propagation_cache = back_propagation_cache
-          # TODO: Uncomment when OneLayer will work correctly
-          # model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
-          model.gradient_descent(a, minibatch_y)
+            model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
 
-          if @gradient_checks != :off
+            if @gradient_checks != :off && idx_epoch % @gradient_checks_epochs_interval == 0
             # Compute d_theta for gradient checking
             d_theta = nil
             model.parameters.map do |parameter|

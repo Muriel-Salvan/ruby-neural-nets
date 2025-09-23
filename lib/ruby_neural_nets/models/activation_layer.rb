@@ -1,4 +1,4 @@
-require 'ruby_neural_nets/models/activation_layer'
+require 'ruby_neural_nets/models/layer'
 
 module RubyNeuralNets
 

@@ -27,8 +27,6 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: The corresponding loss gradient
       def compute_loss_gradient(a, y)
-        # TODO: Remove old formula if gradient checking is ok
-        # (a - y) / ((a * (1 - a)) + Epsilon)
         - y / a
       end
 

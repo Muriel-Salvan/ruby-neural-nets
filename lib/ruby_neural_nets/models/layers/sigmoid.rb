@@ -19,7 +19,7 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
           output = Helpers.sigmoid(input)
-          back_propagation_cache[:output] = input
+          back_propagation_cache[:output] = output
           output
         end
 
