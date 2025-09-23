@@ -8,6 +8,8 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer)
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics
 - **Gradient Checking**: Built-in gradient checking to verify analytical gradients against numerical approximations
+- **Profiling**: Optional epoch profiling with HTML reports generated using ruby-prof to analyze performance bottlenecks
+- **OpenBLAS Linear Algebra**: Fast matrix operations powered by OpenBLAS through numo-linalg for improved computational performance
 - **Visualization**: Confusion matrix plotting using Gnuplot
 - **Extensible Architecture**: Modular design for easy addition of new models, optimizers, and loss functions
 
