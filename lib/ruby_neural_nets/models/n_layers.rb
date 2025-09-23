@@ -2,7 +2,7 @@ require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/models/layers/batch_normalization'
 require 'ruby_neural_nets/models/layers/dense'
-require 'ruby_neural_nets/models/layers/relu'
+require 'ruby_neural_nets/models/layers/leaky_relu'
 require 'ruby_neural_nets/models/layers/softmax'
 
 module RubyNeuralNets
@@ -25,9 +25,11 @@ module RubyNeuralNets
         @n_x = rows * cols * channels
         # Define a simple neural net with layers densily connected with sigmoid activation + 1 softmax layer to classify at the end
         @layers = []
+        @back_propagation_cache[:layers] = []
         layers.each do |nbr_units|
           self << Layers::Dense.new(nbr_units:)
-          self << Layers::Relu.new
+          self << Layers::BatchNormalization.new
+          self << Layers::LeakyRelu.new
         end
         self << Layers::Dense.new(nbr_units: nbr_classes)
         self << Layers::BatchNormalization.new

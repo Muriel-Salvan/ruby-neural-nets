@@ -38,6 +38,7 @@ module RubyNeuralNets
       @gradient_checks = gradient_checks
       @nbr_gradient_checks_samples = nbr_gradient_checks_samples
       @gradient_checks_epochs_interval = gradient_checks_epochs_interval
+      @profile = profile
     end
 
     # Train a given model on a training dataset
