@@ -4,3 +4,6 @@ vendor
 
 # Don't include the datasets
 dataset
+
+# Don't include profiling outputs
+profiling

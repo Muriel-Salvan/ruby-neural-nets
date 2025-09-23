@@ -18,6 +18,7 @@ module RubyNeuralNets
     #   Possible values are the same as for Helpers.instability_checks
     # * *nbr_gradient_checks_samples* (Integer): Max number of parameters per model's parameter tensor to be used for gradient checking [default: 2]
     # * *gradient_checks_epochs_interval* (Integer): Perform gradients checking every N epochs [default: 25]
+    # * *profile* (Boolean): Should we profile the execution of each epoch? [default: false]
     def initialize(
       nbr_epochs:,
       max_minibatch_size:,
@@ -26,7 +27,8 @@ module RubyNeuralNets
       optimizer: Optimizers::Constant.new(learning_rate: 0.001),
       gradient_checks: :warning,
       nbr_gradient_checks_samples: 2,
-      gradient_checks_epochs_interval: 25
+      gradient_checks_epochs_interval: 25,
+      profile: false
     )
       @nbr_epochs = nbr_epochs
       @max_minibatch_size = max_minibatch_size
@@ -74,87 +76,105 @@ module RubyNeuralNets
         confusion_graph.set ytics: tics
       end
 
+      # Compute the profiling code caller
+      profiling_code =
+        if @profile
+          require 'ruby-prof'
+          require 'fileutils'
+          proc do |idx_epoch, &code|
+            profiling_result = RubyProf::Profile.profile { code.call }
+            RubyProf::FlatPrinter.new(profiling_result).print(STDOUT)
+            printer = RubyProf::CallStackPrinter.new(profiling_result)
+            FileUtils.mkdir_p 'profiling'
+            File.open("profiling/epoch_#{idx_epoch}.html", 'w') { |f| printer.print(f, {}) }
+          end
+        else
+          proc { |idx_epoch, &code| code.call }
+        end
+
       @nbr_epochs.times do |idx_epoch|
-        puts "[Trainer] - Training for epoch ##{idx_epoch}..."
-        @optimizer.start_epoch(idx_epoch)
-        idx_minibatch = 0
-        dataset.for_each_minibatch(dataset_type, @max_minibatch_size) do |minibatch_x, minibatch_y|
-          # Compute loss and accuracy
-          cost, a, back_propagation_cache = minibatch_cost(model, minibatch_x, minibatch_y)
-          accuracy = @accuracy.measure(a, minibatch_y)
-          puts "[Trainer] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
+        profiling_code.call(idx_epoch) do
+          puts "[Trainer] - Training for epoch ##{idx_epoch}..."
+          @optimizer.start_epoch(idx_epoch)
+          idx_minibatch = 0
+          dataset.for_each_minibatch(dataset_type, @max_minibatch_size) do |minibatch_x, minibatch_y|
+            # Compute loss and accuracy
+            cost, a, back_propagation_cache = minibatch_cost(model, minibatch_x, minibatch_y)
+            accuracy = @accuracy.measure(a, minibatch_y)
+            puts "[Trainer] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 
-          if display_graphs
-            costs << cost
-            cost_graph.plot costs, w: 'lines', t: ''
-            accuracies << accuracy
-            accuracy_graph.plot accuracies, w: 'lines', t: ''
-            confusion_graph.plot @accuracy.confusion_matrix(a, minibatch_y), w: 'image', t: ''
-          end
+            if display_graphs
+              costs << cost
+              cost_graph.plot costs, w: 'lines', t: ''
+              accuracies << accuracy
+              accuracy_graph.plot accuracies, w: 'lines', t: ''
+              confusion_graph.plot @accuracy.confusion_matrix(a, minibatch_y), w: 'image', t: ''
+            end
 
-          # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
-          gradient_checking_epsilon = 1e-7
-          d_theta_approx = nil
+            # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
+            gradient_checking_epsilon = 1e-7
+            d_theta_approx = nil
             if @gradient_checks != :off && idx_epoch % @gradient_checks_epochs_interval == 0
-            d_theta_approx = Numo::DFloat[
-              *model.parameters.map do |parameter|
-                # Compute the indexes to select from the parameter
-                parameter.gradient_check_indices = @nbr_gradient_checks_samples.times.map { rand(parameter.values.size) }.sort.uniq
-                parameter.gradient_check_indices.map do |idx_param|
-                  value_original = parameter.values[idx_param]
-                  begin
-                    parameter.values[idx_param] = value_original - gradient_checking_epsilon
-                    cost_minus, _a, _cache = minibatch_cost(model, minibatch_x, minibatch_y)
-                    parameter.values[idx_param] = value_original + gradient_checking_epsilon
-                    cost_plus, _a, _cache = minibatch_cost(model, minibatch_x, minibatch_y)
-                    (cost_plus - cost_minus) / (2 * gradient_checking_epsilon)
-                  ensure
-                    parameter.values[idx_param] = value_original
+              d_theta_approx = Numo::DFloat[
+                *model.parameters.map do |parameter|
+                  # Compute the indexes to select from the parameter
+                  parameter.gradient_check_indices = @nbr_gradient_checks_samples.times.map { rand(parameter.values.size) }.sort.uniq
+                  parameter.gradient_check_indices.map do |idx_param|
+                    value_original = parameter.values[idx_param]
+                    begin
+                      parameter.values[idx_param] = value_original - gradient_checking_epsilon
+                      cost_minus, _a, _cache = minibatch_cost(model, minibatch_x, minibatch_y)
+                      parameter.values[idx_param] = value_original + gradient_checking_epsilon
+                      cost_plus, _a, _cache = minibatch_cost(model, minibatch_x, minibatch_y)
+                      (cost_plus - cost_minus) / (2 * gradient_checking_epsilon)
+                    ensure
+                      parameter.values[idx_param] = value_original
+                    end
                   end
-                end
-              end.flatten(1)
-            ]
-          end
+                end.flatten(1)
+              ]
+            end
 
-          # Gradient descent
-          # Make sure gradient descent uses caches computed by the normal forward propagation
-          model.back_propagation_cache = back_propagation_cache
+            # Gradient descent
+            # Make sure gradient descent uses caches computed by the normal forward propagation
+            model.back_propagation_cache = back_propagation_cache
             model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
 
             if @gradient_checks != :off && idx_epoch % @gradient_checks_epochs_interval == 0
-            # Compute d_theta for gradient checking
-            d_theta = nil
-            model.parameters.map do |parameter|
-              dparams = parameter.dparams[parameter.gradient_check_indices]
-              if d_theta.nil?
-                d_theta = dparams
-              else
-                d_theta = d_theta.concatenate(dparams)
-              end
-            end
-            # Perform gradient checking
-            gradient_distance = Helpers.norm_2(d_theta_approx - d_theta) / (Helpers.norm_2(d_theta_approx) + Helpers.norm_2(d_theta))
-            puts "[Trainer] - Gradient checking on #{d_theta.size} parameters got #{gradient_distance}"
-            if gradient_distance > gradient_checking_epsilon * 100
-              # Debug breakdown per-parameter tensor to locate mismatch source
-              offset = 0
-              model.parameters.each_with_index do |parameter, idx_param_tensor|
-                nbr_indices = parameter.gradient_check_indices.size
-                num = d_theta_approx[offset...offset + nbr_indices]
-                ana = d_theta[offset...offset + nbr_indices]
-                dist = Helpers.norm_2(num - ana) / (Helpers.norm_2(num) + Helpers.norm_2(ana))
-                puts "[Trainer] -   Param ##{idx_param_tensor} shape=#{parameter.shape.inspect} rel_dist=#{dist}"
-                parameter.gradient_check_indices.each_with_index do |param_idx, i|
-                  puts "[Trainer] -     idx=#{param_idx} d_theta_approx=#{num[i]} d_theta=#{ana[i]}"
+              # Compute d_theta for gradient checking
+              d_theta = nil
+              model.parameters.map do |parameter|
+                dparams = parameter.dparams[parameter.gradient_check_indices]
+                if d_theta.nil?
+                  d_theta = dparams
+                else
+                  d_theta = d_theta.concatenate(dparams)
                 end
-                offset += nbr_indices
               end
-              Helpers.handle_error("Gradient checking reports a distance of #{gradient_distance} for an epsilon of #{gradient_checking_epsilon}", @gradient_checks)
+              # Perform gradient checking
+              gradient_distance = Helpers.norm_2(d_theta_approx - d_theta) / (Helpers.norm_2(d_theta_approx) + Helpers.norm_2(d_theta))
+              puts "[Trainer] - Gradient checking on #{d_theta.size} parameters got #{gradient_distance}"
+              if gradient_distance > gradient_checking_epsilon * 100
+                # Debug breakdown per-parameter tensor to locate mismatch source
+                offset = 0
+                model.parameters.each_with_index do |parameter, idx_param_tensor|
+                  nbr_indices = parameter.gradient_check_indices.size
+                  num = d_theta_approx[offset...offset + nbr_indices]
+                  ana = d_theta[offset...offset + nbr_indices]
+                  dist = Helpers.norm_2(num - ana) / (Helpers.norm_2(num) + Helpers.norm_2(ana))
+                  puts "[Trainer] -   Param ##{idx_param_tensor} shape=#{parameter.shape.inspect} rel_dist=#{dist}"
+                  parameter.gradient_check_indices.each_with_index do |param_idx, i|
+                    puts "[Trainer] -     idx=#{param_idx} d_theta_approx=#{num[i]} d_theta=#{ana[i]}"
+                  end
+                  offset += nbr_indices
+                end
+                Helpers.handle_error("Gradient checking reports a distance of #{gradient_distance} for an epsilon of #{gradient_checking_epsilon}", @gradient_checks)
+              end
+
             end
 
+            idx_minibatch += 1
           end
-
-          idx_minibatch += 1
         end
       end
 
