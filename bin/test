@@ -8,6 +8,11 @@ $LOAD_PATH.unshift(File.expand_path("#{__dir__}/../lib"))
 require 'numo/gnuplot'
 require 'numo/narray'
 
+# Load a C extension for efficient computations
+require 'numo/linalg/linalg'
+# Comment out the following line if no backend is to be used
+Numo::Linalg::Loader.load_openblas 'I:\Env\Windows\Libraries\OpenBLAS-0.3.30-x64\bin'
+
 require 'ruby_neural_nets/accuracy'
 require 'ruby_neural_nets/dataset'
 require 'ruby_neural_nets/helpers'
@@ -28,30 +33,31 @@ puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats
 
 # optimizer = RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.001)
 optimizer = RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.001)
-model = RubyNeuralNets::Models::OneLayer.new(
-  image_stats[:rows],
-  image_stats[:cols],
-  image_stats[:channels],
-  dataset.classes.size,
-  optimizer:
-)
-# model = RubyNeuralNets::Models::NLayers.new(
+# model = RubyNeuralNets::Models::OneLayer.new(
 #   image_stats[:rows],
 #   image_stats[:cols],
 #   image_stats[:channels],
 #   dataset.classes.size,
-#   layers: [],
 #   optimizer:
 # )
+model = RubyNeuralNets::Models::NLayers.new(
+  image_stats[:rows],
+  image_stats[:cols],
+  image_stats[:channels],
+  dataset.classes.size,
+  layers: [100],
+  optimizer:
+)
 accuracy = RubyNeuralNets::Accuracy.new
 loss = RubyNeuralNets::Losses::CrossEntropy.new
 RubyNeuralNets::Trainer.new(
   nbr_epochs: 100,
-  max_minibatch_size: 2000,
+  max_minibatch_size: 5000,
   accuracy:,
   loss:,
   optimizer:,
-  gradient_checks: :exception
+  gradient_checks: :exception,
+  profile: false
 ).train(model, dataset)
 
 # Validate on the dev set
