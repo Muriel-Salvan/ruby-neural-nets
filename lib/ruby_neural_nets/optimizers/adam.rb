@@ -32,8 +32,9 @@ module RubyNeuralNets
       def learn(parameter, dparams)
         parameter.optimizer_parameters[:v] = @beta_1 * parameter.optimizer_parameters[:v] + (1 - @beta_1) * dparams
         parameter.optimizer_parameters[:s] = @beta_2 * parameter.optimizer_parameters[:s] + (1 - @beta_2) * dparams ** 2
-        v_corrected = parameter.optimizer_parameters[:v] / (1 - @beta_1 ** (@idx_epoch + 1))
-        s_corrected = parameter.optimizer_parameters[:s] / (1 - @beta_2 ** (@idx_epoch + 1))
+        parameter.optimizer_parameters[:t] = parameter.optimizer_parameters[:t] + 1
+        v_corrected = parameter.optimizer_parameters[:v] / (1 - @beta_1 ** parameter.optimizer_parameters[:t])
+        s_corrected = parameter.optimizer_parameters[:s] / (1 - @beta_2 ** parameter.optimizer_parameters[:t])
         diff_parameters = @learning_rate * v_corrected / (s_corrected ** 0.5 + @epsilon)
         puts "[Optimizer/Adam] - Learning with mean delta #{diff_parameters.mean}"
         new_params = parameter.values - diff_parameters
@@ -48,7 +49,8 @@ module RubyNeuralNets
       def init_parameter(parameter)
         parameter.optimizer_parameters.merge!(
           v: Numo::DFloat.zeros(*parameter.shape),
-          s: Numo::DFloat.zeros(*parameter.shape)
+          s: Numo::DFloat.zeros(*parameter.shape),
+          t: 0
         )
       end
 
