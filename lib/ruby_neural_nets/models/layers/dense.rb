@@ -50,9 +50,12 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
+          # Compute gradient to pass to previous layer using current weights before updating
+          prev_da = @w.values.transpose.dot(da)
+          # Update parameters after computing prev_da to avoid using updated weights in the backward chain
           @w.learn(da.dot(@cache[:input].transpose))
           @b.learn(da.sum(axis: 1, keepdims: true))
-          @w.values.transpose.dot(da)
+          prev_da
         end
 
       end

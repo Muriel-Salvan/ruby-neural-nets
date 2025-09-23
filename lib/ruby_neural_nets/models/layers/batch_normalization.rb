@@ -66,18 +66,20 @@ module RubyNeuralNets
           # Gradient for x_hat (using current gamma)
           dx_hat = da * @gamma.values
 
-          # Update parameters
-          @beta.learn(dbeta)
-          @gamma.learn(dgamma)
-
           # Gradient for var
           dvar = (dx_hat * (input - mean) * -0.5 * (var + @epsilon) ** -1.5).sum(axis: 1, keepdims: true)
 
           # Gradient for mean
           dmean = (dx_hat * -1 / sqrt_var_eps).sum(axis: 1, keepdims: true) + dvar * -2 * ((input - mean).sum(axis: 1, keepdims: true) / m)
 
-          # Gradient for input
-          dx_hat / sqrt_var_eps + dvar * 2 * (input - mean) / m + dmean / m
+          # Gradient for input to pass to previous layers
+          prev_da = dx_hat / sqrt_var_eps + dvar * 2 * (input - mean) / m + dmean / m
+
+          # Update parameters after computing prev_da (to avoid influencing backward chain)
+          @beta.learn(dbeta)
+          @gamma.learn(dgamma)
+
+          prev_da
         end
 
       end
