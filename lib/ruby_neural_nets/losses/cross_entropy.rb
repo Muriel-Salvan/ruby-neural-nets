@@ -7,9 +7,6 @@ module RubyNeuralNets
     # Compute the cross-entropy loss
     class CrossEntropy < Loss
 
-      # Epsilon used to make sure the gradient of matching a and y is never NaN
-      Epsilon = 1e-10
-
       # Compute the loss from a predicted output and a real one.
       #
       # Parameters::
@@ -18,7 +15,7 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: The corresponding loss
       def compute_loss(a, y)
-        - (y * Numo::DFloat::Math.log(a + Epsilon)).sum(axis: 0)
+        - (y * Numo::DFloat::Math.log(a)).sum(axis: 0)
       end
 
       # Compute the loss gradient from a predicted output and a real one.
@@ -32,7 +29,7 @@ module RubyNeuralNets
       def compute_loss_gradient(a, y)
         # TODO: Remove old formula if gradient checking is ok
         # (a - y) / ((a * (1 - a)) + Epsilon)
-        - y / (a + Epsilon)
+        - y / a
       end
 
     end

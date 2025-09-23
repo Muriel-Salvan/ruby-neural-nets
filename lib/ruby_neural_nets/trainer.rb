@@ -134,7 +134,23 @@ module RubyNeuralNets
             # Perform gradient checking
             gradient_distance = Helpers.norm_2(d_theta_approx - d_theta) / (Helpers.norm_2(d_theta_approx) + Helpers.norm_2(d_theta))
             puts "[Trainer] - Gradient checking on #{d_theta.size} parameters got #{gradient_distance}"
-            Helpers.handle_error("Gradient checking reports a distance of #{gradient_distance} for an epsilon of #{gradient_checking_epsilon}", @gradient_checks) if gradient_distance > gradient_checking_epsilon * 100
+            if gradient_distance > gradient_checking_epsilon * 100
+              # Debug breakdown per-parameter tensor to locate mismatch source
+              offset = 0
+              model.parameters.each_with_index do |parameter, idx_param_tensor|
+                nbr_indices = parameter.gradient_check_indices.size
+                num = d_theta_approx[offset...offset + nbr_indices]
+                ana = d_theta[offset...offset + nbr_indices]
+                dist = Helpers.norm_2(num - ana) / (Helpers.norm_2(num) + Helpers.norm_2(ana))
+                puts "[Trainer] -   Param ##{idx_param_tensor} shape=#{parameter.shape.inspect} rel_dist=#{dist}"
+                parameter.gradient_check_indices.each_with_index do |param_idx, i|
+                  puts "[Trainer] -     idx=#{param_idx} d_theta_approx=#{num[i]} d_theta=#{ana[i]}"
+                end
+                offset += nbr_indices
+              end
+              Helpers.handle_error("Gradient checking reports a distance of #{gradient_distance} for an epsilon of #{gradient_checking_epsilon}", @gradient_checks)
+            end
+
           end
 
           idx_minibatch += 1
@@ -163,6 +179,7 @@ module RubyNeuralNets
     # * Hash: Cache of computations for back-propagation
     def minibatch_cost(model, minibatch_x, minibatch_y)
       a = model.forward_propagate(minibatch_x)
+      Helpers.check_instability(a, types: %i[not_finite zero one])
       [@loss.compute_loss(a, minibatch_y).sum / minibatch_x.shape[1], a, model.back_propagation_cache]
     end
 
