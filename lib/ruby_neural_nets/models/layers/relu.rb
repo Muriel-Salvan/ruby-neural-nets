@@ -1,4 +1,4 @@
-require 'ruby_neural_nets/models/layer'
+require 'ruby_neural_nets/models/activation_layer'
 
 module RubyNeuralNets
 
@@ -7,7 +7,7 @@ module RubyNeuralNets
     module Layers
 
       # Simple ReLU layer
-      class Relu < Layer
+      class Relu < ActivationLayer
 
         # Forward propagate an input through this layer
         #
@@ -16,7 +16,7 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
-          @cache[:input] = input
+          back_propagation_cache[:input] = input
           input.clip(0, nil)
         end
 
@@ -31,7 +31,7 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
-          da * (@cache[:input] > 0)
+          da * (back_propagation_cache[:input] > 0)
         end
 
       end

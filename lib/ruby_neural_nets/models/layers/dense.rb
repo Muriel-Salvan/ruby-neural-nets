@@ -15,17 +15,27 @@ module RubyNeuralNets
         # Constructor
         #
         # Parameters::
-        # * *model* (Model): Model that is using this layer
-        # * *n_x* (Integer): Number of input units
         # * *nbr_units* (Integer): The number of units for this dense layer
-        def initialize(model:, n_x:, nbr_units:)
-          super(model:, n_x:)
+        def initialize(nbr_units:)
           @nbr_units = nbr_units
+        end
+
+        # Initialize parameters.
+        # This method is optional and is always called once a layer is linked to a model.
+        def initialize_parameters
           # Layer weights [nbr_units, n_x]
           # Use the Xavier Glorot normal initialization to avoid exploding gradients
-          @w = register_parameters([nbr_units, n_x], Initializers::Glorot)
+          @w = register_parameters([@nbr_units, @n_x], Initializers::Glorot)
           # Layer bias [nbr_units, 1]
-          @b = register_parameters([nbr_units, 1], Initializers::Zero)
+          @b = register_parameters([@nbr_units, 1], Initializers::Zero)
+        end
+
+        # Get the output dimension of this layer
+        #
+        # Result::
+        # * Integer: Output dimension of the layer
+        def n_y
+          @nbr_units
         end
 
         # Forward propagate an input through this layer
@@ -35,7 +45,7 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
-          @cache[:input] = input
+          back_propagation_cache[:input] = input
           @w.values.dot(input) + @b.values
         end
 
@@ -53,7 +63,7 @@ module RubyNeuralNets
           # Compute gradient to pass to previous layer using current weights before updating
           prev_da = @w.values.transpose.dot(da)
           # Update parameters after computing prev_da to avoid using updated weights in the backward chain
-          @w.learn(da.dot(@cache[:input].transpose))
+          @w.learn(da.dot(back_propagation_cache[:input].transpose))
           @b.learn(da.sum(axis: 1, keepdims: true))
           prev_da
         end

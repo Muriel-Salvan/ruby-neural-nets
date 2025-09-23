@@ -22,17 +22,30 @@ module RubyNeuralNets
       # * *layers* (Array<Integer>): List of hidden units per layer before the last one
       def initialize(rows, cols, channels, nbr_classes, optimizer:, layers:)
         super(rows, cols, channels, nbr_classes, optimizer:)
-        n_x = rows * cols * channels
+        @n_x = rows * cols * channels
         # Define a simple neural net with layers densily connected with sigmoid activation + 1 softmax layer to classify at the end
-        @layers = layers.map do |nbr_units|
-          layer = Layers::Dense.new(model: self, n_x:, nbr_units:)
-          n_x = nbr_units
-          [layer, Layers::Relu.new(model: self, n_x:)]
-        end.flatten(1) + [
-          Layers::Dense.new(model: self, n_x:, nbr_units: nbr_classes),
-          Layers::BatchNormalization.new(model: self, n_x: nbr_classes),
-          Layers::Softmax.new(model: self, n_x: nbr_classes)
-        ]
+        @layers = []
+        layers.each do |nbr_units|
+          self << Layers::Dense.new(nbr_units:)
+          self << Layers::Relu.new
+        end
+        self << Layers::Dense.new(nbr_units: nbr_classes)
+        self << Layers::BatchNormalization.new
+        self << Layers::Softmax.new
+      end
+
+      # Add a layer
+      #
+      # Parameters::
+      # * *layer* (Layer): Layer to be added
+      def <<(layer)
+        layer.link_to_model(
+          model: self,
+          n_x: @layers.empty? ? @n_x : @layers.last.n_y,
+          idx_layer: @layers.size
+        )
+        @layers << layer
+        @back_propagation_cache[:layers] << {}
       end
 
       # Perform the forward propagation given an input layer

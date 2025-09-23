@@ -77,7 +77,7 @@ module RubyNeuralNets
         idx_minibatch = 0
         dataset.for_each_minibatch(dataset_type, @max_minibatch_size) do |minibatch_x, minibatch_y|
           # Compute loss and accuracy
-          cost, a = minibatch_cost(model, minibatch_x, minibatch_y)
+          cost, a, back_propagation_cache = minibatch_cost(model, minibatch_x, minibatch_y)
           accuracy = @accuracy.measure(a, minibatch_y)
           puts "[Trainer] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 
@@ -101,9 +101,9 @@ module RubyNeuralNets
                   value_original = parameter.values[idx_param]
                   begin
                     parameter.values[idx_param] = value_original - gradient_checking_epsilon
-                    cost_minus, _a = minibatch_cost(model, minibatch_x, minibatch_y)
+                    cost_minus, _a, _cache = minibatch_cost(model, minibatch_x, minibatch_y)
                     parameter.values[idx_param] = value_original + gradient_checking_epsilon
-                    cost_plus, _a = minibatch_cost(model, minibatch_x, minibatch_y)
+                    cost_plus, _a, _cache = minibatch_cost(model, minibatch_x, minibatch_y)
                     (cost_plus - cost_minus) / (2 * gradient_checking_epsilon)
                   ensure
                     parameter.values[idx_param] = value_original
@@ -114,7 +114,11 @@ module RubyNeuralNets
           end
 
           # Gradient descent
-          model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
+          # Make sure gradient descent uses caches computed by the normal forward propagation
+          model.back_propagation_cache = back_propagation_cache
+          # TODO: Uncomment when OneLayer will work correctly
+          # model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
+          model.gradient_descent(a, minibatch_y)
 
           if @gradient_checks != :off
             # Compute d_theta for gradient checking
@@ -156,9 +160,10 @@ module RubyNeuralNets
     # Result::
     # * Float: Corresponding cost
     # * Numo::DFloat: Output of the model
+    # * Hash: Cache of computations for back-propagation
     def minibatch_cost(model, minibatch_x, minibatch_y)
       a = model.forward_propagate(minibatch_x)
-      [@loss.compute_loss(a, minibatch_y).sum / minibatch_x.shape[1], a]
+      [@loss.compute_loss(a, minibatch_y).sum / minibatch_x.shape[1], a, model.back_propagation_cache]
     end
 
   end

@@ -1,6 +1,6 @@
 require 'numo/narray'
 require 'ruby_neural_nets/helpers'
-require 'ruby_neural_nets/models/layer'
+require 'ruby_neural_nets/models/activation_layer'
 
 module RubyNeuralNets
 
@@ -9,7 +9,7 @@ module RubyNeuralNets
     module Layers
 
       # Simple softmax layer
-      class Softmax < Layer
+      class Softmax < ActivationLayer
 
         # Forward propagate an input through this layer
         #
@@ -19,7 +19,7 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
           output = Helpers.softmax(input)
-          @cache[:output] = output
+          back_propagation_cache[:output] = output
           Helpers.check_instability(output, types: %i[not_finite zero one])
           output
         end
@@ -38,7 +38,7 @@ module RubyNeuralNets
           # TODO: Remove old formula if gradient checking is ok
           # da * @cache[:output] * (1 - @cache[:output])
           # Computes dz = J^T * da where J is the softmax Jacobian.
-          a = @cache[:output]
+          a = back_propagation_cache[:output]
           sum_term = (a * da).sum(axis: 0)
           a * da - a * sum_term
         end

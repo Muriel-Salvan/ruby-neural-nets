@@ -9,6 +9,10 @@ module RubyNeuralNets
     #   Array<Parameter>
     attr_reader :parameters
 
+    # Access the back-propagation cache
+    #   Hash
+    attr_accessor :back_propagation_cache
+
     # Define a model for processing images and outputting a given number of classes
     #
     # Parameters::
@@ -20,6 +24,7 @@ module RubyNeuralNets
     def initialize(rows, cols, channels, nbr_classes, optimizer: Optimizer::Constant.new(learning_rate: 0.001))
       @optimizer = optimizer
       @parameters = []
+      @back_propagation_cache = {}
     end
 
     # Perform the forward propagation given an input layer

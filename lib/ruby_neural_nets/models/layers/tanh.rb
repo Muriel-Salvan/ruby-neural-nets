@@ -1,5 +1,6 @@
 require 'numo/narray'
-require 'ruby_neural_nets/models/layer'
+require 'ruby_neural_nets/helpers'
+require 'ruby_neural_nets/models/activation_layer'
 
 module RubyNeuralNets
 
@@ -8,7 +9,7 @@ module RubyNeuralNets
     module Layers
 
       # Simple tanh layer
-      class Tanh < Layer
+      class Tanh < ActivationLayer
 
         # Forward propagate an input through this layer
         #
@@ -17,8 +18,8 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
-          output = tanh(input)
-          @cache[:output] = output
+          output = Helpers.tanh(input)
+          back_propagation_cache[:output] = output
           output
         end
 
@@ -33,21 +34,7 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
-          da * (1 - @cache[:output] ** 2)
-        end
-
-        private
-
-        # Perform tanh of an array
-        #
-        # Parameters::
-        # * *narray* (Numo::DFloat): The array on which we apply tanh
-        # Result::
-        # * Numo::DFloat: Resulting tanh
-        def tanh(narray)
-          exp_array = Numo::DFloat::Math.exp(narray)
-          exp_neg_array = Numo::DFloat::Math.exp(-narray)
-          (exp_array - exp_neg_array) / (exp_array + exp_neg_array)
+          da * (1 - back_propagation_cache[:output] ** 2)
         end
 
       end

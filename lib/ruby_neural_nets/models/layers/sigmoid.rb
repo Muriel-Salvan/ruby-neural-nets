@@ -1,6 +1,6 @@
 require 'numo/narray'
 require 'ruby_neural_nets/helpers'
-require 'ruby_neural_nets/models/layer'
+require 'ruby_neural_nets/models/activation_layer'
 
 module RubyNeuralNets
 
@@ -9,7 +9,7 @@ module RubyNeuralNets
     module Layers
 
       # Simple sigmoid layer
-      class Sigmoid < Layer
+      class Sigmoid < ActivationLayer
 
         # Forward propagate an input through this layer
         #
@@ -19,7 +19,7 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
           output = Helpers.sigmoid(input)
-          @cache[:output] = input
+          back_propagation_cache[:output] = input
           output
         end
 
@@ -34,7 +34,7 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
-          da * @cache[:output] * (1 - @cache[:output])
+          da * back_propagation_cache[:output] * (1 - back_propagation_cache[:output])
         end
 
       end

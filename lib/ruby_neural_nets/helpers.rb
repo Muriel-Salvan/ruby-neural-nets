@@ -43,6 +43,18 @@ module RubyNeuralNets
       exp_array / sums
     end
 
+    # Perform tanh of an array
+    #
+    # Parameters::
+    # * *narray* (Numo::DFloat): The array on which we apply tanh
+    # Result::
+    # * Numo::DFloat: Resulting tanh
+    def self.tanh(narray)
+      exp_array = Numo::DFloat::Math.exp(narray)
+      exp_neg_array = Numo::DFloat::Math.exp(-narray)
+      (exp_array - exp_neg_array) / (exp_array + exp_neg_array)
+    end
+
     # Compute the euclidian norm of a tensor
     #
     # Parameters::

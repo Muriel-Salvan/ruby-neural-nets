@@ -35,7 +35,7 @@ module RubyNeuralNets
       # * Numo::DFloat: The last layer's output
       def forward_propagate(x)
         # Cache some variables
-        @cache_x = x
+        @back_propagation_cache[:x] = x
         # Forward propagate the minibatch
         # Shape [nbr_classes, minibatch.size]
         z_1 = @w_1.values.dot(x) + @b_1.values
@@ -53,7 +53,9 @@ module RubyNeuralNets
       # * *da* (Numo::DFloat): The loss derivative from the model predicted output
       # * *a* (Numo::DFloat): The predicted output
       # * *y* (Numo::DFloat): The real output
-      def gradient_descent(da, a, y)
+      # TODO: Uncomment when OneLayer will work correctly
+      # def gradient_descent(da, a, y)
+      def gradient_descent(a, y)
         m = y.shape[1]
         # Backward propagate the minibatch
         # For softmax + cross-entropy, use the combined derivative
@@ -62,7 +64,7 @@ module RubyNeuralNets
         dz_1 = a - y
 
         # Shape [nbr_classes, n_x]
-        dw_1 = dz_1.dot(@cache_x.transpose) / m
+        dw_1 = dz_1.dot(@back_propagation_cache[:x].transpose) / m
         Helpers.check_instability(dw_1)
         # Shape [nbr_classes, 1]
         db_1 = dz_1.sum(axis: 1, keepdims: true) / m
