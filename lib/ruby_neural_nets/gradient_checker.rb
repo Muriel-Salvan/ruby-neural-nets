@@ -1,3 +1,4 @@
+require 'numo/narray'
 require 'ruby_neural_nets/helpers'
 
 module RubyNeuralNets

@@ -1,3 +1,5 @@
+require 'numo/narray'
+
 module RubyNeuralNets
 
   # Store parameters that can be trained

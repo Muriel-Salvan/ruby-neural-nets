@@ -1,4 +1,4 @@
-require 'ruby_neural_nets/helpers'
+require 'numo/narray'
 require 'ruby_neural_nets/optimizer'
 
 module RubyNeuralNets

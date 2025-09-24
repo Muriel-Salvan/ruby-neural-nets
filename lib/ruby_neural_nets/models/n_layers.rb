@@ -1,3 +1,4 @@
+require 'numo/narray'
 require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/models/layers/batch_normalization'

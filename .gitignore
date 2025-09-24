@@ -7,3 +7,6 @@ dataset
 
 # Don't include profiling outputs
 profiling
+
+# Don't include byebug history
+.byebug_history

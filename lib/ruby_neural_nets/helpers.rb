@@ -1,3 +1,5 @@
+require 'numo/narray'
+
 module RubyNeuralNets
 
   module Helpers

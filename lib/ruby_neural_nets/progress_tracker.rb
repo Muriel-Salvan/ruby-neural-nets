@@ -1,3 +1,6 @@
+require 'numo/gnuplot'
+require 'numo/narray'
+
 module RubyNeuralNets
 
   # Track the progress of training models

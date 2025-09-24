@@ -1,5 +1,6 @@
+require 'numo/narray'
 require 'ruby_neural_nets/helpers'
-require 'ruby_neural_nets/initializers/rand'
+require 'ruby_neural_nets/initializers/glorot'
 require 'ruby_neural_nets/initializers/zero'
 require 'ruby_neural_nets/model'
 

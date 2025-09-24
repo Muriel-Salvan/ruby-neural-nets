@@ -1,5 +1,7 @@
-require 'rmagick'
 require 'numo/narray'
+require 'rmagick'
+require 'terminal-table'
+require 'tmpdir'
 
 module RubyNeuralNets
 

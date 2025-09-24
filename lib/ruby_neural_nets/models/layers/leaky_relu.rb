@@ -1,3 +1,4 @@
+require 'numo/narray'
 require 'ruby_neural_nets/models/activation_layer'
 
 module RubyNeuralNets

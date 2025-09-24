@@ -1,6 +1,5 @@
 require 'ruby_neural_nets/accuracy'
 require 'ruby_neural_nets/gradient_checker'
-require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/losses/cross_entropy'
 require 'ruby_neural_nets/profiler'
 require 'ruby_neural_nets/progress_tracker'
