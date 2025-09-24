@@ -53,10 +53,11 @@ module RubyNeuralNets
     # Parameters::
     # * *shape* (Array): Shape of this parameter
     # * *initializer* (Class): Initializer class
+    # * *name* (String): Name that can be used for display or search [default: 'P']
     # Result::
     # * Parameter: The corresponding parameters tensor
-    def register_parameters(shape, initializer)
-      param = Parameter.new(shape, initializer, @optimizer)
+    def register_parameters(shape, initializer, name: 'P')
+      param = Parameter.new(shape, initializer, @optimizer, name:)
       @parameters << param
       param
     end

@@ -20,6 +20,20 @@ module RubyNeuralNets
       # Subclasses can override that.
     end
 
+    # Adapt some parameters from a differential value to apply to them.
+    #
+    # Parameters::
+    # * *parameter* (Parameter): Parameters to update
+    # * *diff* (Numo::DFloat): Corresponding differential to apply to this parameter
+    # Result::
+    # * Numo::DFloat: New parameter values to take into account for next epoch
+    def learn_from_diff(parameter, diff)
+      puts "[Optimizer] - Learning #{parameter.name} with diff #{diff.mean}"
+      new_params = parameter.values - diff
+      Helpers.check_instability(new_params)
+      new_params
+    end
+
   end
 
 end

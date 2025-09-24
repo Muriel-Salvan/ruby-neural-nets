@@ -39,10 +39,11 @@ module RubyNeuralNets
       # Parameters::
       # * *shape* (Array): Shape of this parameter
       # * *initializer* (Class): Initializer class
+      # * *name* (String): Name that can be used for display or search [default: "L#{@idx_layer}_P#{@model.parameters.size}"]
       # Result::
       # * Parameter: The corresponding parameters tensor
-      def register_parameters(shape, initializer)
-        @model.register_parameters(shape, initializer)
+      def register_parameters(shape, initializer, name: "L#{@idx_layer}_P#{@model.parameters.size}")
+        @model.register_parameters(shape, initializer, name:)
       end
 
       # Access the back-propagation cache of this layer

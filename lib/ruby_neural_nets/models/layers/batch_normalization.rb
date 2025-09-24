@@ -16,9 +16,9 @@ module RubyNeuralNets
         # This method is optional and is always called once a layer is linked to a model.
         def initialize_parameters
           # Gamma parameter [n_x, 1], initialized to 1
-          @gamma = register_parameters([@n_x, 1], Initializers::One)
+          @gamma = register_parameters([@n_x, 1], Initializers::One, name: "L#{@idx_layer}_BatchNormalization_Gamma")
           # Beta parameter [n_x, 1], initialized to 0
-          @beta = register_parameters([@n_x, 1], Initializers::Zero)
+          @beta = register_parameters([@n_x, 1], Initializers::Zero, name: "L#{@idx_layer}_BatchNormalization_Beta")
           @epsilon = 1e-8
         end
 

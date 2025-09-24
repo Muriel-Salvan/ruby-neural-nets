@@ -163,7 +163,7 @@ module RubyNeuralNets
                   num = d_theta_approx[offset...offset + nbr_indices]
                   ana = d_theta[offset...offset + nbr_indices]
                   dist = Helpers.norm_2(num - ana) / (Helpers.norm_2(num) + Helpers.norm_2(ana))
-                  puts "[Trainer] -   Param ##{idx_param_tensor} shape=#{parameter.shape.inspect} rel_dist=#{dist}"
+                  puts "[Trainer] -   Param ##{idx_param_tensor} name=#{parameter.name} shape=#{parameter.shape.inspect} rel_dist=#{dist}"
                   parameter.gradient_check_indices.each_with_index do |param_idx, i|
                     puts "[Trainer] -     idx=#{param_idx} d_theta_approx=#{num[i]} d_theta=#{ana[i]}"
                   end

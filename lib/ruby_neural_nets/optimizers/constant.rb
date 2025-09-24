@@ -24,11 +24,7 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: New parameter values to take into account for next epoch
       def learn(parameter, dparams)
-        diff_parameters = @learning_rate * dparams
-        puts "[Optimizer/Constant] - Learning with mean delta #{diff_parameters.mean}"
-        new_params = parameter.values - diff_parameters
-        Helpers.check_instability(new_params)
-        new_params
+        learn_from_diff(parameter, @learning_rate * dparams)
       end
 
     end

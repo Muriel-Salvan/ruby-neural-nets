@@ -26,11 +26,7 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: New parameter values to take into account for next epoch
       def learn(parameter, dparams)
-        learning_rate = @learning_rate * Numo::NMath.exp(-@decay * @idx_epoch).to_f
-        puts "[Optimizer/ExponentialDecay] Learning with rate #{learning_rate}"
-        new_params = parameter.values - dparams * learning_rate
-        Helpers.check_instability(new_params)
-        new_params
+        learn_from_diff(parameter, dparams * @learning_rate * Numo::NMath.exp(-@decay * @idx_epoch).to_f)
       end
 
     end

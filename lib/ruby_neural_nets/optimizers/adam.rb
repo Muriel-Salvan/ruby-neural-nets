@@ -35,11 +35,7 @@ module RubyNeuralNets
         parameter.optimizer_parameters[:t] = parameter.optimizer_parameters[:t] + 1
         v_corrected = parameter.optimizer_parameters[:v] / (1 - @beta_1 ** parameter.optimizer_parameters[:t])
         s_corrected = parameter.optimizer_parameters[:s] / (1 - @beta_2 ** parameter.optimizer_parameters[:t])
-        diff_parameters = @learning_rate * v_corrected / (s_corrected ** 0.5 + @epsilon)
-        puts "[Optimizer/Adam] - Learning with mean delta #{diff_parameters.mean}"
-        new_params = parameter.values - diff_parameters
-        Helpers.check_instability(new_params)
-        new_params
+        learn_from_diff(parameter, @learning_rate * v_corrected / (s_corrected ** 0.5 + @epsilon))
       end
 
       # Initialize the optimizer's specific parameters of trainable tensors
