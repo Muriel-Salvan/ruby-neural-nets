@@ -5,12 +5,13 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 ## Features
 
 - **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits
-- **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer)
-- **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics
-- **Gradient Checking**: Built-in gradient checking to verify analytical gradients against numerical approximations
+- **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
+- **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
+- **Gradient Checking**: Built-in gradient checking to verify analytical gradients against numerical approximations, configurable to run every n epochs
 - **Profiling**: Optional epoch profiling with HTML reports generated using ruby-prof to analyze performance bottlenecks
 - **OpenBLAS Linear Algebra**: Fast matrix operations powered by OpenBLAS through numo-linalg for improved computational performance
-- **Visualization**: Confusion matrix plotting using Gnuplot
+- **Visualization**: Confusion matrix plotting using Gnuplot, with real-time parameter visualization in progress tracker graphs
+- **Named Parameters**: Parameters include names for better identification and visualization
 - **Extensible Architecture**: Modular design for easy addition of new models, optimizers, and loss functions
 
 ## Installation
