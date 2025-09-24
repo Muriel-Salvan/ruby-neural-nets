@@ -135,6 +135,7 @@ Using the one-layer model on the numbers model validates the following:
 * [I] Adding to [A] 1 hidden layer of 100 units with BatchNormalization and tanh activation seems to increase accuracy slower than [D]: 50% was reached at epoch 42 and 83% at epoch 100, with nearly no variance.
 * [J] Changing tanh activation with sigmoid from [I] got the exact same results as with tanh.
 * [K] Changing tanh activation with leaky ReLU from [I] got best results: 50% was reached at epoch 29 and 95% at epoch 100. Less than 1% of variance with dev set.
+* When adding visualizations of the hidden layer units, we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster.
 
 ## License
 

@@ -6,10 +6,6 @@ module RubyNeuralNets
 
   class Model
 
-    # Get all parameters for this model
-    #   Array<Parameter>
-    attr_reader :parameters
-
     # Access the back-propagation cache
     #   Hash
     attr_accessor :back_propagation_cache
@@ -31,6 +27,17 @@ module RubyNeuralNets
     # This is called before forward propagating.
     def initialize_back_propagation_cache
       @back_propagation_cache = {}
+    end
+
+    # Get parameters from this model
+    #
+    # Parameters::
+    # * *name* (Regexp or String): Regexp matching the parameter names to fetch (or String for exact name match) [default: /.*/]
+    # Result::
+    # * Array<Parameter>: List of parameters
+    def parameters(name: /.*/)
+      filter = name.is_a?(Regexp) ? proc { |p| p.name =~ name } : proc { |p| p.name == name }
+      @parameters.select { |select_parameter| filter.call(select_parameter) }
     end
 
     # Perform the forward propagation given an input layer

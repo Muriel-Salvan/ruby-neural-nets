@@ -39,11 +39,13 @@ module RubyNeuralNets
       # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
       gradient_checking_epsilon = 1e-7
       d_theta_approx = nil
+      parameters = nil
       perform_gradient_checking = @gradient_checks != :off && idx_epoch % @gradient_checks_epochs_interval == 0
       if perform_gradient_checking
         m = minibatch_x.shape[1]
+        parameters = @model.parameters
         d_theta_approx = Numo::DFloat[
-          *@model.parameters.map do |parameter|
+          *parameters.map do |parameter|
             # Compute the indexes to select from the parameter
             parameter.gradient_check_indices = @nbr_gradient_checks_samples.times.map { rand(parameter.values.size) }.sort.uniq
             parameter.gradient_check_indices.map do |idx_param|
@@ -68,7 +70,7 @@ module RubyNeuralNets
       if perform_gradient_checking
         # Compute d_theta for gradient checking
         d_theta = nil
-        @model.parameters.each do |parameter|
+        parameters.each do |parameter|
           dparams = parameter.dparams[parameter.gradient_check_indices]
           d_theta = d_theta.nil? ? dparams : d_theta.concatenate(dparams)
         end
@@ -78,7 +80,7 @@ module RubyNeuralNets
         if gradient_distance > gradient_checking_epsilon * 100
           # Debug breakdown per-parameter tensor to locate mismatch source
           offset = 0
-          @model.parameters.each_with_index do |parameter, idx_param_tensor|
+          parameters.each_with_index do |parameter, idx_param_tensor|
             nbr_indices = parameter.gradient_check_indices.size
             num = d_theta_approx[offset...offset + nbr_indices]
             ana = d_theta[offset...offset + nbr_indices]

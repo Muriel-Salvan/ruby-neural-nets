@@ -54,7 +54,13 @@ model = RubyNeuralNets::Models::NLayers.new(
 accuracy = RubyNeuralNets::Accuracy.new
 loss = RubyNeuralNets::Losses::CrossEntropy.new
 gradient_checker = RubyNeuralNets::GradientChecker.new(gradient_checks: :exception)
-progress_tracker = RubyNeuralNets::ProgressTracker.new(display_graphs: true)
+progress_tracker = RubyNeuralNets::ProgressTracker.new(
+  display_graphs: true,
+  display_units: {
+    L0_Dense_W: 10,
+    L3_Dense_W: 10
+  }
+)
 profiler = RubyNeuralNets::Profiler.new(profile: false)
 RubyNeuralNets::Trainer.new(
   nbr_epochs: 100,

@@ -1,4 +1,3 @@
-* Find a way to visualize hidden layers evolution during training.
 * Use Keras and continue next steps in recognition using convolutional layers, transfer & multitask learning (C3W2), data augmentation, skip connections, RNNs...
 * Implement regularization (Regularization parameter, Dropout, Early stopping) - see C2W1 - Find a usecase when I overfit
 * Add data augmentation.

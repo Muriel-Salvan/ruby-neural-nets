@@ -47,7 +47,7 @@ module RubyNeuralNets
     # * *dataset_type* (Symbol): The dataset type on which the model has to be trained [default: :train]
     def train(model, dataset, dataset_type: :train)
       puts "[Trainer] - Train with minibatches of size #{@max_minibatch_size}, on #{@nbr_epochs} epochs"
-      @progress_tracker.track(dataset.classes, @loss, @accuracy) do
+      @progress_tracker.track(model, dataset.classes, @loss, @accuracy) do
         @gradient_checker.link_to_model(model, @loss)
         @nbr_epochs.times do |idx_epoch|
           @profiler.profile(idx_epoch) do
