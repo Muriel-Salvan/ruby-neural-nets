@@ -24,6 +24,11 @@ module RubyNeuralNets
     def initialize(rows, cols, channels, nbr_classes, optimizer: Optimizer::Constant.new(learning_rate: 0.001))
       @optimizer = optimizer
       @parameters = []
+    end
+
+    # Initialize the back propagation cache.
+    # This is called before forward propagating.
+    def initialize_back_propagation_cache
       @back_propagation_cache = {}
     end
 

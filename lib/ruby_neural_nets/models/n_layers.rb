@@ -25,7 +25,6 @@ module RubyNeuralNets
         @n_x = rows * cols * channels
         # Define a simple neural net with layers densily connected with sigmoid activation + 1 softmax layer to classify at the end
         @layers = []
-        @back_propagation_cache[:layers] = []
         layers.each do |nbr_units|
           self << Layers::Dense.new(nbr_units:)
           self << Layers::BatchNormalization.new
@@ -47,7 +46,14 @@ module RubyNeuralNets
           idx_layer: @layers.size
         )
         @layers << layer
-        @back_propagation_cache[:layers] << {}
+      end
+
+      # Initialize the back propagation cache.
+      # This is called before forward propagating.
+      def initialize_back_propagation_cache
+        @back_propagation_cache = {
+          layers: @layers.size.times.map { {} }
+        }
       end
 
       # Perform the forward propagation given an input layer
