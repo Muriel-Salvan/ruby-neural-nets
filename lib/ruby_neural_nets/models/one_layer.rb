@@ -17,8 +17,7 @@ module RubyNeuralNets
       # * *cols* (Integer): Number of columns per image
       # * *channels* (Integer): Number of channels per image
       # * *nbr_classes* (Integer): Number of classes to identify
-      # * *optimizer* (Optimizer): Optimizer to be used
-      def initialize(rows, cols, channels, nbr_classes, optimizer:)
+      def initialize(rows, cols, channels, nbr_classes)
         super
         n_x = rows * cols * channels
         # Define a very simple neural net with 1 softmax layer to categorize the 10 numbers

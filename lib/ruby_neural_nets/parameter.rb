@@ -34,14 +34,20 @@ module RubyNeuralNets
     # Parameters::
     # * *shape* (Array): Shape of this parameter
     # * *initializer* (Class): Initializer class
-    # * *optimizer* (Optimizer): Optimizer responsible for learning this parameter
     # * *name* (String): Name that can be used for display or search [default: 'P']
-    def initialize(shape, initializer, optimizer, name: 'P')
+    def initialize(shape, initializer, name: 'P')
       @shape = shape
       @values = initializer.new_tensor(shape)
-      @optimizer = optimizer
       @optimizer_parameters = {}
       @name = name
+    end
+
+    # Link this parameter tp an optimizer
+    #
+    # Parameters::
+    # * *optimizer* (Optimizer): The optimizer that will handle this parameter
+    def link_to_optimizer(optimizer)
+      @optimizer = optimizer
       optimizer.init_parameter(self)
     end
       

@@ -1,5 +1,4 @@
 require 'numo/narray'
-require 'ruby_neural_nets/optimizers/constant'
 require 'ruby_neural_nets/parameter'
 
 module RubyNeuralNets
@@ -17,9 +16,7 @@ module RubyNeuralNets
     # * *cols* (Integer): Number of columns per image
     # * *channels* (Integer): Number of channels per image
     # * *nbr_classes* (Integer): Number of classes to identify
-    # * *optimizer* (Optimizer): The optimizer to be used [default: Optimizer::Constant.new(learning_rate: 0.001)]
-    def initialize(rows, cols, channels, nbr_classes, optimizer: Optimizer::Constant.new(learning_rate: 0.001))
-      @optimizer = optimizer
+    def initialize(rows, cols, channels, nbr_classes)
       @parameters = []
     end
 
@@ -27,6 +24,16 @@ module RubyNeuralNets
     # This is called before forward propagating.
     def initialize_back_propagation_cache
       @back_propagation_cache = {}
+    end
+
+    # Link the model to an optimizer.
+    # This has to be done by the trainer before training.
+    #
+    # Parameters::
+    # * *optimizer* (Optimizer): The optimizer to attach the model to.
+    def link_to_optimizer(optimizer)
+      @optimizer = optimizer
+      @parameters.each { |param| param.link_to_optimizer(@optimizer) }
     end
 
     # Get parameters from this model
@@ -70,7 +77,7 @@ module RubyNeuralNets
     # Result::
     # * Parameter: The corresponding parameters tensor
     def register_parameters(shape, initializer, name: 'P')
-      param = Parameter.new(shape, initializer, @optimizer, name:)
+      param = Parameter.new(shape, initializer, name:)
       @parameters << param
       param
     end

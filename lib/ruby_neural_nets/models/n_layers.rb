@@ -19,10 +19,9 @@ module RubyNeuralNets
       # * *cols* (Integer): Number of columns per image
       # * *channels* (Integer): Number of channels per image
       # * *nbr_classes* (Integer): Number of classes to identify
-      # * *optimizer* (Optimizer): Optimizer to be used
       # * *layers* (Array<Integer>): List of hidden units per layer before the last one
-      def initialize(rows, cols, channels, nbr_classes, optimizer:, layers:)
-        super(rows, cols, channels, nbr_classes, optimizer:)
+      def initialize(rows, cols, channels, nbr_classes, layers:)
+        super(rows, cols, channels, nbr_classes)
         @n_x = rows * cols * channels
         # Define a simple neural net with layers densily connected with sigmoid activation + 1 softmax layer to classify at the end
         @layers = []

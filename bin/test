@@ -11,7 +11,7 @@ require 'numo/narray'
 # Load a C extension for efficient computations
 require 'numo/linalg/linalg'
 # Comment out the following line if no backend is to be used
-Numo::Linalg::Loader.load_openblas 'I:\Env\Windows\Libraries\OpenBLAS-0.3.30-x64\bin'
+Numo::Linalg::Loader.load_openblas(RUBY_PLATFORM == 'x86_64-linux' ? '/usr/lib/x86_64-linux-gnu/' : 'I:\Env\Windows\Libraries\OpenBLAS-0.3.30-x64\bin')
 
 require 'ruby_neural_nets/accuracy'
 require 'ruby_neural_nets/dataset'
@@ -34,43 +34,37 @@ dataset.display_stats
 image_stats = dataset.image_stats
 puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats[:channels]}"
 
-# optimizer = RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.001)
-optimizer = RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.001)
 # model = RubyNeuralNets::Models::OneLayer.new(
 #   image_stats[:rows],
 #   image_stats[:cols],
 #   image_stats[:channels],
-#   dataset.classes.size,
-#   optimizer:
+#   dataset.classes.size
 # )
 model = RubyNeuralNets::Models::NLayers.new(
   image_stats[:rows],
   image_stats[:cols],
   image_stats[:channels],
   dataset.classes.size,
-  layers: [100],
-  optimizer:
+  layers: [100]
 )
+
 accuracy = RubyNeuralNets::Accuracy.new
-loss = RubyNeuralNets::Losses::CrossEntropy.new
-gradient_checker = RubyNeuralNets::GradientChecker.new(gradient_checks: :exception)
-progress_tracker = RubyNeuralNets::ProgressTracker.new(
-  display_graphs: true,
-  display_units: {
-    L0_Dense_W: 10,
-    L3_Dense_W: 10
-  }
-)
-profiler = RubyNeuralNets::Profiler.new(profile: false)
 RubyNeuralNets::Trainer.new(
   nbr_epochs: 100,
   max_minibatch_size: 5000,
   accuracy:,
-  loss:,
-  optimizer:,
-  gradient_checker:,
-  progress_tracker:,
-  profiler:
+  loss: RubyNeuralNets::Losses::CrossEntropy.new,
+  # optimizer: RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.001),
+  optimizer: RubyNeuralNets::Optimizers::Adam.new(learning_rate: 0.001),
+  gradient_checker: RubyNeuralNets::GradientChecker.new(gradient_checks: :exception),
+  progress_tracker: RubyNeuralNets::ProgressTracker.new(
+    display_graphs: true,
+    display_units: {
+      L0_Dense_W: 10,
+      L3_Dense_W: 10
+    }
+  ),
+  profiler: RubyNeuralNets::Profiler.new(profile: false)
 ).train(model, dataset)
 
 # Validate on the dev set
