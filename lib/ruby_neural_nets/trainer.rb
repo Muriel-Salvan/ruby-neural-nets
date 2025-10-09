@@ -49,27 +49,31 @@ module RubyNeuralNets
       puts "[Trainer] - Train with minibatches of size #{@max_minibatch_size}, on #{@nbr_epochs} epochs"
       @progress_tracker.track(model, dataset.classes, @loss, @accuracy) do
         @gradient_checker.link_to_model(model, @loss)
-        model.link_to_optimizer(@optimizer)
+        @optimizer.teach_parameters(model.parameters)
         @nbr_epochs.times do |idx_epoch|
           @profiler.profile(idx_epoch) do
             puts "[Trainer] - Training for epoch ##{idx_epoch}..."
             @optimizer.start_epoch(idx_epoch)
             idx_minibatch = 0
-            dataset.for_each_minibatch(dataset_type, @max_minibatch_size) do |minibatch_x, minibatch_y|
+            dataset.for_each_minibatch(dataset_type, @max_minibatch_size) do |minibatch_x, minibatch_y, minibatch_size|
+              @optimizer.start_minibatch(idx_minibatch)
               # Forward propagation
               model.initialize_back_propagation_cache
               a = model.forward_propagate(minibatch_x)
               back_propagation_cache = model.back_propagation_cache
               # Make sure other processing like gradient checking won't modify the cache again
               model.initialize_back_propagation_cache
+              # Compute the loss for the minibatch
+              loss = @loss.compute_loss(a, minibatch_y)
               # Display progress
-              @progress_tracker.progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a)
+              @progress_tracker.progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
               # Gradient descent
               @gradient_checker.check_gradients_for(idx_epoch, minibatch_x, minibatch_y) do
                 # Make sure gradient descent uses caches computed by the normal forward propagation
                 model.back_propagation_cache = back_propagation_cache
-                model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y) / minibatch_x.shape[1], a, minibatch_y)
+                model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y), a, minibatch_y, loss, minibatch_size)
               end
+              @optimizer.step
               idx_minibatch += 1
             end
           end

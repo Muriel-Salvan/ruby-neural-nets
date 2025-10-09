@@ -5,6 +5,14 @@ module RubyNeuralNets
   # Base class for optimizers
   class Optimizer
 
+    # Teach a given set of parameters
+    #
+    # Parameters::
+    # * *parameters* (Array<Parameter>): Model's parameters that need to be learned
+    def teach_parameters(parameters)
+      parameters.each { |param| param.link_to_optimizer(self) }
+    end
+
     # Set the current epoch being processed
     #
     # Parameters::
@@ -13,10 +21,24 @@ module RubyNeuralNets
       @idx_epoch = idx_epoch
     end
 
+    # Set the current minibatch being processed
+    #
+    # Parameters::
+    # * *idx_minibatch* (Integer): The minibatch index being processed
+    def start_minibatch(idx_minibatch)
+      @idx_minibatch = idx_minibatch
+    end
+
+    # Handle a step after back-propogation
+    def step
+      # By default, nothing to do.
+      # Subclasses can override that.
+    end
+
     # Initialize the optimizer's specific parameters of trainable tensors
     #
     # Parameters::
-    # * *parameter* (Parameter): The parameter tensoe to initialize
+    # * *parameter* (Parameter): The parameter tensor to initialize
     def init_parameter(parameter)
       # By default, nothing to do.
       # Subclasses can override that.

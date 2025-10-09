@@ -53,7 +53,9 @@ module RubyNeuralNets
       # * *da* (Numo::DFloat): The loss derivative from the model predicted output
       # * *a* (Numo::DFloat): The predicted output
       # * *y* (Numo::DFloat): The real output
-      def gradient_descent(da, a, y)
+      # * *loss* (Numo::DFloat): The computed loss
+      # * *minibatch_size* (Integer): Minibatch size
+      def gradient_descent(da, a, y, loss, minibatch_size)
         m = y.shape[1]
         # Backward propagate the minibatch
         # For softmax + cross-entropy, use the combined derivative

@@ -1,0 +1,83 @@
+#!/usr/bin/env ruby
+
+# TODO: Find why do I need that?
+$LOAD_PATH.unshift(File.expand_path("#{__dir__}/../lib"))
+
+# Make it easy to debug
+require 'byebug'
+
+# Get all options from CLI
+require 'ruby_neural_nets/options'
+options = RubyNeuralNets::Options.new
+options.parse_cli
+
+require 'numo/gnuplot'
+require 'numo/linalg/linalg'
+require 'numo/narray'
+# Load a C extension for efficient computations
+# Comment out the following line if no backend is to be used
+Numo::Linalg::Loader.load_openblas(RUBY_PLATFORM == 'x86_64-linux' ? '/usr/lib/x86_64-linux-gnu/' : "#{ENV['XAEON_ROOT']}/Env/Windows/Libraries/OpenBLAS-0.3.30-x64/bin")
+
+require 'ruby_neural_nets/helpers'
+RubyNeuralNets::Helpers.init(instability_checks: options[:instability_checks])
+
+# Read the dataset
+dataset = options.instantiate(:data_loader, options[:dataset])
+dataset.display_stats
+# dataset.display_sample(:train, dataset.classes.first)
+image_stats = dataset.image_stats
+puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats[:channels]}"
+
+# Create the model
+model = options.instantiate(:model, image_stats[:rows], image_stats[:cols], image_stats[:channels], dataset.classes.size)
+
+# Define the accuracy measure
+accuracy = options.instantiate(:accuracy)
+
+# Train the model on the training dataset
+require 'ruby_neural_nets/gradient_checker'
+require 'ruby_neural_nets/profiler'
+require 'ruby_neural_nets/progress_tracker'
+require 'ruby_neural_nets/trainer'
+RubyNeuralNets::Trainer.new(
+  nbr_epochs: options[:nbr_epochs],
+  max_minibatch_size: options[:max_minibatch_size],
+  accuracy:,
+  loss: options.instantiate(:loss),
+  optimizer: options.instantiate(:optimizer),
+  gradient_checker: RubyNeuralNets::GradientChecker.new(gradient_checks: options[:gradient_checks]),
+  progress_tracker: RubyNeuralNets::ProgressTracker.new(
+    display_graphs: true,
+    display_units: {
+      # To be used with Numo NLayers model
+      # L0_Dense_W: 10,
+      # L3_Dense_W: 10
+      
+      # To be used with Torch NLayersTorch model
+      # 'l0_linear.weight': 10,
+      # 'l1_linear.weight': 10
+    }
+  ),
+  profiler: RubyNeuralNets::Profiler.new(profiling: options[:profiling])
+).train(model, dataset)
+
+# Validate on the dev set
+dataset.for_each_minibatch(:dev, 10000) do |minibatch_x, minibatch_y, minibatch_size|
+  a_dev = model.forward_propagate(minibatch_x)
+  puts "Dev dataset accuracy: #{accuracy.measure(a_dev, minibatch_y, minibatch_size) * 100}%"
+  puts 'Wait for user to close graphs'
+  Numo.gnuplot do
+    set title: 'Dev confusion matrix'
+    set palette: 'gray'
+    set xlabel: 'Predicted'
+    set ylabel: 'True'
+    max_idx = (dataset.classes.size - 0.5)
+    set xrange: -0.5..max_idx
+    set yrange: max_idx..-0.5
+    tics = "(#{dataset.classes.map.with_index { |class_name, idx| "\"#{class_name}\" #{idx}" }.join(', ')})"
+    set xtics: tics
+    set ytics: tics
+    plot(accuracy.confusion_matrix(a_dev, minibatch_y, minibatch_size), w: 'image', t: '')
+    pause 'mouse close'
+  end
+end

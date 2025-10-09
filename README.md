@@ -36,6 +36,8 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 ### Running the Example
 
+# TODO: Change this section now that run has a proper CLI interface
+
 Execute the test script to see a complete example of training a neural network on the numbers dataset:
 
 ```bash
@@ -55,7 +57,7 @@ The framework includes built-in gradient checking to verify that analytical grad
 
 ### Datasets
 
-The project can use datasets in the `dataset/` directory, having the structure `dataset/<dataset_name>/<class_name>/<image_name>.png`.
+The project can use datasets in the `datasets/` directory, having the structure `datasets/<dataset_name>/<class_name>/<image_name>.png`.
 
 The following datasets can be used easily:
 - **colors**: Classification of colored images (red, green, blue)
@@ -66,12 +68,14 @@ Each dataset consists of PNG images organized in class subdirectories.
 ### Creating Custom Datasets
 
 To use your own dataset:
-1. Create a new directory under `dataset/`
+1. Create a new directory under `datasets/`
 2. Organize images in subdirectories named after their classes
 3. Ensure all images are in PNG format
 4. Instantiate the dataset in your code: `RubyNeuralNets::Dataset.new('your_dataset_name')`
 
 ### Code Structure
+
+# TODO: Refresh this section with new architecture
 
 - `lib/ruby_neural_nets/dataset.rb`: Dataset loading and preprocessing
 - `lib/ruby_neural_nets/model.rb`: Base model class
@@ -93,6 +97,10 @@ This is a playground project for experimenting with neural networks in Ruby. Fee
 
 ### One layer model on colors dataset
 
+```bash
+bundle exec ruby ./bin/run --dataset=colors --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+```
+
 The one-layer model provides:
 * 1 dense layer reducing the dimensions from the input down to the number of classes used for classification,
 * 1 softmax activation layer.
@@ -110,6 +118,10 @@ With just this model, we can already validate a lot of the framework's capabilit
 
 ### One layer model on numbers dataset
 
+```bash
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+```
+
 Using the one-layer model on the numbers model validates the following:
 * The learning is quite slow using the constant optimizer, but still gets better and better up to an accuracy of 20% at epoch 100.
 * The learning is more noisy (cost function is doing bounces) but much faster with the Adam optimizer, up to an accuracy of 57% at epoch 100.
@@ -120,10 +132,18 @@ Using the one-layer model on the numbers model validates the following:
 
 ### N layer model on colors dataset
 
+```bash
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+```
+
 * We see that using BatchNormalization layers allow the Adam optimizer to be used without numerical instability.
 * We see that the Adam optimizer converges more slowly on simple datasets like the colors one, but gets better results than the Constant optimizer on complex datasets like the numbers one.
 
 ### N layer model on numbers dataset
+
+```bash
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+```
 
 * [A] We see that just adding the BatchNormalization layer allows the Adam optimizer to be less noisy (cost function is decreasing globally without big bounces) and more quickly converge towards the optimum, reaching 58% accuracy at epoch 37, and 92% (with variance 3% with dev set) at epoch 100. Those figures were obtained without adding any hidden layer in the model.
 * [B] We see that using minibatches the convergence is more noisy but accuracy gets high faster (92% was reached around epoch 70-75). However the final accuracy is around the same as without minibatches, with less variance (around 2% with the dev set).
@@ -137,6 +157,12 @@ Using the one-layer model on the numbers model validates the following:
 * [J] Changing tanh activation with sigmoid from [I] got the exact same results as with tanh.
 * [K] Changing tanh activation with leaky ReLU from [I] got best results: 50% was reached at epoch 29 and 95% at epoch 100. Less than 1% of variance with dev set.
 * When adding visualizations of the hidden layer units, we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster.
+
+### N layer model using PyTorch
+
+```bash
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=Adam
+```
 
 ## License
 

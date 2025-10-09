@@ -5,7 +5,8 @@ module RubyNeuralNets
 
   module Optimizers
 
-    class Adam < Optimizer
+    # Adam optimizer to be sued with Torch.rb
+    class AdamTorch < Optimizer
 
       # Constructor
       #
@@ -21,6 +22,29 @@ module RubyNeuralNets
         @epsilon = epsilon
       end
 
+      # Teach a given set of parameters
+      #
+      # Parameters::
+      # * *parameters* (Array<Parameter>): Model's parameters that need to be learned
+      def teach_parameters(parameters)
+        super
+        @torch_optim = ::Torch::Optim::Adam.new(parameters.map(&:torch_parameter), lr: @learning_rate, betas: [@beta_1, @beta_2], eps: @epsilon)
+      end
+
+      # Set the current minibatch being processed
+      #
+      # Parameters::
+      # * *idx_minibatch* (Integer): The minibatch index being processed
+      def start_minibatch(idx_minibatch)
+        super
+        @torch_optim.zero_grad
+      end
+
+      # Handle a step after back-propogation
+      def step
+        @torch_optim.step
+      end
+
       # Adapt some parameters from their derivative and eventual optimization techniques.
       # This method could be called in any layer's backward_propagate method to update trainable parameters.
       #
@@ -30,12 +54,7 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: New parameter values to take into account for next epoch
       def learn(parameter, dparams)
-        parameter.optimizer_parameters[:v] = @beta_1 * parameter.optimizer_parameters[:v] + (1 - @beta_1) * dparams
-        parameter.optimizer_parameters[:s] = @beta_2 * parameter.optimizer_parameters[:s] + (1 - @beta_2) * dparams ** 2
-        parameter.optimizer_parameters[:t] = parameter.optimizer_parameters[:t] + 1
-        v_corrected = parameter.optimizer_parameters[:v] / (1 - @beta_1 ** parameter.optimizer_parameters[:t])
-        s_corrected = parameter.optimizer_parameters[:s] / (1 - @beta_2 ** parameter.optimizer_parameters[:t])
-        learn_from_diff(parameter, @learning_rate * v_corrected / (s_corrected ** 0.5 + @epsilon))
+        # Nothing to do: Torch.rb model won't call it.
       end
 
       # Initialize the optimizer's specific parameters of trainable tensors
@@ -43,11 +62,7 @@ module RubyNeuralNets
       # Parameters::
       # * *parameter* (Parameter): The parameter tensor to initialize
       def init_parameter(parameter)
-        parameter.optimizer_parameters.merge!(
-          v: Numo::DFloat.zeros(*parameter.shape),
-          s: Numo::DFloat.zeros(*parameter.shape),
-          t: 0
-        )
+        # Nothing to do: Torch.rb model won't call it.
       end
 
     end

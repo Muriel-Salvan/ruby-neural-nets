@@ -104,7 +104,7 @@ module RubyNeuralNets
     # * *error_msg* (String): The error message to handle
     # * *behavior* (Symbol): The behavior to use:
     #   * *warning*: Display found instability in stdout.
-    #   * *prompt*: Invoke a byebug prompt at the time instability is found.
+    #   * *byebug*: Invoke a byebug prompt at the time instability is found.
     #   * *exception*: Raise an exception.
     def self.handle_error(error_msg, behavior)
       case behavior

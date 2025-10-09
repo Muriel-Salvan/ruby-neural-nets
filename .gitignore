@@ -3,7 +3,7 @@
 vendor
 
 # Don't include the datasets
-dataset
+datasets
 
 # Don't include profiling outputs
 profiling

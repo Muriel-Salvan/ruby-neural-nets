@@ -84,8 +84,11 @@ module RubyNeuralNets
       # * *da* (Numo::DFloat): The loss derivative from the model predicted output
       # * *a* (Numo::DFloat): The predicted output
       # * *y* (Numo::DFloat): The real output
-      def gradient_descent(da, a, y)
+      # * *loss* (Numo::DFloat): The computed loss
+      # * *minibatch_size* (Integer): Minibatch size
+      def gradient_descent(da, a, y, loss, minibatch_size)
         # Backward propagate the minibatch
+        da = da / minibatch_size
         @layers.reverse.each do |layer|
           Helpers.check_instability(da)
           n_x = da.shape[0]

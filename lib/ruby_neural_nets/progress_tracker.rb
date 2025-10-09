@@ -94,9 +94,11 @@ module RubyNeuralNets
     # * *minibatch_x* (Numo::DFloat): Minibatch input that has just be forward propagated
     # * *minibatch_y* (Numo::DFloat): Minibatch reference
     # * *a* (Numo::DFloat): Minibatch prediction, result of the forward propagation
-    def progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a)
-      cost = @loss.compute_loss(a, minibatch_y).sum / minibatch_x.shape[1]
-      accuracy = @accuracy.measure(a, minibatch_y)
+    # * *loss* (Numo::DFloat): Computed loss for the minibatch
+    # * *minibatch_size* (Integer): Minibatch size
+    def progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
+      cost = loss.sum.to_f / minibatch_size
+      accuracy = @accuracy.measure(a, minibatch_y, minibatch_size)
       puts "[ProgressTracker] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 
       # Update graphs
@@ -105,11 +107,12 @@ module RubyNeuralNets
         @cost_graph.plot @costs, with: 'lines', title: ''
         @accuracies << accuracy
         @accuracy_graph.plot @accuracies, with: 'lines', title: ''
-        @confusion_graph.plot @accuracy.confusion_matrix(a, minibatch_y), with: 'image', title: ''
+        @confusion_graph.plot @accuracy.confusion_matrix(a, minibatch_y, minibatch_size), with: 'image', title: ''
         unless @display_units.empty?
           @display_units.each do |(param, graph, row_indices)|
-            # Consider it to be RGB image if we can divide the number of input values by 3
             tensor_size = param.shape[1]
+            values = param.values
+            # Consider it to be RGB image if we can divide the number of input values by 3
             nbr_channels = tensor_size % 3 == 0 ? 3 : 1
             width_float = Math.sqrt(tensor_size / nbr_channels)
             width = width_float.floor == width_float ? width_float.floor : width_float.floor + 1
@@ -119,7 +122,7 @@ module RubyNeuralNets
             row_indices.each do |indices|
               row_img = nil
               indices.each do |idx_unit|
-                normalized_image = param.values[idx_unit, nil]
+                normalized_image = values[idx_unit, nil]
                 min_value = normalized_image.min
                 unit_img = Numo::UInt8[*(((normalized_image - min_value) / (normalized_image.max - min_value)) * 255).round].
                   concatenate(Numo::UInt8.zeros(padding * nbr_channels)).

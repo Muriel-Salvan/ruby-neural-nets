@@ -4,9 +4,11 @@ GEM
     base64 (0.3.0)
     byebug (12.0.0)
     date (3.4.1)
+    erb (5.0.3)
     fiddle (1.1.8)
     io-console (0.8.1)
-    irb (1.14.3)
+    irb (1.15.2)
+      pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     numo-gnuplot (0.2.4)
@@ -15,11 +17,16 @@ GEM
     numo-narray (0.9.2.1)
     observer (0.1.2)
     pkg-config (1.6.4)
-    psych (5.2.2)
+    pp (0.6.3)
+      prettyprint
+    prettyprint (0.2.0)
+    psych (5.2.6)
       date
       stringio
-    rdoc (6.10.0)
+    rdoc (6.15.0)
+      erb
       psych (>= 4.0.0)
+      tsort
     reline (0.6.2)
       io-console (~> 0.5)
     rmagick (6.1.4)
@@ -27,9 +34,10 @@ GEM
       pkg-config (~> 1.4)
     ruby-prof (1.7.2-x64-mingw-ucrt)
       base64
-    stringio (3.1.2)
+    stringio (3.1.7)
     terminal-table (4.0.0)
       unicode-display_width (>= 1.1.1, < 4)
+    tsort (0.2.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)
@@ -50,4 +58,4 @@ DEPENDENCIES
   terminal-table
 
 BUNDLED WITH
-   2.6.7
+   2.6.9

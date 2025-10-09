@@ -26,16 +26,6 @@ module RubyNeuralNets
       @back_propagation_cache = {}
     end
 
-    # Link the model to an optimizer.
-    # This has to be done by the trainer before training.
-    #
-    # Parameters::
-    # * *optimizer* (Optimizer): The optimizer to attach the model to.
-    def link_to_optimizer(optimizer)
-      @optimizer = optimizer
-      @parameters.each { |param| param.link_to_optimizer(@optimizer) }
-    end
-
     # Get parameters from this model
     #
     # Parameters::
@@ -64,7 +54,9 @@ module RubyNeuralNets
     # * *da* (Numo::DFloat): The loss derivative from the model predicted output
     # * *a* (Numo::DFloat): The predicted output
     # * *y* (Numo::DFloat): The real output
-    def gradient_descent(da, a, y)
+    # * *loss* (Numo::DFloat): The computed loss
+    # * *minibatch_size* (Integer): Minibatch size
+    def gradient_descent(da, a, y, loss, minibatch_size)
       raise 'Not implemented'
     end
 
@@ -77,7 +69,7 @@ module RubyNeuralNets
     # Result::
     # * Parameter: The corresponding parameters tensor
     def register_parameters(shape, initializer, name: 'P')
-      param = Parameter.new(shape, initializer, name:)
+      param = Parameter.new(shape, initializer:, name:)
       @parameters << param
       param
     end

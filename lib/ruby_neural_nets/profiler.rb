@@ -8,9 +8,9 @@ module RubyNeuralNets
     # Constructor
     #
     # Parameters::
-    # * *profile* (Boolean): Should we profile the execution of each epoch? [default: false]
-    def initialize(profile: false)
-      @profile = profile
+    # * *profiling* (Boolean): Should we profile the execution of each epoch? [default: false]
+    def initialize(profiling: false)
+      @profiling = profiling
     end
 
     # Profile an epoch
@@ -20,7 +20,7 @@ module RubyNeuralNets
     # * *code_to_be_profiled* (Block): Code to be called to train for this epoch
     def profile(idx_epoch, &code_to_be_profiled)
       (
-        if @profile
+        if @profiling
           proc do |&code|
             profiling_result = RubyProf::Profile.profile { code.call }
             RubyProf::FlatPrinter.new(profiling_result).print(STDOUT)

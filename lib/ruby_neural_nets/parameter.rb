@@ -33,11 +33,11 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *shape* (Array): Shape of this parameter
-    # * *initializer* (Class): Initializer class
+    # * *initializer* (Class or nil): Initializer class, or nil if none [default: nil]
     # * *name* (String): Name that can be used for display or search [default: 'P']
-    def initialize(shape, initializer, name: 'P')
+    def initialize(shape, initializer: nil, name: 'P')
       @shape = shape
-      @values = initializer.new_tensor(shape)
+      @values = initializer&.new_tensor(shape)
       @optimizer_parameters = {}
       @name = name
     end
