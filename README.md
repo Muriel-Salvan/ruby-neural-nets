@@ -215,8 +215,26 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --ac
 bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off
 ```
 
-* We see that execution time is slower (takes double time) using Torch.rb than using plain Ruby Numo implementation.
-* Accuracy is not as good after 100 epochs: around 76% instead of 95% using Ruby Numo.
+* Accuracy is not as good after 100 epochs: around 79% instead of 95% using Ruby Numo.
+
+### Performance benchmarks
+
+The benchmarks are made on CPU, under VirtualBox kubuntu, using 100 epochs on training on numbers dataset (caching all data preparation in memory), with 1 layer of 100 units, without minibatches.
+Absolute values are meaningless as this setup is far from being optimal. However relative values give some comparison ideas between frameworks and algorithms, on the training part.
+
+#### Ruby Numo
+
+```bash
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off
+```
+* 100 epochs reach 95% accuracy in 93 seconds.
+
+#### Torch.rb
+
+```bash
+bundle exec ruby -w bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off
+```
+* 100 epochs reach 79% accuracy in 37 seconds.
 
 ## License
 

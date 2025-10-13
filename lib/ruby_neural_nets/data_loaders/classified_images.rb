@@ -93,7 +93,8 @@ module RubyNeuralNets
       #   * *minibatch_y* (Object): Read minibatch Y
       #   * *minibatch_size* (Integer): Minibatches size
       def for_each_minibatch(dataset_type, max_minibatch_size)
-        remaining_dataset = @datasets[dataset_type].dup
+        # Shuffle every time we iterate
+        remaining_dataset = @datasets[dataset_type].shuffle
         idx_minibatch = 0
         while !remaining_dataset.empty?
           minibatch = remaining_dataset[0..max_minibatch_size - 1]

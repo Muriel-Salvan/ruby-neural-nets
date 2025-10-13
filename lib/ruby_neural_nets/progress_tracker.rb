@@ -91,10 +91,10 @@ module RubyNeuralNets
     # Parameters::
     # * *idx_epoch* (Integer): Epoch's index
     # * *idx_minibatch* (Integer): Minibatch index
-    # * *minibatch_x* (Numo::DFloat): Minibatch input that has just be forward propagated
-    # * *minibatch_y* (Numo::DFloat): Minibatch reference
-    # * *a* (Numo::DFloat): Minibatch prediction, result of the forward propagation
-    # * *loss* (Numo::DFloat): Computed loss for the minibatch
+    # * *minibatch_x* (Object): Minibatch input that has just be forward propagated
+    # * *minibatch_y* (Object): Minibatch reference
+    # * *a* (Object): Minibatch prediction, result of the forward propagation
+    # * *loss* (Object): Computed loss for the minibatch
     # * *minibatch_size* (Integer): Minibatch size
     def progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
       cost = loss.mean.to_f

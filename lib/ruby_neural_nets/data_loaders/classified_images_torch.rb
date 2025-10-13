@@ -18,7 +18,10 @@ module RubyNeuralNets
       #   * *minibatch_y* (Object): Read minibatch Y
       #   * *minibatch_size* (Integer): Minibatches size
       def for_each_minibatch(dataset_type, max_minibatch_size)
-        ::Torch::Utils::Data::DataLoader.new(RubyNeuralNets::Torch::SampleFolderDataset.new(self, dataset_type), batch_size: max_minibatch_size, shuffle: true).each do |inputs, labels|
+        @data_loader_cache = {} unless defined?(@data_loader_cache)
+        @data_loader_cache[max_minibatch_size] = {} unless @data_loader_cache.key?(max_minibatch_size)
+        @data_loader_cache[max_minibatch_size][dataset_type] = ::Torch::Utils::Data::DataLoader.new(RubyNeuralNets::Torch::SampleFolderDataset.new(self, dataset_type), batch_size: max_minibatch_size, shuffle: true).each.to_a unless @data_loader_cache[max_minibatch_size].key?(dataset_type)
+        @data_loader_cache[max_minibatch_size][dataset_type].shuffle.each do |(inputs, labels)|
           yield inputs, labels, inputs.shape[0]
         end
       end
