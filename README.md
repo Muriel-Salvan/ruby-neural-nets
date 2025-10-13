@@ -36,20 +36,57 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 ### Running the Example
 
-# TODO: Change this section now that run has a proper CLI interface
+The `run` tool provides a comprehensive CLI interface for configuring and running neural network training experiments. Use `bundle exec ruby bin/run --help` to see all available options.
 
-Execute the test script to see a complete example of training a neural network on the numbers dataset:
+Run the following command to see a complete example of training a neural network on the numbers dataset:
 
 ```bash
-bundle exec ruby bin/test
+bundle exec ruby bin/run --dataset=numbers
 ```
 
-This will:
-- Load the numbers dataset
-- Display dataset statistics
-- Train a multi-layer neural network with gradient checking enabled
-- Evaluate performance on the development set
-- Display a confusion matrix
+This runs with default settings:
+- **Dataset**: Handwritten digits (0-9) from the numbers dataset
+- **Model**: OneLayer (simple softmax classification)
+- **Optimizer**: Adam with learning rate 0.001
+- **Training**: 100 epochs, full batch (no minibatches)
+- **Accuracy**: ClassesNumo (standard accuracy measurement)
+- **Loss**: CrossEntropy
+- **Checks**: Gradient checking enabled (exceptions on failure), instability checks via byebug
+
+#### Key Options Explained
+
+- **`--dataset`**: Choose dataset (colors, numbers)
+  - Controls which dataset to load and train on
+
+- **`--model`**: Select neural network architecture (OneLayer, NLayers, etc.)
+  - Controls the model type and layer configuration
+  - Use `--layers` to specify hidden layer sizes (comma-separated integers)
+
+- **`--optimizer`**: Choose optimization algorithm (Adam, Constant, ExponentialDecay, etc.)
+  - Controls how model parameters are updated during training
+  - Use `--learning-rate` to set learning rate, `--decay` for decay-based optimizers
+
+- **`--data-loader`**: Select data loading method (ClassifiedImages, ClassifiedImagesTorch)
+  - Controls how images are preprocessed and loaded
+
+- **`--loss`**: Choose loss function (CrossEntropy, CrossEntropyTorch)
+  - Defines the training objective function
+
+- **`--accuracy`**: Choose accuracy metric (ClassesNumo, ClassesTorch)
+  - Defines how predictions are evaluated
+
+- **`--nbr-epochs`**: Number of training iterations (default: 100)
+- **`--max-minibatch-size`**: Mini-batch size for memory-limited training (default: 5000, full batch)
+- **`--gradient-checks`**: Enable/disable automatic gradient verification (byebug/exception/off/warning)
+- **`--instability-checks`**: Enable/disable numerical instability monitoring (same options)
+- **`--profiling`**: Enable performance profiling with HTML reports (boolean, default: false)
+
+The run will:
+- Load the specified dataset and display statistics
+- Train the neural network with selected configuration
+- Show training progress, including cost, accuracy, and optional parameter visualizations
+- Evaluate final performance on the development set
+- Display a confusion matrix showing prediction accuracy per class
 
 ### Gradient Checking
 
@@ -75,15 +112,29 @@ To use your own dataset:
 
 ### Code Structure
 
-# TODO: Refresh this section with new architecture
-
-- `lib/ruby_neural_nets/dataset.rb`: Dataset loading and preprocessing
-- `lib/ruby_neural_nets/model.rb`: Base model class
+- `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
+- `lib/ruby_neural_nets/accuracies/`: Accuracy metric implementations (ClassesNumo, ClassesTorch)
+- `lib/ruby_neural_nets/data_loader.rb`: Generic data loading functionality
+- `lib/ruby_neural_nets/data_loaders/`: Specific data loader implementations (ClassifiedImages, ClassifiedImagesTorch)
+- `lib/ruby_neural_nets/gradient_checker.rb`: Gradient checking for validation
+- `lib/ruby_neural_nets/helpers.rb`: Utility functions and numerical stability checks
+- `lib/ruby_neural_nets/initializers/`: Parameter initialization algorithms (Glorot, Rand, Zero, One)
+- `lib/ruby_neural_nets/loss.rb`: Base loss function class
+- `lib/ruby_neural_nets/losses/`: Loss function implementations (CrossEntropy, CrossEntropyTorch)
+- `lib/ruby_neural_nets/model.rb`: Base model class for neural networks
+- `lib/ruby_neural_nets/models/`: Specific model implementations (OneLayer, NLayers, NLayersTorch)
+  - `lib/ruby_neural_nets/models/layers/`: Individual neural network layers (Dense, BatchNormalization, ReLU, Sigmoid, Softmax, Tanh, LeakyReLU)
+  - `lib/ruby_neural_nets/models/activation_layer.rb`: Activation layer implementation
+  - `lib/ruby_neural_nets/models/layer.rb`: Base layer class
+- `lib/ruby_neural_nets/optimizer.rb`: Base optimizer class
+- `lib/ruby_neural_nets/optimizers/`: Optimization algorithms (Adam, Constant, ExponentialDecay, AdamTorch)
+- `lib/ruby_neural_nets/options.rb`: Command-line options parsing and class discovery
+- `lib/ruby_neural_nets/parameter.rb`: Parameter management with optimization integration
+- `lib/ruby_neural_nets/parameters/`: Parameter implementations (Torch)
+- `lib/ruby_neural_nets/profiler.rb`: Performance profiling with HTML reports
+- `lib/ruby_neural_nets/progress_tracker.rb`: Training progress visualization and tracking
 - `lib/ruby_neural_nets/trainer.rb`: Training loop implementation with gradient checking
-- `lib/ruby_neural_nets/helpers.rb`: Utility functions, numerical stability checks
-- `lib/ruby_neural_nets/models/`: Specific model implementations (one-layer, multi-layer)
-- `lib/ruby_neural_nets/optimizers/`: Optimization algorithms (Adam, constant learning rate, etc.)
-- `lib/ruby_neural_nets/losses/`: Loss function implementations (cross-entropy, etc.)
+- `lib/ruby_neural_nets/torch/`: PyTorch integration utilities
 
 ## Contributing
 
