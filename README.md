@@ -212,8 +212,11 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --ac
 ### N layer model using PyTorch
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=Adam
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off
 ```
+
+* We see that execution time is slower (takes double time) using Torch.rb than using plain Ruby Numo implementation.
+* Accuracy is not as good after 100 epochs: around 76% instead of 95% using Ruby Numo.
 
 ## License
 

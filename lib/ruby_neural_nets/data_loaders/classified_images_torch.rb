@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/data_loaders/classified_images'
+require 'ruby_neural_nets/torch/sample_folder_dataset'
 
 module RubyNeuralNets
 

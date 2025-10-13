@@ -97,7 +97,7 @@ module RubyNeuralNets
     # * *loss* (Numo::DFloat): Computed loss for the minibatch
     # * *minibatch_size* (Integer): Minibatch size
     def progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
-      cost = loss.sum.to_f / minibatch_size
+      cost = loss.mean.to_f
       accuracy = @accuracy.measure(a, minibatch_y, minibatch_size)
       puts "[ProgressTracker] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 

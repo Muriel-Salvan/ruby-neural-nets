@@ -1,12 +1,4 @@
-# TODO: Fix torch.rb so that we don't need these requires
-require 'torch/nn/parameter'
-require 'torch/nn/batch_norm'
-
-require 'torch/nn/batch_norm1d'
-require 'torch/nn/leaky_relu'
-require 'torch/nn/linear'
-require 'torch/nn/module'
-require 'torch/nn/softmax'
+require 'torch'
 
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/parameters/torch'
@@ -77,9 +69,9 @@ module RubyNeuralNets
       # Perform the forward propagation given an input layer
       #
       # Parameters::
-      # * *x* (Numo::DFloat): The input layer
+      # * *x* (Object): The input layer
       # Result::
-      # * Numo::DFloat: The last layer's output
+      # * Object: The last layer's output
       def forward_propagate(x)
         @torch_net.call(x)
       end
@@ -88,10 +80,10 @@ module RubyNeuralNets
       # Prerequisite: forward_propagate must be called prior to this.
       #
       # Parameters::
-      # * *da* (Numo::DFloat): The loss derivative from the model predicted output
-      # * *a* (Numo::DFloat): The predicted output
-      # * *y* (Numo::DFloat): The real output
-      # * *loss* (Numo::DFloat): The computed loss
+      # * *da* (Object): The loss derivative from the model predicted output
+      # * *a* (Object): The predicted output
+      # * *y* (Object): The real output
+      # * *loss* (Object): The computed loss
       # * *minibatch_size* (Integer): Minibatch size
       def gradient_descent(da, a, y, loss, minibatch_size)
         loss.backward

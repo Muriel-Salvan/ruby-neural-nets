@@ -1,8 +1,4 @@
-# TODO: Fix torchvision to remove these requires
-require 'torch/utils/data/dataset'
-require 'torchvision/datasets/vision_dataset'
-
-require 'torchvision/datasets/dataset_folder'
+require 'torchvision'
 
 module RubyNeuralNets
   
@@ -45,7 +41,6 @@ module RubyNeuralNets
           transform: TorchVision::Transforms::Compose.new([
             TorchVision::Transforms::ToTensor.new,
             Transformers::RemoveAlpha.new,
-            TorchVision::Transforms::Normalize.new([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
             Transformers::Flatten.new
           ])
         )
