@@ -19,6 +19,7 @@ module RubyNeuralNets
       @instability_checks = instability_checks
       Random.srand(seed)
       Numo::NArray.srand(seed)
+      ::Torch.manual_seed(0) unless const_get(:Torch).nil?
     end
 
     # Compute sigmoid of an array

@@ -20,18 +20,26 @@ module RubyNeuralNets
         def initialize(n_x:, layers:, nbr_classes:)
           super()
           @layers = layers.map.with_index do |nbr_units, idx_layer|
+            linear_module = ::Torch::NN::Linear.new(n_x, nbr_units)
+            ::Torch::NN::Init.xavier_uniform!(linear_module.weight)
+            ::Torch::NN::Init.zeros!(linear_module.bias)
             layers_group = [
-              add_module("l#{idx_layer}_linear", ::Torch::NN::Linear.new(n_x, nbr_units)),
-              add_module("l#{idx_layer}_batch_norm1d", ::Torch::NN::BatchNorm1d.new(nbr_units)),
+              add_module("l#{idx_layer}_linear", linear_module),
+              add_module("l#{idx_layer}_batch_norm1d", ::Torch::NN::BatchNorm1d.new(nbr_units, eps: 1e-8)),
               add_module("l#{idx_layer}_leaky_relu", ::Torch::NN::LeakyReLU.new)
             ]
             n_x = nbr_units
             layers_group
-          end.flatten(1) + [
-            add_module("l#{layers.size}_linear", ::Torch::NN::Linear.new(n_x, nbr_classes)),
-            add_module("l#{layers.size}_batch_norm1d", ::Torch::NN::BatchNorm1d.new(nbr_classes)),
-            add_module("l#{layers.size}_softmax", ::Torch::NN::Softmax.new)
-          ]
+          end.flatten(1)
+          final_linear_module = ::Torch::NN::Linear.new(n_x, nbr_classes)
+          ::Torch::NN::Init.xavier_uniform!(final_linear_module.weight)
+          ::Torch::NN::Init.zeros!(final_linear_module.bias)
+          @layers.concat(
+            [
+              add_module("l#{layers.size}_linear", final_linear_module),
+              add_module("l#{layers.size}_batch_norm1d", ::Torch::NN::BatchNorm1d.new(nbr_classes))
+            ]
+          )
         end
 
         def forward(x)
