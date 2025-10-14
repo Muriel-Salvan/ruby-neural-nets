@@ -1,12 +1,12 @@
 # Don't include the bundler directories
-.bundle
-vendor
+/.bundle
+/vendor
 
 # Don't include the datasets
-datasets
+/datasets
 
 # Don't include profiling outputs
-profiling
+/profiling
 
 # Don't include byebug history
-.byebug_history
+/.byebug_history

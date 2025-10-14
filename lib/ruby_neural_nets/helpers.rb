@@ -1,3 +1,5 @@
+require 'rmagick'
+require 'tmpdir'
 require 'numo/narray'
 
 module RubyNeuralNets
@@ -19,7 +21,7 @@ module RubyNeuralNets
       @instability_checks = instability_checks
       Random.srand(seed)
       Numo::NArray.srand(seed)
-      ::Torch.manual_seed(0) unless const_get(:Torch).nil?
+      ::Torch.manual_seed(0) if const_defined?('::Torch')
     end
 
     # Compute sigmoid of an array
@@ -120,6 +122,21 @@ module RubyNeuralNets
         raise ApplicationError.new(error_msg)
       else
         raise "Unknown application error behavior: #{behavior}"
+      end
+    end
+
+    # Display an image
+    #
+    # Parameters::
+    # * *image* (Magick::Image): The image to be displayed
+    def self.display_image(image)
+      require 'tmpdir'
+      Dir.mktmpdir do |temp_dir|
+        file_name = "#{temp_dir}/display.png"
+        image.write(file_name)
+        system "start #{file_name}"
+        puts 'Press enter to continue...'
+        $stdin.gets
       end
     end
 

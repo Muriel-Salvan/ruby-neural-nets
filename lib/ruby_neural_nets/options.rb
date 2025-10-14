@@ -24,24 +24,36 @@ module RubyNeuralNets
       # The description of an option is either its default value, or a Hash with more information:
       # * *value* (Object): The default value of the option. Is the default property used when not specifying a Hash for the option.
       # * *from* (Module): In the case values are classes, give the module containing the possible classes for the value.
+      # * *ancestor* (Class): In the case values are classes, give the ancestor possible classes for the value should have. Mandatory if :from is also specified.
       # * *name* (String): In the case values are classes, give the default class name (when specifying name, value is not needed).
       # * *desc* (String or Array<String>): Additional description of the option.
       # * *options* (Hash): Sub-options that are linked to this option. The structure is the same as the options object itself.
       @options = {
         accuracy: {
           from: RubyNeuralNets::Accuracies,
+          ancestor: RubyNeuralNets::Accuracy,
           name: 'ClassesNumo'
         },
         data_loader: {
           from: RubyNeuralNets::DataLoaders,
-          name: 'ClassifiedImages'
+          ancestor: RubyNeuralNets::DataLoader,
+          name: 'Numo',
+          options: {
+            max_minibatch_size: 5000,
+            dataset: {
+              desc: "Possible values are #{Dir.glob('./datasets/*').map { |file| File.basename(file) }.join(', ')}.",
+              value: 'colors'
+            }
+          }
         },
         loss: {
           from: RubyNeuralNets::Losses,
+          ancestor: RubyNeuralNets::Loss,
           name: 'CrossEntropy'
         },
         model: {
           from: RubyNeuralNets::Models,
+          ancestor: RubyNeuralNets::Model,
           name: 'OneLayer',
           options: {
             layers: [100]
@@ -49,18 +61,14 @@ module RubyNeuralNets
         },
         optimizer: {
           from: RubyNeuralNets::Optimizers,
+          ancestor: RubyNeuralNets::Optimizer,
           name: 'Adam',
           options: {
             decay: 0.9,
             learning_rate: 0.001
           }
         },
-        dataset: {
-          desc: "Possible values are #{Dir.glob('./datasets/*').map { |file| File.basename(file) }.join(', ')}.",
-          value: 'colors'
-        },
         nbr_epochs: 100,
-        max_minibatch_size: 5000,
         instability_checks: {
           desc: [
             'Possible values are:',
@@ -187,12 +195,13 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *mod* (Module): The module from which we look for classes
+    # * *ancestor* (Class): The ancestor classes should belong to
     # Result::
     # * Hash<Class, Array<Symbol>>: For each class, the list of option kwargs that can be used with the constructor
-    def discover_classes_of(mod)
+    def discover_classes_of(mod, ancestor)
       mod.constants.map do |const|
         model_constant = mod.const_get(const)
-        if model_constant.is_a?(Class)
+        if model_constant.is_a?(Class) && model_constant.ancestors.include?(ancestor)
           [
             model_constant,
             model_constant.
@@ -215,7 +224,9 @@ module RubyNeuralNets
     # Result::
     # * String: Corresponding string
     def option_str(value, option_info)
-      if value.is_a?(Array)
+      if option_info.key?(:from)
+        value.name.split('::').last
+      elsif value.is_a?(Array)
         value.join(',')
       else
         value.to_s
@@ -296,7 +307,7 @@ module RubyNeuralNets
       if normalized_info.key?(:from)
         # In the case values are classes, give the set of possible class names and their corresponding needed options at construction time.
         # Hash< String, Array<Symbol> >
-        normalized_info[:known_classes] = discover_classes_of(normalized_info[:from])
+        normalized_info[:known_classes] = discover_classes_of(normalized_info[:from], normalized_info[:ancestor])
         normalized_info[:desc] << "Possible values are #{classes_desc(normalized_info[:known_classes].keys)}."
       end
       normalized_info[:desc].concat(additional_desc)

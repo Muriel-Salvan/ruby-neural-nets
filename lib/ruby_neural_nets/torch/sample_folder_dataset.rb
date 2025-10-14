@@ -32,10 +32,8 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *dataset* (Dataset): The dataset containing files
-      # * *dataset_type* (Symbol): The dataset type
-      def initialize(dataset, dataset_type)
+      def initialize(dataset)
         @dataset = dataset
-        @dataset_type = dataset_type
         super(
           @dataset.root,
           transform: TorchVision::Transforms::Compose.new([
@@ -49,10 +47,7 @@ module RubyNeuralNets
       private
       
       def make_dataset(directory, class_to_idx, extensions, is_valid_file)
-        @dataset.classes.map do |class_name|
-          class_idx = class_to_idx[class_name]
-          @dataset.files(@dataset_type, class_name).map { |file| [file, class_idx] }
-        end.flatten(1)
+        @dataset.map { |(file, label)| [file, class_to_idx[label]] }
       end
 
     end
