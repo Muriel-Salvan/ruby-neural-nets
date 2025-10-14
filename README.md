@@ -4,7 +4,8 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 ## Features
 
-- **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits
+- **Layered Datasets**: Modular dataset processing framework with composable layers (partitioning, shuffling, caching, encoding, minibatching) enabling reusable features between Numo and PyTorch implementations
+- **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits using extensible data loader architecture
 - **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
 - **Gradient Checking**: Built-in gradient checking to verify analytical gradients against numerical approximations, configurable to run every n epochs
@@ -66,8 +67,8 @@ This runs with default settings:
   - Controls how model parameters are updated during training
   - Use `--learning-rate` to set learning rate, `--decay` for decay-based optimizers
 
-- **`--data-loader`**: Select data loading method (ClassifiedImages, ClassifiedImagesTorch)
-  - Controls how images are preprocessed and loaded
+- **`--data-loader`**: Select data loading method (Numo, Torch)
+  - Controls the dataset processing pipeline (partitioning, shuffling, caching, encoding, minibatching)
 
 - **`--loss`**: Choose loss function (CrossEntropy, CrossEntropyTorch)
   - Defines the training objective function
@@ -114,8 +115,10 @@ To use your own dataset:
 
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
 - `lib/ruby_neural_nets/accuracies/`: Accuracy metric implementations (ClassesNumo, ClassesTorch)
-- `lib/ruby_neural_nets/data_loader.rb`: Generic data loading functionality
-- `lib/ruby_neural_nets/data_loaders/`: Specific data loader implementations (ClassifiedImages, ClassifiedImagesTorch)
+- `lib/ruby_neural_nets/data_loader.rb`: Base data loader framework
+- `lib/ruby_neural_nets/data_loaders/`: Data loader implementations (Numo, Torch) configuring layered dataset processing
+- `lib/ruby_neural_nets/dataset.rb`: Base dataset class
+- `lib/ruby_neural_nets/datasets/`: Dataset processing layers (Wrapper, Partitioning, Shuffling, Caching, Encoding, Minibatching)
 - `lib/ruby_neural_nets/gradient_checker.rb`: Gradient checking for validation
 - `lib/ruby_neural_nets/helpers.rb`: Utility functions and numerical stability checks
 - `lib/ruby_neural_nets/initializers/`: Parameter initialization algorithms (Glorot, Rand, Zero, One)
@@ -149,7 +152,7 @@ This is a playground project for experimenting with neural networks in Ruby. Fee
 ### One layer model on colors dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=colors --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+bundle exec ruby ./bin/run --dataset=colors --data-loader=Numo --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
 ```
 
 The one-layer model provides:
@@ -170,7 +173,7 @@ With just this model, we can already validate a lot of the framework's capabilit
 ### One layer model on numbers dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
 ```
 
 Using the one-layer model on the numbers model validates the following:
@@ -184,7 +187,7 @@ Using the one-layer model on the numbers model validates the following:
 ### N layer model on colors dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+bundle exec ruby ./bin/run --dataset=colors --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
 * We see that using BatchNormalization layers allow the Adam optimizer to be used without numerical instability.
@@ -193,7 +196,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --ac
 ### N layer model on numbers dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
 * [A] We see that just adding the BatchNormalization layer allows the Adam optimizer to be less noisy (cost function is decreasing globally without big bounces) and more quickly converge towards the optimum, reaching 58% accuracy at epoch 37, and 92% (with variance 3% with dev set) at epoch 100. Those figures were obtained without adding any hidden layer in the model.
@@ -225,14 +228,14 @@ Absolute values are meaningless as this setup is far from being optimal. However
 #### Ruby Numo
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImages --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off
 ```
 * 100 epochs reach 95% accuracy in 93 seconds.
 
 #### Torch.rb
 
 ```bash
-bundle exec ruby -w bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off
+bundle exec ruby -w bin/run --dataset=numbers --data-loader=Torch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off
 ```
 * 100 epochs reach 79% accuracy in 37 seconds.
 
