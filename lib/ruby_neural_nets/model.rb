@@ -41,9 +41,10 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *x* (Object): The input layer
+    # * *train* (Boolean): Are we in training mode? [default: false]
     # Result::
     # * Object: The corresponding output layer
-    def forward_propagate(x)
+    def forward_propagate(x, train: false)
       raise 'Not implemented'
     end
 

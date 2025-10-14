@@ -59,7 +59,7 @@ module RubyNeuralNets
               @optimizer.start_minibatch(idx_minibatch)
               # Forward propagation
               model.initialize_back_propagation_cache
-              a = model.forward_propagate(minibatch_x)
+              a = model.forward_propagate(minibatch_x, train: true)
               back_propagation_cache = model.back_propagation_cache
               # Make sure other processing like gradient checking won't modify the cache again
               model.initialize_back_propagation_cache

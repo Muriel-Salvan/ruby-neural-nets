@@ -60,9 +60,10 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *x* (Object): The input layer
+      # * *train* (Boolean): Are we in training mode? [default: false]
       # Result::
-      # * Object: The last layer's output
-      def forward_propagate(x)
+      # * Object: The corresponding output layer
+      def forward_propagate(x, train: false)
         # Forward propagate the minibatch
         a = x
         @layers.each do |layer|
