@@ -19,6 +19,7 @@ module RubyNeuralNets
         @beta_1 = beta_1
         @beta_2 = beta_2
         @epsilon = epsilon
+        log "learning_rate: #{@learning_rate}, beta_1: #{@beta_1}, beta_2: #{@beta_2}, epsilon: #{@epsilon}"
       end
 
       # Adapt some parameters from their derivative and eventual optimization techniques.

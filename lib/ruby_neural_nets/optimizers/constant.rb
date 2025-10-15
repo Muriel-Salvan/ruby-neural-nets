@@ -13,6 +13,7 @@ module RubyNeuralNets
       # * *learning_rate* (Float): Constant learning rate to apply while learning
       def initialize(learning_rate:)
         @learning_rate = learning_rate
+        log "learning_rate: #{@learning_rate}"
       end
 
       # Adapt some parameters from their derivative and eventual optimization techniques.

@@ -15,6 +15,7 @@ module RubyNeuralNets
       def initialize(learning_rate:, decay:)
         @learning_rate = learning_rate
         @decay = decay
+        log "learning_rate: #{@learning_rate}, decay: #{@decay}"
       end
 
       # Adapt some parameters from their derivative and eventual optimization techniques.
