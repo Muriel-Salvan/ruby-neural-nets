@@ -1,7 +1,10 @@
+require 'ruby_neural_nets/logger'
+
 module RubyNeuralNets
 
   # Track the progress of training models
   class ProgressTracker
+    include Logger
 
     # Constructor
     #
@@ -77,7 +80,7 @@ module RubyNeuralNets
 
       # Close graphs
       if @display_graphs
-        puts 'Wait for user to close graphs'
+        log 'Wait for user to close graphs'
         graphs_to_close = [@cost_graph, @accuracy_graph, @confusion_graph]
         graphs_to_close.concat(@display_units.map { |(_param, graph, _row_indices)| graph }) unless @display_units.empty?
         graphs_to_close.map do |gnuplot_graph|
@@ -99,7 +102,7 @@ module RubyNeuralNets
     def progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
       cost = loss.mean.to_f
       accuracy = @accuracy.measure(a, minibatch_y, minibatch_size)
-      puts "[ProgressTracker] - [Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
+      log "[Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 
       # Update graphs
       if @display_graphs

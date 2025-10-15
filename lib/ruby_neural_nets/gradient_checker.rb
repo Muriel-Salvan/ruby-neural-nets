@@ -1,9 +1,11 @@
 require 'numo/narray'
 require 'ruby_neural_nets/helpers'
+require 'ruby_neural_nets/logger'
 
 module RubyNeuralNets
 
   class GradientChecker
+    include Logger
 
     # Constructor
     #
@@ -76,7 +78,7 @@ module RubyNeuralNets
         end
         # Perform gradient checking
         gradient_distance = Helpers.norm_2(d_theta_approx - d_theta) / (Helpers.norm_2(d_theta_approx) + Helpers.norm_2(d_theta))
-        puts "[Trainer] - Gradient checking on #{d_theta.size} parameters got #{gradient_distance}"
+        log "Gradient checking on #{d_theta.size} parameters got #{gradient_distance}"
         if gradient_distance > gradient_checking_epsilon * 100
           # Debug breakdown per-parameter tensor to locate mismatch source
           offset = 0
@@ -85,9 +87,9 @@ module RubyNeuralNets
             num = d_theta_approx[offset...offset + nbr_indices]
             ana = d_theta[offset...offset + nbr_indices]
             dist = Helpers.norm_2(num - ana) / (Helpers.norm_2(num) + Helpers.norm_2(ana))
-            puts "[Trainer] -   Param ##{idx_param_tensor} name=#{parameter.name} shape=#{parameter.shape.inspect} rel_dist=#{dist}"
+            log "  Param ##{idx_param_tensor} name=#{parameter.name} shape=#{parameter.shape.inspect} rel_dist=#{dist}"
             parameter.gradient_check_indices.each_with_index do |param_idx, i|
-              puts "[Trainer] -     idx=#{param_idx} d_theta_approx=#{num[i]} d_theta=#{ana[i]}"
+              log "    idx=#{param_idx} d_theta_approx=#{num[i]} d_theta=#{ana[i]}"
             end
             offset += nbr_indices
           end

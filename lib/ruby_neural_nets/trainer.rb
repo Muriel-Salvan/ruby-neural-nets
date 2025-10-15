@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/accuracy'
 require 'ruby_neural_nets/gradient_checker'
+require 'ruby_neural_nets/logger'
 require 'ruby_neural_nets/losses/cross_entropy'
 require 'ruby_neural_nets/profiler'
 require 'ruby_neural_nets/progress_tracker'
@@ -8,6 +9,7 @@ require 'ruby_neural_nets/datasets/minibatch'
 module RubyNeuralNets
 
   class Trainer
+    include Logger
 
     # Constructor
     #
@@ -43,18 +45,18 @@ module RubyNeuralNets
     # * *model* (Model): The model to be trained
     # * *data_loader* (DataLoader): The data loader providing data for training
     def train(model, data_loader)
-      puts "[Trainer] - Train on #{@nbr_epochs} epochs"
+      log "Train on #{@nbr_epochs} epochs"
       data_loader.select_dataset_type(:training) do
         @progress_tracker.track(model, data_loader.labels, @loss, @accuracy) do
           @gradient_checker.link_to_model(model, @loss)
           @optimizer.teach_parameters(model.parameters)
           @nbr_epochs.times do |idx_epoch|
             @profiler.profile(idx_epoch) do
-              puts "[Trainer] - Training for epoch ##{idx_epoch}..."
+              log "Training for epoch ##{idx_epoch}..."
               @optimizer.start_epoch(idx_epoch)
               idx_minibatch = 0
               data_loader.each_minibatch do |minibatch_x, minibatch_y, minibatch_size|
-                puts "[Trainer] - Retrieved minibatch ##{idx_minibatch} of size #{minibatch_size}"
+                log "Retrieved minibatch ##{idx_minibatch} of size #{minibatch_size}"
                 @optimizer.start_minibatch(idx_minibatch)
                 # Forward propagation
                 model.initialize_back_propagation_cache

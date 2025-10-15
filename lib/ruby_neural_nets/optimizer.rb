@@ -54,7 +54,7 @@ module RubyNeuralNets
     # Result::
     # * Numo::DFloat: New parameter values to take into account for next epoch
     def learn_from_diff(parameter, diff)
-      puts "[Optimizer] - Learning #{parameter.name} with diff #{diff.mean}"
+      log "Learning #{parameter.name} with diff #{diff.mean}"
       new_params = parameter.values - diff
       Helpers.check_instability(new_params)
       new_params

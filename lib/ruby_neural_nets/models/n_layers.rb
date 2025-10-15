@@ -69,7 +69,7 @@ module RubyNeuralNets
         @layers.each do |layer|
           n_x = a.shape[0]
           a = layer.forward_propagate(a)
-          puts "[Model/N-Layers] - Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[0]}."
+          debug { "Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[0]}." }
           Helpers.check_instability(a)
           # Keep intermediate activations for debugging.
           # This could be removed in case memory becomes an issue.
@@ -94,7 +94,7 @@ module RubyNeuralNets
           Helpers.check_instability(da)
           n_x = da.shape[0]
           da = layer.backward_propagate(da)
-          puts "[Model/N-Layers] - Backward propagate #{n_x} => #{layer.class.name.split('::').last} => #{da.shape[0]}."
+          debug { "Backward propagate #{n_x} => #{layer.class.name.split('::').last} => #{da.shape[0]}." }
         end
       end
 

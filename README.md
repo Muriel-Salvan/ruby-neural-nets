@@ -13,6 +13,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **OpenBLAS Linear Algebra**: Fast matrix operations powered by OpenBLAS through numo-linalg for improved computational performance
 - **Visualization**: Confusion matrix plotting using Gnuplot, with real-time parameter visualization in progress tracker graphs
 - **Named Parameters**: Parameters include names for better identification and visualization
+- **Logger Mixin**: Unified logging system with ISO8601 UTC timestamps and class name prefixes, supporting both regular and debug (lazy-evaluated) logging across all major components
 - **Extensible Architecture**: Modular design for easy addition of new models, optimizers, and loss functions
 
 ## Installation
@@ -81,6 +82,9 @@ This runs with default settings:
 - **`--gradient-checks`**: Enable/disable automatic gradient verification (byebug/exception/off/warning)
 - **`--instability-checks`**: Enable/disable numerical instability monitoring (same options)
 - **`--profiling`**: Enable performance profiling with HTML reports (boolean, default: false)
+- **`--debug`**: Enable debug mode for verbose logging output (boolean, default: false)
+  - When enabled, shows detailed debug messages from model forward/backward propagation and other internal operations
+  - Debug messages use lazy evaluation to avoid performance overhead when disabled
 
 The run will:
 - Load the specified dataset and display statistics
@@ -113,6 +117,7 @@ To use your own dataset:
 
 ### Code Structure
 
+- `lib/ruby_neural_nets/logger.rb`: Logger mixin providing timestamped logging with lazy-evaluated debug messages
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
 - `lib/ruby_neural_nets/accuracies/`: Accuracy metric implementations (ClassesNumo, ClassesTorch)
 - `lib/ruby_neural_nets/data_loader.rb`: Base data loader framework

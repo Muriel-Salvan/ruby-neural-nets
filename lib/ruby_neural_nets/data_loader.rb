@@ -1,10 +1,12 @@
 require 'ruby_neural_nets/helpers'
+require 'ruby_neural_nets/logger'
 
 module RubyNeuralNets
 
   # Base class representing a data loader, serving data.
   # Technically it is a factory of Dataset.
   class DataLoader
+    include Logger
 
     # Constructor
     #
@@ -148,7 +150,7 @@ module RubyNeuralNets
         loop do
           found_file, found_label = @elements_labels_dataset[rand(@elements_labels_dataset.size)]
           if found_label == label
-            puts "Display sample image #{found_file} of label #{found_label}"
+            log "Display sample image #{found_file} of label #{found_label}"
             Helpers.display_image(Magick::ImageList.new(found_file).first)
             break
           end

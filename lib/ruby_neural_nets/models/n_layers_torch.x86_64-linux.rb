@@ -1,5 +1,6 @@
 require 'torch'
 
+require 'ruby_neural_nets/logger'
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/parameters/torch'
 
@@ -10,6 +11,7 @@ module RubyNeuralNets
     class NLayersTorch < Model
 
       class DenseStackNet < Torch::NN::Module
+        include Logger
 
         # Constructor
         #
@@ -47,7 +49,7 @@ module RubyNeuralNets
           @layers.each do |layer|
             n_x = a.shape[1]
             a = layer.call(a)
-            puts "[Model/N-LayersTorch] - Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[1]}."
+            debug { "Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[1]}." }
           end
           a
         end
