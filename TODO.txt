@@ -1,3 +1,4 @@
+* Understand why PyTorch still differs from Numo implementation.
 * Revalidate variance in all examples.
 * Implement regularization as it appears dev accuracy is too low.
 * Use Keras or Torch and continue next steps in recognition using convolutional layers, transfer & multitask learning (C3W2), data augmentation, skip connections, RNNs...
