@@ -42,12 +42,12 @@ module RubyNeuralNets
     def data_to_str(data, max_elements: 9)
       type, original_shape, size, stats, ruby_array_info =
         case data
-        when Numo::DFloat
+        when Numo::DFloat, Numo::SFloat
           ["Numo::DFloat", data.shape, data.size, calculate_array_stats(data), extract_numo_subset(data, max_elements)]
         when ::Torch::Tensor
           ["Torch::Tensor", data.shape, data.numel, calculate_tensor_stats(data), extract_torch_subset(data, max_elements)]
         else
-          "Unsupported data type: #{data.class} (value: #{data.inspect})"
+          raise "Unsupported data type: #{data.class} (value: #{data.inspect})"
         end
       "#{type} shape=#{original_shape.inspect} size=#{size}" +
         " stats={mean=#{stats[:mean]}, std=#{stats[:std]}, min=#{stats[:min]}, max=#{stats[:max]}}" +
@@ -80,9 +80,10 @@ module RubyNeuralNets
     # * Hash: Statistics hash
     def calculate_tensor_stats(tensor)
       # Use tensor methods to avoid full conversion to Ruby array
+      float_tensor = tensor.float
       {
-        mean: tensor.mean.item.round(6),
-        std: tensor.std.item.round(6),
+        mean: float_tensor.mean.item.round(6),
+        std: float_tensor.std.item.round(6),
         min: tensor.min.item.round(6),
         max: tensor.max.item.round(6)
       }
@@ -121,6 +122,8 @@ module RubyNeuralNets
     # * Hash: Contains Ruby array and truncation info
     def extract_torch_subset(tensor, max_elements)
       shape = tensor.shape
+      return { array: tensor.to_a, truncated: false } if shape.empty?
+
       total_elements = tensor.numel
 
       # Calculate new shape with truncation

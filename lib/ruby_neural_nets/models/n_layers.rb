@@ -70,6 +70,7 @@ module RubyNeuralNets
           n_x = a.shape[0]
           a = layer.forward_propagate(a)
           debug { "Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[0]}." }
+          debug { "=> Output data: #{data_to_str(a)}" }
           Helpers.check_instability(a)
           # Keep intermediate activations for debugging.
           # This could be removed in case memory becomes an issue.

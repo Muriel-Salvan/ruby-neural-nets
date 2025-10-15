@@ -57,16 +57,19 @@ module RubyNeuralNets
               idx_minibatch = 0
               data_loader.each_minibatch do |minibatch_x, minibatch_y, minibatch_size|
                 log "Retrieved minibatch ##{idx_minibatch} of size #{minibatch_size}"
+                debug { "Minibatch X input: #{data_to_str(minibatch_x)}" }
+                debug { "Minibatch Y reference: #{data_to_str(minibatch_y)}" }
                 @optimizer.start_minibatch(idx_minibatch)
                 # Forward propagation
                 model.initialize_back_propagation_cache
+                debug { "Model parameters:\n#{model.parameters.map { |p| "* #{p.name}: #{data_to_str(p.values)}" }.join("\n")}" }
                 a = model.forward_propagate(minibatch_x, train: true)
-                debug { "Forward propagation output: #{data_to_str(a)}" }
                 back_propagation_cache = model.back_propagation_cache
                 # Make sure other processing like gradient checking won't modify the cache again
                 model.initialize_back_propagation_cache
                 # Compute the loss for the minibatch
                 loss = @loss.compute_loss(a, minibatch_y)
+                debug { "Loss computed: #{data_to_str(loss)}" }
                 # Display progress
                 @progress_tracker.progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
                 # Gradient descent

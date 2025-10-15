@@ -50,6 +50,7 @@ module RubyNeuralNets
             n_x = a.shape[1]
             a = layer.call(a)
             debug { "Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[1]}." }
+            debug { "=> Output data: #{data_to_str(a)}" }
           end
           a
         end
