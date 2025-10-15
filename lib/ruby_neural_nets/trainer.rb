@@ -61,6 +61,7 @@ module RubyNeuralNets
                 # Forward propagation
                 model.initialize_back_propagation_cache
                 a = model.forward_propagate(minibatch_x, train: true)
+                debug { "Forward propagation output: #{data_to_str(a)}" }
                 back_propagation_cache = model.back_propagation_cache
                 # Make sure other processing like gradient checking won't modify the cache again
                 model.initialize_back_propagation_cache
