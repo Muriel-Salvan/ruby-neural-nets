@@ -11,6 +11,10 @@ require 'ruby_neural_nets/options'
 options = RubyNeuralNets::Options.new
 options.parse_cli
 
+# Set debug mode for Logger
+require 'ruby_neural_nets/logger'
+RubyNeuralNets::Logger.debug_mode = options[:debug]
+
 require 'numo/gnuplot'
 require 'numo/linalg/linalg'
 require 'numo/narray'

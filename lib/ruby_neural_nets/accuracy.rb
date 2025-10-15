@@ -1,9 +1,11 @@
 require 'numo/narray'
+require 'ruby_neural_nets/logger'
 
 module RubyNeuralNets
 
   # Base class for any accuracy measurement
   class Accuracy
+    include Logger
 
     # Measure accuracy between a predicted output and the real one
     #

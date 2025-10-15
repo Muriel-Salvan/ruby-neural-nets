@@ -89,7 +89,11 @@ module RubyNeuralNets
           ],
           value: :exception
         },
-        profiling: false
+        profiling: false,
+        debug: {
+          desc: 'Enable debug mode for verbose logging output.',
+          value: false
+        }
       }.to_h { |option, option_info| [option, normalize_option_info(option_info)] }
     end
 

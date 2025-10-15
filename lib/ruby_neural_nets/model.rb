@@ -1,9 +1,11 @@
 require 'numo/narray'
 require 'ruby_neural_nets/parameter'
+require 'ruby_neural_nets/logger'
 
 module RubyNeuralNets
 
   class Model
+    include Logger
 
     # Access the back-propagation cache
     #   Hash

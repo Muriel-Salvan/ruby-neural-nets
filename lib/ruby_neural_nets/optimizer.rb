@@ -1,9 +1,11 @@
 require 'numo/narray'
+require 'ruby_neural_nets/logger'
 
 module RubyNeuralNets
 
   # Base class for optimizers
   class Optimizer
+    include Logger
 
     # Teach a given set of parameters
     #
