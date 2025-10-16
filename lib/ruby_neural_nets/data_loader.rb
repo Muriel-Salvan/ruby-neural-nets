@@ -87,7 +87,9 @@ module RubyNeuralNets
     #   * *minibatch_y* (Object): The Y component of the minibatch (expected real outputs)
     #   * *minibatch_size* (Integer): The minibatch size
     def each_minibatch(max_minibatch_size: @max_minibatch_size)
-      new_minibatch_dataset(max_minibatch_size:).each do |minibatch_x, (minibatch_y, minibatch_size)|
+      minibatch_dataset = new_minibatch_dataset(max_minibatch_size:)
+      minibatch_dataset.prepare_for_epoch
+      minibatch_dataset.each do |minibatch_x, (minibatch_y, minibatch_size)|
         yield minibatch_x, minibatch_y, minibatch_size
       end
     end

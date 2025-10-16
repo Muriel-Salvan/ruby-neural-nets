@@ -6,3 +6,4 @@
 * Add data augmentation.
 * Find techniques that are efficient for hyper parameters tuning - See C2W3
 * Add Recall as a metric - See C3W1
+* Add OpenBLAS library location in the options
