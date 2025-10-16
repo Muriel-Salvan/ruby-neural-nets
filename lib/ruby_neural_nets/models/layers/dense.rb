@@ -1,5 +1,5 @@
 require 'numo/narray'
-require 'ruby_neural_nets/initializers/glorot'
+require 'ruby_neural_nets/initializers/glorot_normal'
 require 'ruby_neural_nets/initializers/zero'
 require 'ruby_neural_nets/models/layer'
 
@@ -25,7 +25,7 @@ module RubyNeuralNets
         def initialize_parameters
           # Layer weights [nbr_units, n_x]
           # Use the Xavier Glorot normal initialization to avoid exploding gradients
-          @w = register_parameters([@nbr_units, @n_x], Initializers::Glorot, name: "L#{@idx_layer}_Dense_W")
+          @w = register_parameters([@nbr_units, @n_x], Initializers::GlorotNormal, name: "L#{@idx_layer}_Dense_W")
           # Layer bias [nbr_units, 1]
           @b = register_parameters([@nbr_units, 1], Initializers::Zero, name: "L#{@idx_layer}_Dense_B")
         end

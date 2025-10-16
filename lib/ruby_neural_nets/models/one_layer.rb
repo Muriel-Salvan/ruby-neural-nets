@@ -1,6 +1,6 @@
 require 'numo/narray'
 require 'ruby_neural_nets/helpers'
-require 'ruby_neural_nets/initializers/glorot'
+require 'ruby_neural_nets/initializers/glorot_uniform'
 require 'ruby_neural_nets/initializers/zero'
 require 'ruby_neural_nets/model'
 
@@ -22,7 +22,7 @@ module RubyNeuralNets
         n_x = rows * cols * channels
         # Define a very simple neural net with 1 softmax layer to categorize the 10 numbers
         # Softmax layer weights [nbr_classes, n_x]
-        @w_1 = register_parameters([nbr_classes, n_x], Initializers::Glorot)
+        @w_1 = register_parameters([nbr_classes, n_x], Initializers::GlorotUniform)
         # Softmax layer bias [nbr_classes, 1]
         @b_1 = register_parameters([nbr_classes, 1], Initializers::Zero)
       end
