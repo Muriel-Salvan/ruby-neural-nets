@@ -90,6 +90,7 @@ module RubyNeuralNets
       # * *minibatch_size* (Integer): Minibatch size
       def gradient_descent(da, a, y, loss, minibatch_size)
         # Backward propagate the minibatch
+        da = da / minibatch_size
         @layers.reverse.each do |layer|
           Helpers.check_instability(da)
           n_x = da.shape[0]
