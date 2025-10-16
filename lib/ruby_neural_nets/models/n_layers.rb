@@ -26,11 +26,11 @@ module RubyNeuralNets
         # Define a simple neural net with layers densily connected with sigmoid activation + 1 softmax layer to classify at the end
         @layers = []
         layers.each do |nbr_units|
-          self << Layers::Dense.new(nbr_units:)
+          self << Layers::Dense.new(nbr_units:, use_bias: false)
           self << Layers::BatchNormalization.new
           self << Layers::LeakyRelu.new
         end
-        self << Layers::Dense.new(nbr_units: nbr_classes)
+        self << Layers::Dense.new(nbr_units: nbr_classes, use_bias: false)
         self << Layers::BatchNormalization.new
         self << Layers::Softmax.new
       end
@@ -90,7 +90,6 @@ module RubyNeuralNets
       # * *minibatch_size* (Integer): Minibatch size
       def gradient_descent(da, a, y, loss, minibatch_size)
         # Backward propagate the minibatch
-        da = da / minibatch_size
         @layers.reverse.each do |layer|
           Helpers.check_instability(da)
           n_x = da.shape[0]

@@ -1,3 +1,5 @@
+* Try with normalized input values with mean 0 and sigma 1 
+* Glorot is supposed to be not great with ReLU. Try randn*sqrt(2/n[l-1])
 * Understand why PyTorch still differs from Numo implementation.
 * Revalidate variance in all examples.
 * Implement regularization as it appears dev accuracy is too low.

@@ -31,9 +31,8 @@ module RubyNeuralNets
         def initialize(n_x:, layers:, nbr_classes:)
           super()
           @layers = layers.map.with_index do |nbr_units, idx_layer|
-            linear_module = ::Torch::NN::Linear.new(n_x, nbr_units)
+            linear_module = ::Torch::NN::Linear.new(n_x, nbr_units, bias: false)
             ::Torch::NN::Init.xavier_normal!(linear_module.weight)
-            ::Torch::NN::Init.zeros!(linear_module.bias)
             batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_units)
             batch_norm_module.register_buffer("running_mean", ::Torch.zeros(nbr_units, dtype: :double))
             batch_norm_module.register_buffer("running_var", ::Torch.ones(nbr_units, dtype: :double))
@@ -44,9 +43,8 @@ module RubyNeuralNets
               add_module("l#{idx_layer}_leaky_relu", ::Torch::NN::LeakyReLU.new)
             ]
           end.flatten(1)
-          final_linear_module = ::Torch::NN::Linear.new(n_x, nbr_classes)
+          final_linear_module = ::Torch::NN::Linear.new(n_x, nbr_classes, bias: false)
           ::Torch::NN::Init.xavier_normal!(final_linear_module.weight)
-          ::Torch::NN::Init.zeros!(final_linear_module.bias)
           final_batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_classes)
           final_batch_norm_module.register_buffer("running_mean", ::Torch.zeros(nbr_classes, dtype: :double))
           final_batch_norm_module.register_buffer("running_var", ::Torch.ones(nbr_classes, dtype: :double))

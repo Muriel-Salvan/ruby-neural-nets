@@ -16,8 +16,12 @@ module RubyNeuralNets
         #
         # Parameters::
         # * *nbr_units* (Integer): The number of units for this dense layer
-        def initialize(nbr_units:)
+        # * *use_bias* (Boolean): Should we add bias parameters? [default: true]
+        #   If this layer is followed by a batch normalization layer, there is no point in having bias
+        #     because it will be cancelled out by the batch normalization layer.
+        def initialize(nbr_units:, use_bias: true)
           @nbr_units = nbr_units
+          @use_bias = use_bias
         end
 
         # Initialize parameters.
@@ -27,7 +31,7 @@ module RubyNeuralNets
           # Use the Xavier Glorot normal initialization to avoid exploding gradients
           @w = register_parameters([@nbr_units, @n_x], Initializers::GlorotNormal, name: "L#{@idx_layer}_Dense_W")
           # Layer bias [nbr_units, 1]
-          @b = register_parameters([@nbr_units, 1], Initializers::Zero, name: "L#{@idx_layer}_Dense_B")
+          @b = register_parameters([@nbr_units, 1], Initializers::Zero, name: "L#{@idx_layer}_Dense_B") if @use_bias
         end
 
         # Get the output dimension of this layer
@@ -46,7 +50,9 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input)
           back_propagation_cache[:input] = input
-          @w.values.dot(input) + @b.values
+          a = @w.values.dot(input)
+          a += @b.values if @use_bias
+          a
         end
 
         # Backward propagate an input da (coming from next layers) through this layer.
@@ -64,7 +70,7 @@ module RubyNeuralNets
           prev_da = @w.values.transpose.dot(da)
           # Update parameters after computing prev_da to avoid using updated weights in the backward chain
           @w.learn(da.dot(back_propagation_cache[:input].transpose))
-          @b.learn(da.sum(axis: 1, keepdims: true))
+          @b.learn(da.sum(axis: 1, keepdims: true)) if @use_bias
           prev_da
         end
 
