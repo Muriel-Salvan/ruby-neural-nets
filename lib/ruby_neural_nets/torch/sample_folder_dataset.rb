@@ -23,6 +23,15 @@ module RubyNeuralNets
 
       end
 
+      class ToDouble < ::Torch::NN::Module
+
+        def forward(tensor)
+          # Make sure the resulting tensor is in 64 bits
+          tensor.double
+        end
+
+      end
+
     end
     
     # Dataset that uses an underlying Dataset for a given dataset type
@@ -39,7 +48,8 @@ module RubyNeuralNets
           transform: TorchVision::Transforms::Compose.new([
             TorchVision::Transforms::ToTensor.new,
             Transformers::RemoveAlpha.new,
-            Transformers::Flatten.new
+            Transformers::Flatten.new,
+            Transformers::ToDouble.new,
           ])
         )
       end

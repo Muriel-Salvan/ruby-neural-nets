@@ -1,5 +1,14 @@
 require 'torch'
 
+# Make sure default tensors are using 64-bits floats (dtype = double)
+module Torch
+  class Tensor
+    def self.new(*args)
+      DoubleTensor.new(*args)
+    end
+  end
+end
+
 require 'ruby_neural_nets/logger'
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/parameters/torch'
@@ -25,9 +34,12 @@ module RubyNeuralNets
             linear_module = ::Torch::NN::Linear.new(n_x, nbr_units)
             ::Torch::NN::Init.xavier_normal!(linear_module.weight)
             ::Torch::NN::Init.zeros!(linear_module.bias)
+            batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_units, eps: 1e-8)
+            batch_norm_module.register_buffer("running_mean", ::Torch.zeros(nbr_units, dtype: :double))
+            batch_norm_module.register_buffer("running_var", ::Torch.ones(nbr_units, dtype: :double))
             layers_group = [
               add_module("l#{idx_layer}_linear", linear_module),
-              add_module("l#{idx_layer}_batch_norm1d", ::Torch::NN::BatchNorm1d.new(nbr_units, eps: 1e-8)),
+              add_module("l#{idx_layer}_batch_norm1d", batch_norm_module),
               add_module("l#{idx_layer}_leaky_relu", ::Torch::NN::LeakyReLU.new)
             ]
             n_x = nbr_units
@@ -36,10 +48,13 @@ module RubyNeuralNets
           final_linear_module = ::Torch::NN::Linear.new(n_x, nbr_classes)
           ::Torch::NN::Init.xavier_normal!(final_linear_module.weight)
           ::Torch::NN::Init.zeros!(final_linear_module.bias)
+          final_batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_classes, eps: 1e-8)
+          final_batch_norm_module.register_buffer("running_mean", ::Torch.zeros(nbr_classes, dtype: :double))
+          final_batch_norm_module.register_buffer("running_var", ::Torch.ones(nbr_classes, dtype: :double))
           @layers.concat(
             [
               add_module("l#{layers.size}_linear", final_linear_module),
-              add_module("l#{layers.size}_batch_norm1d", ::Torch::NN::BatchNorm1d.new(nbr_classes, eps: 1e-8))
+              add_module("l#{layers.size}_batch_norm1d", final_batch_norm_module)
             ]
           )
         end
