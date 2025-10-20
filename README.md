@@ -223,7 +223,10 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off
 ```
 
-* Accuracy is not as good after 100 epochs: around 79% instead of 95% using Ruby Numo.
+* Accuracy is not as good after 100 epochs: around 62% instead of 73% using Ruby Numo.
+* We see that using different seeds produce very different accuracies with Torch.
+* After using 64 bit floats in Torch, the accuracy goes up from 62% to 87%.
+* Changing random seeds has a big impact on the final accuracy using Torch: from 60% to 90%. Looks like the framework is quite unstable with randomness. In comparison, the Numo implementation varies between 72% and 74% with different seeds.
 
 ### Performance benchmarks
 
@@ -236,6 +239,7 @@ Absolute values are meaningless as this setup is far from being optimal. However
 bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off
 ```
 * 100 epochs reach 95% accuracy in 93 seconds.
+* Memory consumption is around 3GB max.
 
 #### Torch.rb
 
@@ -243,6 +247,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 bundle exec ruby -w bin/run --dataset=numbers --data-loader=Torch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off
 ```
 * 100 epochs reach 79% accuracy in 37 seconds.
+* Memory consumption is around 9GB max.
 
 ## License
 

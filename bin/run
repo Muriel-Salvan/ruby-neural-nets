@@ -23,7 +23,11 @@ require 'numo/narray'
 Numo::Linalg::Loader.load_openblas(RUBY_PLATFORM == 'x86_64-linux' ? '/usr/lib/x86_64-linux-gnu/' : "#{ENV['XAEON_ROOT']}/Env/Windows/Libraries/OpenBLAS-0.3.30-x64/bin")
 
 require 'ruby_neural_nets/helpers'
-RubyNeuralNets::Helpers.init(seed: options[:seed], instability_checks: options[:instability_checks])
+RubyNeuralNets::Helpers.init(
+  model_seed: options[:model_seed],
+  dataset_seed: options[:dataset_seed],
+  instability_checks: options[:instability_checks]
+)
 
 # Load data from the dataset
 data_loader = options.instantiate(:data_loader)

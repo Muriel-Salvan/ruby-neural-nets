@@ -12,7 +12,7 @@ module RubyNeuralNets
       # This can be used to generate some data before hand, or shuffle in a particular way.
       def prepare_for_epoch
         # Get the size again as it could have changed if we selected another partition or filtered it
-        @indexes = @dataset.size.times.to_a.shuffle
+        @indexes = @dataset.size.times.to_a.shuffle(random: RubyNeuralNets::Helpers.dataset_rng)
       end
 
       # Access an element of the dataset

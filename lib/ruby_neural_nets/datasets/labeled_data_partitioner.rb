@@ -31,7 +31,7 @@ module RubyNeuralNets
         # Shuffle indexes and partition each label
         # Hash< label, Hash< partition, Array< index > > >
         partition_labeled_indexes = labeled_indexes.to_h do |label, indexes|
-          shuffled_indexes = indexes.shuffle
+          shuffled_indexes = indexes.shuffle(random: RubyNeuralNets::Helpers.dataset_rng)
           next_index = 0
           [
             label,

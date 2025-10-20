@@ -94,8 +94,12 @@ module RubyNeuralNets
           desc: 'Enable debug mode for verbose logging output.',
           value: false
         },
-        seed: {
-          desc: 'Random number generator seed.',
+        model_seed: {
+          desc: 'Random number generator seed for model initialization and parameters.',
+          value: 0
+        },
+        dataset_seed: {
+          desc: 'Random number generator seed for dataset shuffling and data order.',
           value: 0
         }
       }.to_h { |option, option_info| [option, normalize_option_info(option_info)] }
