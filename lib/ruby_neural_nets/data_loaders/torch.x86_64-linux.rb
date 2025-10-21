@@ -15,12 +15,14 @@ module RubyNeuralNets
       # Create an elements dataset that maps to the labels and is partitioned.
       # The following instance variables can be used to initialize the dataset correctly:
       # * *@dataset_name* (String): The dataset name.
+      # * *@dataset_rng* (Random): Random number generator for dataset operations.
       #
       # Result::
       # * Dataset: The dataset that will serve data with Y being true labels, unencoded
       def new_elements_labels_dataset
         RubyNeuralNets::Datasets::LabeledDataPartitioner.new(
-          RubyNeuralNets::Datasets::LabeledFiles.new(name: @dataset_name)
+          RubyNeuralNets::Datasets::LabeledFiles.new(name: @dataset_name),
+          rng: @dataset_rng
         )
       end
 
@@ -28,6 +30,7 @@ module RubyNeuralNets
       # The following instance variables can be used to initialize the dataset correctly:
       # * *@dataset_name* (String): The dataset name.
       # * *@elements_labels_dataset* (Dataset): The elements dataset previously created with true labels.
+      # * *@dataset_rng* (Random): Random number generator for dataset operations.
       #
       # Result::
       # * Dataset: The dataset that will serve data with X and Y being prepared for training
@@ -35,7 +38,8 @@ module RubyNeuralNets
         RubyNeuralNets::Datasets::EpochShuffler.new(
           RubyNeuralNets::Datasets::CacheMemory.new(
             RubyNeuralNets::Datasets::LabeledTorchImages.new(@elements_labels_dataset)
-          )
+          ),
+          rng: @dataset_rng
         )
       end
 

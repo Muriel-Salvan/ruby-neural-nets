@@ -25,7 +25,6 @@ Numo::Linalg::Loader.load_openblas(RUBY_PLATFORM == 'x86_64-linux' ? '/usr/lib/x
 require 'ruby_neural_nets/helpers'
 RubyNeuralNets::Helpers.init(
   model_seed: options[:model_seed],
-  dataset_seed: options[:dataset_seed],
   instability_checks: options[:instability_checks]
 )
 

@@ -50,6 +50,10 @@ module RubyNeuralNets
             dataset: {
               desc: "Possible values are #{Dir.glob('./datasets/*').map { |file| File.basename(file) }.join(', ')}.",
               value: 'colors'
+            },
+            dataset_seed: {
+              desc: 'Random number generator seed for dataset shuffling and data order.',
+              value: 0
             }
           }
         },
@@ -105,10 +109,7 @@ module RubyNeuralNets
           desc: 'Random number generator seed for model initialization and parameters.',
           value: 0
         },
-        dataset_seed: {
-          desc: 'Random number generator seed for dataset shuffling and data order.',
-          value: 0
-        },
+
         track_layer: {
           desc: 'Specify a layer name to be tracked for a given number of hidden units.',
           format: 'string,integer',

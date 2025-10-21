@@ -13,9 +13,10 @@ module RubyNeuralNets
     # Parameters::
     # * *dataset* (String): The dataset name
     # * *max_minibatch_size* (Integer): Max size each minibatch should have
-    def initialize(dataset:, max_minibatch_size:)
+    def initialize(dataset:, max_minibatch_size:, dataset_seed:)
       @dataset_name = dataset
       @max_minibatch_size = max_minibatch_size
+      @dataset_rng = Random.new(dataset_seed)
       # This dataset is used to get statistics on partitions and labels
       @elements_labels_dataset = new_elements_labels_dataset
       # This dataset is used to access the model's inputs (X) and compare them with true outputs (Y)

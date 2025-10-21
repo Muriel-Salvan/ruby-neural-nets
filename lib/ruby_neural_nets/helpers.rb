@@ -17,22 +17,12 @@ module RubyNeuralNets
     #   Possible values are:
     #   * *off*: Don't perform instability checks.
     #   * Any other value from the handle_error method's behavior parameter.
-    def self.init(model_seed: 0, dataset_seed: 0, instability_checks: :warning)
+    def self.init(model_seed: 0, instability_checks: :warning)
       @instability_checks = instability_checks
       # Set model-related random seeds
       Random.srand(model_seed)
       Numo::NArray.srand(model_seed)
       ::Torch.manual_seed(model_seed) if const_defined?('::Torch')
-      # Create a separate random generator for dataset operations
-      @dataset_rng = Random.new(dataset_seed)
-    end
-
-    # Get a random number generator for dataset operations
-    #
-    # Result::
-    # * Random: Random number generator initialized with dataset_seed
-    def self.dataset_rng
-      @dataset_rng
     end
 
     # Compute sigmoid of an array

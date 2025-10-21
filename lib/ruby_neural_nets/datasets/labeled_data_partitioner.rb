@@ -14,7 +14,8 @@ module RubyNeuralNets
       # Parameters::
       # * *dataset* (Dataset): Dataset giving underlying labeled data
       # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage [default: { training: 0.7, dev: 0.15, test: 0.15 }]
-      def initialize(dataset, partitions: { training: 0.7, dev: 0.15, test: 0.15 })
+      # * *rng* (Random): Random number generator to be used [default: Random.new]
+      def initialize(dataset, partitions: { training: 0.7, dev: 0.15, test: 0.15 }, rng: Random.new)
         super(dataset)
 
         raise "Partitions percentages don't sum to 1: #{partitions}" unless partitions.values.sum == 1.0
@@ -31,7 +32,7 @@ module RubyNeuralNets
         # Shuffle indexes and partition each label
         # Hash< label, Hash< partition, Array< index > > >
         partition_labeled_indexes = labeled_indexes.to_h do |label, indexes|
-          shuffled_indexes = indexes.shuffle(random: RubyNeuralNets::Helpers.dataset_rng)
+          shuffled_indexes = indexes.shuffle(random: rng)
           next_index = 0
           [
             label,
