@@ -56,12 +56,9 @@ RubyNeuralNets::Trainer.new(
   loss: options.instantiate(:loss),
   optimizer: options.instantiate(:optimizer),
   gradient_checker: RubyNeuralNets::GradientChecker.new(gradient_checks: options[:gradient_checks]),
-  progress_tracker: RubyNeuralNets::ProgressTracker.new(
-    display_graphs: true,
-    display_units: options[:track_layer].to_h
-  ),
+  progress_tracker: RubyNeuralNets::ProgressTracker.new(display_graphs: true),
   profiler: RubyNeuralNets::Profiler.new(profiling: options[:profiling])
-).train(model, data_loader)
+).train(model, data_loader, display_units: options[:track_layer].to_h)
 
 # Validate on the dev set
 data_loader.select_dataset_type(:dev) do

@@ -2,7 +2,7 @@ require 'ruby_neural_nets/logger'
 
 module RubyNeuralNets
 
-  # Track the progress of training models
+  # Track the progress of training and evaluating models
   class ProgressTracker
     include Logger
 
@@ -10,10 +10,8 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *display_graphs* (Boolean): Do we want to display graphs ? [default: true]
-    # * *display_units* (Hash<Symbol, String or Regexp, Integer>): For each parameter name (or regexp matching name), indicate the number of units we want to picture [default: {}]
-    def initialize(display_graphs: true, display_units: {})
+    def initialize(display_graphs: true)
       @display_graphs = display_graphs
-      @display_units = display_units
       if @display_graphs
         require 'numo/gnuplot'
         require 'numo/narray'
@@ -25,25 +23,35 @@ module RubyNeuralNets
         # Hash< String, Numo::GnuPlot >
         @graphs = {}
       end
+      # Hash to store experiment data with experiment IDs as keys
+      # Hash< String, Hash >
+      @experiments = {}
     end
 
     # Start tracking progress for a training.
     #
     # Parameters::
+    # * *experiment_id* (String): The experiment ID to track progress for
     # * *model* (Model): The model that we are tracking
     # * *classes* (Array<String>): List of classes that the model output will classify
     # * *loss* (Loss): The loss instance to be used
     # * *accuracy* (Accuracy): The accuracy instance to be used
+    # * *display_units* (Hash<Symbol, String or Regexp, Integer>): For each parameter name (or regexp matching name), indicate the number of units we want to picture [default: {}]
     # * Code: Code called with the progress tracker instantiated to be used
-    def track(model, classes, loss, accuracy)
-      @model = model
-      @loss = loss
-      @accuracy = accuracy
+    def track(experiment_id, model, classes, loss, accuracy, display_units: {})
+      @experiments[experiment_id] = {
+        model: model,
+        loss: loss,
+        accuracy: accuracy
+      }
       # Initialize graphs
       if @display_graphs
-        @costs = []
+        @experiments[experiment_id].merge!(
+          costs: [],
+          accuracies: [],
+          display_units: []
+        )
         create_graph('Cost')
-        @accuracies = []
         create_graph('Accuracy')
         max_idx = (classes.size - 0.5)
         tics = "(#{classes.map.with_index { |class_name, idx| "\"#{class_name}\" #{idx}" }.join(', ')}) "
@@ -57,14 +65,14 @@ module RubyNeuralNets
           xtics: tics,
           ytics: tics
         )
-        unless @display_units.empty?
+        unless display_units.empty?
           # Change it to resolve the exact parameters selected
           # Array< [ Parameter, Array< Array< Integer >           > ] >
           # Array< [ parameter,        unit_indexes_per_graph_row   ] >
-          @display_units = @display_units.map.with_index do |(name, nbr_units), idx_param|
+          @experiments[experiment_id][:display_units] = display_units.map.with_index do |(name, nbr_units), idx_param|
             name = name.to_s if name.is_a?(Symbol)
-            found_param = @model.parameters(name:).first
-            raise "Unable to find parameter #{name} for plotting. Parameters are #{@model.parameters.map(&:name).join(', ')}" if found_param.nil?
+            found_param = @experiments[experiment_id][:model].parameters(name:).first
+            raise "Unable to find parameter #{name} for plotting. Parameters are #{@experiments[experiment_id][:model].parameters.map(&:name).join(', ')}" if found_param.nil?
             create_graph(found_param.name.gsub('_', '\_'))
             units_step = found_param.shape[0].to_f / nbr_units
             units_to_plot = nbr_units.times.map { |idx_unit| Integer(idx_unit * units_step) }.uniq
@@ -91,6 +99,7 @@ module RubyNeuralNets
     # Track the progress of a minibatch training
     #
     # Parameters::
+    # * *experiment_id* (String): The experiment ID to track progress for
     # * *idx_epoch* (Integer): Epoch's index
     # * *idx_minibatch* (Integer): Minibatch index
     # * *minibatch_x* (Object): Minibatch input that has just be forward propagated
@@ -98,20 +107,20 @@ module RubyNeuralNets
     # * *a* (Object): Minibatch prediction, result of the forward propagation
     # * *loss* (Object): Computed loss for the minibatch
     # * *minibatch_size* (Integer): Minibatch size
-    def progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
+    def progress(experiment_id, idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
       cost = loss.mean.to_f
-      accuracy = @accuracy.measure(a, minibatch_y, minibatch_size)
+      accuracy = @experiments[experiment_id][:accuracy].measure(a, minibatch_y, minibatch_size)
       log "[Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 
       # Update graphs
       if @display_graphs
-        @costs << cost
-        @graphs['Cost'].plot @costs, with: 'lines', title: ''
-        @accuracies << accuracy
-        @graphs['Accuracy'].plot @accuracies, with: 'lines', title: ''
-        @graphs['Confusion Matrix'].plot @accuracy.confusion_matrix(a, minibatch_y, minibatch_size), with: 'image', title: ''
-        unless @display_units.empty?
-          @display_units.each do |(param, row_indices)|
+        @experiments[experiment_id][:costs] << cost
+        @graphs['Cost'].plot @experiments[experiment_id][:costs], with: 'lines', title: experiment_id
+        @experiments[experiment_id][:accuracies] << accuracy
+        @graphs['Accuracy'].plot @experiments[experiment_id][:accuracies], with: 'lines', title: experiment_id
+        @graphs['Confusion Matrix'].plot @experiments[experiment_id][:accuracy].confusion_matrix(a, minibatch_y, minibatch_size), with: 'image', title: ''
+        unless @experiments[experiment_id][:display_units].empty?
+          @experiments[experiment_id][:display_units].each do |(param, row_indices)|
             tensor_size = param.shape[1]
             values = param.values
             # Consider it to be RGB image if we can divide the number of input values by 3

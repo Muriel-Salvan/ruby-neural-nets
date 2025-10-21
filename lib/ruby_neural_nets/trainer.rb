@@ -44,10 +44,11 @@ module RubyNeuralNets
     # Parameters::
     # * *model* (Model): The model to be trained
     # * *data_loader* (DataLoader): The data loader providing data for training
-    def train(model, data_loader)
+    # * *display_units* (Hash<Symbol, String or Regexp, Integer>): For each parameter name (or regexp matching name), indicate the number of units we want to picture [default: {}]
+    def train(model, data_loader, display_units: {})
       log "Train on #{@nbr_epochs} epochs"
       data_loader.select_dataset_type(:training) do
-        @progress_tracker.track(model, data_loader.labels, @loss, @accuracy) do
+        @progress_tracker.track('main', model, data_loader.labels, @loss, @accuracy, display_units: display_units) do
           @gradient_checker.link_to_model(model, @loss)
           @optimizer.teach_parameters(model.parameters)
           @nbr_epochs.times do |idx_epoch|
@@ -71,7 +72,7 @@ module RubyNeuralNets
                 loss = @loss.compute_loss(a, minibatch_y)
                 debug { "Loss computed: #{data_to_str(loss)}" }
                 # Display progress
-                @progress_tracker.progress(idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
+                @progress_tracker.progress('main', idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
                 # Gradient descent
                 @gradient_checker.check_gradients_for(idx_epoch, minibatch_x, minibatch_y) do
                   # Make sure gradient descent uses caches computed by the normal forward propagation
