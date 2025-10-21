@@ -17,6 +17,13 @@ module RubyNeuralNets
       if @display_graphs
         require 'numo/gnuplot'
         require 'numo/narray'
+        @screen_width = 1280
+        @graph_width = 640
+        @graph_height = 400
+        @graph_row_padding = 80
+        # Set of named graphs
+        # Hash< String, Numo::GnuPlot >
+        @graphs = {}
       end
     end
 
@@ -35,41 +42,34 @@ module RubyNeuralNets
       # Initialize graphs
       if @display_graphs
         @costs = []
-        @cost_graph = Numo::Gnuplot.new
-        @cost_graph.set terminal: 'wxt 0 position 0,0 size 640,400'
-        @cost_graph.set title: 'Cost'
+        create_graph('Cost')
         @accuracies = []
-        @accuracy_graph = Numo::Gnuplot.new
-        @accuracy_graph.set terminal: 'wxt 0 position 640,0 size 640,400'
-        @accuracy_graph.set title: 'Accuracy'
-        @confusion_graph = Numo::Gnuplot.new
-        @confusion_graph.set terminal: 'wxt 0 position 1280,0 size 640,400'
-        @confusion_graph.set title: 'Confusion Matrix'
-        @confusion_graph.set palette: 'gray'
-        @confusion_graph.set xlabel: 'Predicted'
-        @confusion_graph.set ylabel: 'True'
+        create_graph('Accuracy')
         max_idx = (classes.size - 0.5)
-        @confusion_graph.set xrange: -0.5..max_idx
-        @confusion_graph.set yrange: max_idx..-0.5
-        tics = "(#{classes.map.with_index { |class_name, idx| "\"#{class_name}\" #{idx}" }.join(', ')})"
-        @confusion_graph.set xtics: tics
-        @confusion_graph.set ytics: tics
+        tics = "(#{classes.map.with_index { |class_name, idx| "\"#{class_name}\" #{idx}" }.join(', ')}) "
+        create_graph(
+          'Confusion Matrix',
+          palette: 'gray',
+          xlabel: 'Predicted',
+          ylabel: 'True',
+          xrange: -0.5..max_idx,
+          yrange: max_idx..-0.5,
+          xtics: tics,
+          ytics: tics
+        )
         unless @display_units.empty?
           # Change it to resolve the exact parameters selected
-          # Array< [ Parameter, Numo::Gnuplot, Array< Array< Integer             > > ] >
-          # Array< [ parameter, graph,                unit_indexes_per_graph_row   > ] >
+          # Array< [ Parameter, Array< Array< Integer >           > ] >
+          # Array< [ parameter,        unit_indexes_per_graph_row   ] >
           @display_units = @display_units.map.with_index do |(name, nbr_units), idx_param|
             name = name.to_s if name.is_a?(Symbol)
             found_param = @model.parameters(name:).first
             raise "Unable to find parameter #{name} for plotting. Parameters are #{@model.parameters.map(&:name).join(', ')}" if found_param.nil?
-            parameter_graph = Numo::Gnuplot.new
-            parameter_graph.set terminal: "wxt 0 position #{idx_param * 640},480 size 640,400"
-            parameter_graph.set title: found_param.name.gsub('_', '\_')
+            create_graph(found_param.name.gsub('_', '\_'))
             units_step = found_param.shape[0].to_f / nbr_units
             units_to_plot = nbr_units.times.map { |idx_unit| Integer(idx_unit * units_step) }.uniq
             [
               found_param,
-              parameter_graph,
               units_to_plot.each_slice(Math.sqrt(units_to_plot.size).round).to_a
             ]
           end
@@ -81,8 +81,7 @@ module RubyNeuralNets
       # Close graphs
       if @display_graphs
         log 'Wait for user to close graphs'
-        graphs_to_close = [@cost_graph, @accuracy_graph, @confusion_graph]
-        graphs_to_close.concat(@display_units.map { |(_param, graph, _row_indices)| graph }) unless @display_units.empty?
+        graphs_to_close = @graphs.values
         graphs_to_close.map do |gnuplot_graph|
           Thread.new { gnuplot_graph.pause 'mouse close' }
         end.each(&:join)
@@ -107,12 +106,12 @@ module RubyNeuralNets
       # Update graphs
       if @display_graphs
         @costs << cost
-        @cost_graph.plot @costs, with: 'lines', title: ''
+        @graphs['Cost'].plot @costs, with: 'lines', title: ''
         @accuracies << accuracy
-        @accuracy_graph.plot @accuracies, with: 'lines', title: ''
-        @confusion_graph.plot @accuracy.confusion_matrix(a, minibatch_y, minibatch_size), with: 'image', title: ''
+        @graphs['Accuracy'].plot @accuracies, with: 'lines', title: ''
+        @graphs['Confusion Matrix'].plot @accuracy.confusion_matrix(a, minibatch_y, minibatch_size), with: 'image', title: ''
         unless @display_units.empty?
-          @display_units.each do |(param, graph, row_indices)|
+          @display_units.each do |(param, row_indices)|
             tensor_size = param.shape[1]
             values = param.values
             # Consider it to be RGB image if we can divide the number of input values by 3
@@ -143,10 +142,37 @@ module RubyNeuralNets
             end
             # Duplicate all channels in param_img to make it RGB
             param_img = param_img.concatenate(param_img, axis: 2).concatenate(param_img, axis: 2) if nbr_channels == 1
-            graph.plot param_img.reverse(0), with: 'rgbimage', title: ''
+            @graphs[param.name.gsub('_', '\_')].plot param_img.reverse(0), with: 'rgbimage', title: ''
           end
         end
       end
+    end
+
+    private
+
+    # Create a new graph with automatic positioning
+    #
+    # Parameters:::
+    # * *title* (String): The title of the graph
+    # * *kwargs: GnuPlot properties to set as keyword arguments
+    def create_graph(title, **kwargs)
+      graph = Numo::Gnuplot.new
+      # Calculate position based on number of existing graphs
+      graph_index = @graphs.size
+      x_pos = (graph_index * @graph_width) % @screen_width
+      y_pos = ((graph_index * @graph_width) / @screen_width).floor * (@graph_height + @graph_row_padding)
+
+      graph.set terminal: "wxt 0 position #{x_pos},#{y_pos} size #{@graph_width},#{@graph_height}"
+      graph.set title: title
+
+      # Set additional properties
+      kwargs.each do |property, value|
+        graph.set property => value
+      end
+
+      # Store in @graphs hash using title as key
+      @graphs[title] = graph
+      nil
     end
 
   end
