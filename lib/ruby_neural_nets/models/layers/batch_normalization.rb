@@ -19,7 +19,7 @@ module RubyNeuralNets
           @gamma = register_parameters([@n_x, 1], Initializers::One, name: "L#{@idx_layer}_BatchNormalization_Gamma")
           # Beta parameter [n_x, 1], initialized to 0
           @beta = register_parameters([@n_x, 1], Initializers::Zero, name: "L#{@idx_layer}_BatchNormalization_Beta")
-          @epsilon = 1e-8
+          @epsilon = 1e-5
         end
 
         # Get the output dimension of this layer

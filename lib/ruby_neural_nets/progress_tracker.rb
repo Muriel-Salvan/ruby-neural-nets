@@ -74,7 +74,7 @@ module RubyNeuralNets
             name = name.to_s if name.is_a?(Symbol)
             found_param = @experiments[experiment_id][:model].parameters(name:).first
             raise "Unable to find parameter #{name} for plotting. Parameters are #{@experiments[experiment_id][:model].parameters.map(&:name).join(', ')}" if found_param.nil?
-            create_graph("#{found_param.name.gsub('_', '\_')} #{experiment_id}")
+            create_graph("#{found_param.name} #{experiment_id}")
             units_step = found_param.shape[0].to_f / nbr_units
             units_to_plot = nbr_units.times.map { |idx_unit| Integer(idx_unit * units_step) }.uniq
             [
@@ -117,10 +117,10 @@ module RubyNeuralNets
       if @display_graphs
         @experiments[experiment_id][:costs] << cost
         # Plot all experiments' cost curves on the shared Cost graph
-        @graphs['Cost'].plot(*@experiments.map { |exp_id, exp_data| [exp_data[:costs], with: 'lines', title: exp_id] })
+        @graphs['Cost'].plot(*@experiments.map { |exp_id, exp_data| [exp_data[:costs], with: 'lines', title: exp_id.gsub('_', '\_')] })
         @experiments[experiment_id][:accuracies] << accuracy
         # Plot all experiments' accuracy curves on the shared Accuracy graph
-        @graphs['Accuracy'].plot(*@experiments.map { |exp_id, exp_data| [exp_data[:accuracies], with: 'lines', title: exp_id] })
+        @graphs['Accuracy'].plot(*@experiments.map { |exp_id, exp_data| [exp_data[:accuracies], with: 'lines', title: exp_id.gsub('_', '\_')] })
         @graphs["Confusion Matrix #{experiment_id}"].plot @experiments[experiment_id][:accuracy].confusion_matrix(a, minibatch_y, minibatch_size), with: 'image', title: ''
         unless @experiments[experiment_id][:display_units].nil?
           @experiments[experiment_id][:display_units].each do |(param, row_indices)|
@@ -154,7 +154,7 @@ module RubyNeuralNets
             end
             # Duplicate all channels in param_img to make it RGB
             param_img = param_img.concatenate(param_img, axis: 2).concatenate(param_img, axis: 2) if nbr_channels == 1
-            @graphs["#{param.name.gsub('_', '\_')} #{experiment_id}"].plot param_img.reverse(0), with: 'rgbimage', title: ''
+            @graphs["#{param.name} #{experiment_id}"].plot param_img.reverse(0), with: 'rgbimage', title: ''
           end
         end
       end
@@ -175,7 +175,7 @@ module RubyNeuralNets
       y_pos = ((graph_index * @graph_width) / @screen_width).floor * (@graph_height + @graph_row_padding)
 
       graph.set terminal: "wxt 0 position #{x_pos},#{y_pos} size #{@graph_width},#{@graph_height}"
-      graph.set title: title
+      graph.set title: title.gsub('_', '\_')
 
       # Set additional properties
       kwargs.each do |property, value|

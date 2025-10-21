@@ -80,6 +80,10 @@ module RubyNeuralNets
           }
         },
         nbr_epochs: 100,
+        training_times: {
+          desc: 'Number of times to perform training of the model.',
+          value: 1
+        },
         instability_checks: {
           desc: [
             'Possible values are:',

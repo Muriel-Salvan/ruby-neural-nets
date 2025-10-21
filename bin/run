@@ -28,63 +28,72 @@ RubyNeuralNets::Helpers.init(
   instability_checks: options[:instability_checks]
 )
 
-# Load data from the dataset
-data_loader = options.instantiate(:data_loader)
-
-# Display some stats
-labels = data_loader.labels
-data_loader.display_stats
-# data_loader.display_sample(:training, labels.first)
-image_stats = data_loader.image_stats
-puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats[:channels]}"
-
-# Create the model
-model = options.instantiate(:model, image_stats[:rows], image_stats[:cols], image_stats[:channels], labels.size)
-
-# Define the accuracy measure and loss
-accuracy = options.instantiate(:accuracy)
-loss = options.instantiate(:loss)
-
-# Train the model on the training dataset
-require 'ruby_neural_nets/gradient_checker'
-require 'ruby_neural_nets/profiler'
+# Create the progress tracker for all experiments
 require 'ruby_neural_nets/progress_tracker'
-require 'ruby_neural_nets/trainer'
 progress_tracker = RubyNeuralNets::ProgressTracker.new(display_graphs: true)
-progress_tracker.track('main', model, labels, loss, accuracy, display_units: options[:track_layer].to_h)
 
-RubyNeuralNets::Trainer.new(
-  nbr_epochs: options[:nbr_epochs],
-  accuracy:,
-  loss: loss,
-  optimizer: options.instantiate(:optimizer),
-  gradient_checker: RubyNeuralNets::GradientChecker.new(gradient_checks: options[:gradient_checks]),
-  progress_tracker: progress_tracker,
-  profiler: RubyNeuralNets::Profiler.new(profiling: options[:profiling])
-).train('main', model, data_loader)
+options[:training_times].times do |exp_idx|
+  train_exp_id = "train_#{exp_idx}"
+
+  # Load data from the dataset
+  data_loader = options.instantiate(:data_loader)
+  # Display some stats
+  labels = data_loader.labels
+  data_loader.display_stats
+  # data_loader.display_sample(:training, labels.first)
+  image_stats = data_loader.image_stats
+  puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats[:channels]}"
+
+  # Create the model
+  model = options.instantiate(:model, image_stats[:rows], image_stats[:cols], image_stats[:channels], labels.size)
+
+  # Define the accuracy measure and loss
+  accuracy = options.instantiate(:accuracy)
+  loss = options.instantiate(:loss)
+
+  # Track this model training
+  progress_tracker.track(train_exp_id, model, labels, loss, accuracy, display_units: options[:track_layer].to_h)
+
+  require 'ruby_neural_nets/gradient_checker'
+  require 'ruby_neural_nets/profiler'
+  require 'ruby_neural_nets/trainer'
+  RubyNeuralNets::Trainer.new(
+    nbr_epochs: options[:nbr_epochs],
+    accuracy:,
+    loss: loss,
+    optimizer: options.instantiate(:optimizer),
+    gradient_checker: RubyNeuralNets::GradientChecker.new(gradient_checks: options[:gradient_checks]),
+    progress_tracker: progress_tracker,
+    profiler: RubyNeuralNets::Profiler.new(profiling: options[:profiling])
+  ).train(train_exp_id, model, data_loader)
+
+  if options[:training_times] == 1
+    # Validate on the dev set
+    data_loader.select_dataset_type(:dev) do
+      data_loader.each_minibatch(max_minibatch_size: 10000) do |minibatch_x, minibatch_y, minibatch_size|
+        a_dev = model.forward_propagate(minibatch_x)
+        puts "Dev dataset accuracy: #{accuracy.measure(a_dev, minibatch_y, minibatch_size) * 100}%"
+        puts 'Wait for user to close graphs'
+        Numo.gnuplot do
+          set terminal: 'wxt 0'
+          set title: 'Dev confusion matrix'
+          set palette: 'gray'
+          set xlabel: 'Predicted'
+          set ylabel: 'True'
+          max_idx = (labels.size - 0.5)
+          set xrange: -0.5..max_idx
+          set yrange: max_idx..-0.5
+          tics = "(#{labels.map.with_index { |label, idx| "\"#{label}\" #{idx}" }.join(', ')})"
+          set xtics: tics
+          set ytics: tics
+          plot(accuracy.confusion_matrix(a_dev, minibatch_y, minibatch_size), w: 'image', t: '')
+          pause 'mouse close'
+        end
+      end
+    end
+  end
+
+end
 
 # Close graphs
 progress_tracker.close_graphs
-
-# Validate on the dev set
-data_loader.select_dataset_type(:dev) do
-  data_loader.each_minibatch(max_minibatch_size: 10000) do |minibatch_x, minibatch_y, minibatch_size|
-    a_dev = model.forward_propagate(minibatch_x)
-    puts "Dev dataset accuracy: #{accuracy.measure(a_dev, minibatch_y, minibatch_size) * 100}%"
-    puts 'Wait for user to close graphs'
-    Numo.gnuplot do
-      set title: 'Dev confusion matrix'
-      set palette: 'gray'
-      set xlabel: 'Predicted'
-      set ylabel: 'True'
-      max_idx = (labels.size - 0.5)
-      set xrange: -0.5..max_idx
-      set yrange: max_idx..-0.5
-      tics = "(#{labels.map.with_index { |label, idx| "\"#{label}\" #{idx}" }.join(', ')})"
-      set xtics: tics
-      set ytics: tics
-      plot(accuracy.confusion_matrix(a_dev, minibatch_y, minibatch_size), w: 'image', t: '')
-      pause 'mouse close'
-    end
-  end
-end
