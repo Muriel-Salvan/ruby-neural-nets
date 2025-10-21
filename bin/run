@@ -58,15 +58,7 @@ RubyNeuralNets::Trainer.new(
   gradient_checker: RubyNeuralNets::GradientChecker.new(gradient_checks: options[:gradient_checks]),
   progress_tracker: RubyNeuralNets::ProgressTracker.new(
     display_graphs: true,
-    display_units: {
-      # To be used with Numo NLayers model
-      # L0_Dense_W: 10,
-      # L3_Dense_W: 10
-      
-      # To be used with Torch NLayersTorch model
-      # 'l0_linear.weight': 10,
-      # 'l1_linear.weight': 10
-    }
+    display_units: options[:track_layer].to_h
   ),
   profiler: RubyNeuralNets::Profiler.new(profiling: options[:profiling])
 ).train(model, data_loader)

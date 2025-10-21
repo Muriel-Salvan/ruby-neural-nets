@@ -27,6 +27,13 @@ module RubyNeuralNets
       # * *ancestor* (Class): In the case values are classes, give the ancestor possible classes for the value should have. Mandatory if :from is also specified.
       # * *name* (String): In the case values are classes, give the default class name (when specifying name, value is not needed).
       # * *desc* (String or Array<String>): Additional description of the option.
+      # * *format* (String): Description of the format of the parameter (defaults by guessing from value).
+      # * *multiple* (Boolean): Is this option allowed several times? Default to false. If true, then value will contain an array of the values given by CLI.
+      # * *parse* (Proc): Parser of the CLI string argument to the real value. Defaults by guessing from value.
+      #   * Parameters::
+      #     * *value_str* (String): The string value from CLI.
+      #   * Result::
+      #     * Object: The value to store in value.
       # * *options* (Hash): Sub-options that are linked to this option. The structure is the same as the options object itself.
       @options = {
         accuracy: {
@@ -101,6 +108,15 @@ module RubyNeuralNets
         dataset_seed: {
           desc: 'Random number generator seed for dataset shuffling and data order.',
           value: 0
+        },
+        track_layer: {
+          desc: 'Specify a layer name to be tracked for a given number of hidden units.',
+          format: 'string,integer',
+          multiple: true,
+          parse: proc do |value_str|
+            layer_name, nbr_units_str = value_str.split(',')
+            [layer_name.to_sym, Integer(nbr_units_str)]
+          end
         }
       }.to_h { |option, option_info| [option, normalize_option_info(option_info)] }
     end
@@ -184,20 +200,26 @@ module RubyNeuralNets
     # * *option* (Symbol): The option to add
     # * *option_info* (Hash): The corresponding option information
     def add_option(opts, option, option_info)
-      format = option_format(option_info)
       opts.on(
         *(
           [
-            "--#{option.to_s.gsub('_', '-')} #{format.upcase.gsub(' ', '_')}",
+            "--#{option.to_s.gsub('_', '-')} #{option_info[:format].upcase.gsub(' ', '_')}",
             "Specify the #{option} to use."
           ] +
             option_info[:desc] +
             [
-              "Format is #{format}.",
-              "Defaults to #{option_str(option_info[:value], option_info)}."
-            ]
+              "Format is #{option_info[:format]}."
+            ] +
+            (option_info[:multiple] ? ['Can be used multiple times'] : ["Defaults to #{option_str(option_info[:value], option_info)}."])
         )
-      ) { |value| option_info[:value] = parse_option_str(value, option_info) }
+      ) do |value_str|
+        value = option_info[:parse].call(value_str)
+        if option_info[:multiple]
+          option_info[:value] << value
+        else
+          option_info[:value] = value
+        end
+      end
       option_info[:options].each do |sub_option, sub_option_info|
         add_option(opts, sub_option, sub_option_info)
       end
@@ -287,15 +309,16 @@ module RubyNeuralNets
         "#{option_info[:from].name.split('::').last} name"
       else
         value = option_info[:value]
-        if value.is_a?(Array)
+        case value
+        when Array
           "comma-separated list of #{option_format({ value: value.first })}"
-        elsif value.is_a?(Integer)
+        when Integer
           'integer'
-        elsif value.is_a?(Float)
+        when Float
           'float'
-        elsif value.is_a?(Symbol) || value.is_a?(String)
+        when Symbol, String
           'string'
-        elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
+        when TrueClass, FalseClass
           'boolean'
         else
           raise "Can't parse option value \"#{value}\" of type #{value.class}"
@@ -335,6 +358,11 @@ module RubyNeuralNets
           )
         ]
       end
+      # Default values
+      normalized_info[:format] = option_format(normalized_info) unless normalized_info.key?(:format)
+      normalized_info[:multiple] = false unless normalized_info.key?(:multiple)
+      normalized_info[:value] = [] if normalized_info[:multiple]
+      normalized_info[:parse] = proc { |value_str| parse_option_str(value_str, normalized_info) } unless normalized_info.key?(:parse)
       normalized_info
     end
 

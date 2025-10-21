@@ -86,6 +86,20 @@ This runs with default settings:
   - When enabled, shows detailed debug messages from model forward/backward propagation and other internal operations
   - Debug messages use lazy evaluation to avoid performance overhead when disabled
 
+- **`--model-seed`**: Random number generator seed for model initialization and parameters (integer, default: 0)
+  - Controls the randomness in model parameter initialization
+  - Use specific seeds for reproducible model initialization across runs
+
+- **`--dataset-seed`**: Random number generator seed for dataset shuffling and data order (integer, default: 0)
+  - Controls the randomness in dataset shuffling and data ordering
+  - Use specific seeds for reproducible data loading and shuffling across runs
+
+- **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
+  - Allows monitoring specific layer parameters during training
+  - Format: `--track-layer layer_name,num_units`
+  - Example: `--track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10`
+  - Useful for visualizing parameter evolution in specific layers during training
+
 The run will:
 - Load the specified dataset and display statistics
 - Train the neural network with selected configuration
@@ -201,7 +215,7 @@ bundle exec ruby ./bin/run --dataset=colors --data-loader=Numo --accuracy=Classe
 ### N layer model on numbers dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10
 ```
 
 * [A] We see that just adding the BatchNormalization layer allows the Adam optimizer to be less noisy (cost function is decreasing globally without big bounces) and more quickly converge towards the optimum, reaching 58% accuracy at epoch 37, and 92% (with variance 3% with dev set) at epoch 100. Those figures were obtained without adding any hidden layer in the model.
@@ -220,7 +234,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 ### N layer model using PyTorch
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --track-layer l0_linear.weight,10 --track-layer l1_linear.weight,10
 ```
 
 * Accuracy is not as good after 100 epochs: around 62% instead of 73% using Ruby Numo.

@@ -172,7 +172,6 @@ module RubyNeuralNets
 
       # Store in @graphs hash using title as key
       @graphs[title] = graph
-      nil
     end
 
   end
