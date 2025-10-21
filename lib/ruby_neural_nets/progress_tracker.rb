@@ -37,7 +37,6 @@ module RubyNeuralNets
     # * *loss* (Loss): The loss instance to be used
     # * *accuracy* (Accuracy): The accuracy instance to be used
     # * *display_units* (Hash<Symbol, String or Regexp, Integer>): For each parameter name (or regexp matching name), indicate the number of units we want to picture [default: {}]
-    # * Code: Code called with the progress tracker instantiated to be used
     def track(experiment_id, model, classes, loss, accuracy, display_units: {})
       @experiments[experiment_id] = {
         model: model,
@@ -83,10 +82,10 @@ module RubyNeuralNets
           end
         end
       end
+    end
 
-      yield
-
-      # Close graphs
+    # Close all graphs and wait for user to close them
+    def close_graphs
       if @display_graphs
         log 'Wait for user to close graphs'
         graphs_to_close = @graphs.values

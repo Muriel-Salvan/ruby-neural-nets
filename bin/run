@@ -42,23 +42,30 @@ puts "Images size: #{image_stats[:rows]} x #{image_stats[:cols]} x #{image_stats
 # Create the model
 model = options.instantiate(:model, image_stats[:rows], image_stats[:cols], image_stats[:channels], labels.size)
 
-# Define the accuracy measure
+# Define the accuracy measure and loss
 accuracy = options.instantiate(:accuracy)
+loss = options.instantiate(:loss)
 
 # Train the model on the training dataset
 require 'ruby_neural_nets/gradient_checker'
 require 'ruby_neural_nets/profiler'
 require 'ruby_neural_nets/progress_tracker'
 require 'ruby_neural_nets/trainer'
+progress_tracker = RubyNeuralNets::ProgressTracker.new(display_graphs: true)
+progress_tracker.track('main', model, labels, loss, accuracy, display_units: options[:track_layer].to_h)
+
 RubyNeuralNets::Trainer.new(
   nbr_epochs: options[:nbr_epochs],
   accuracy:,
-  loss: options.instantiate(:loss),
+  loss: loss,
   optimizer: options.instantiate(:optimizer),
   gradient_checker: RubyNeuralNets::GradientChecker.new(gradient_checks: options[:gradient_checks]),
-  progress_tracker: RubyNeuralNets::ProgressTracker.new(display_graphs: true),
+  progress_tracker: progress_tracker,
   profiler: RubyNeuralNets::Profiler.new(profiling: options[:profiling])
-).train(model, data_loader, display_units: options[:track_layer].to_h)
+).train('main', model, data_loader)
+
+# Close graphs
+progress_tracker.close_graphs
 
 # Validate on the dev set
 data_loader.select_dataset_type(:dev) do
