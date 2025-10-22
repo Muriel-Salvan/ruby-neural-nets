@@ -33,7 +33,7 @@ module RubyNeuralNets
           @layers = layers.map.with_index do |nbr_units, idx_layer|
             linear_module = ::Torch::NN::Linear.new(n_x, nbr_units, bias: false)
             ::Torch::NN::Init.xavier_normal!(linear_module.weight)
-            batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_units)
+            batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_units, track_running_stats: false)
             batch_norm_module.register_buffer("running_mean", ::Torch.zeros(nbr_units, dtype: :double))
             batch_norm_module.register_buffer("running_var", ::Torch.ones(nbr_units, dtype: :double))
             n_x = nbr_units
@@ -45,7 +45,7 @@ module RubyNeuralNets
           end.flatten(1)
           final_linear_module = ::Torch::NN::Linear.new(n_x, nbr_classes, bias: false)
           ::Torch::NN::Init.xavier_normal!(final_linear_module.weight)
-          final_batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_classes)
+          final_batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_classes, track_running_stats: false)
           final_batch_norm_module.register_buffer("running_mean", ::Torch.zeros(nbr_classes, dtype: :double))
           final_batch_norm_module.register_buffer("running_var", ::Torch.ones(nbr_classes, dtype: :double))
           @layers.concat(
