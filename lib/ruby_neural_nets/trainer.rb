@@ -81,7 +81,13 @@ module RubyNeuralNets
         @optimizer.start_minibatch(idx_minibatch) if train
         # Forward propagation
         model.initialize_back_propagation_cache
-        debug { "[#{selected_partition}] Model parameters:\n#{model.parameters.map { |p| "* #{p.name}: #{data_to_str(p.values)}" }.join("\n")}" }
+        saved_parameters = {}
+        debug do
+          "[#{selected_partition}] Model parameters:\n#{model.parameters.map do |p|
+            saved_parameters[p.name] = p.values.dup
+            "* #{p.name}: #{data_to_str(p.values)}"
+          end.join("\n")}"
+        end
         a = model.forward_propagate(minibatch_x, train:)
         back_propagation_cache = train ? model.back_propagation_cache : nil
         # Make sure other processing like gradient checking won't modify the cache again
@@ -99,6 +105,7 @@ module RubyNeuralNets
             model.gradient_descent(@loss.compute_loss_gradient(a, minibatch_y), a, minibatch_y, loss, minibatch_size)
           end
           @optimizer.step
+          debug { "[#{selected_partition}] Model parameters gradients:\n#{model.parameters.map { |p| "* #{p.name}: #{data_to_str(p.values - saved_parameters[p.name])}" }.join("\n")}" }
         end
         idx_minibatch += 1
       end

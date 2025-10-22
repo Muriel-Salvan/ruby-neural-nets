@@ -241,6 +241,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch
 * We see that using different seeds produce very different accuracies with Torch.
 * After using 64 bit floats in Torch, the accuracy goes up from 62% to 87%.
 * Changing random seeds has a big impact on the final accuracy using Torch: from 60% to 90%. Looks like the framework is quite unstable with randomness. In comparison, the Numo implementation varies between 72% and 74% with different seeds.
+* We can check that using ::Torch::NN::LogSoftmax layer with ::Torch::NN::NLLLoss loss is equivalent (but slower) than not using this last layer with ::Torch::NN::CrossEntropyLoss.
 
 ### Performance benchmarks
 
