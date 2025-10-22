@@ -12,49 +12,38 @@ module RubyNeuralNets
 
     class Torch < DataLoader
 
-      # Create an elements dataset that maps to the labels and is partitioned.
-      # The following instance variables can be used to initialize the dataset correctly:
-      # * *@dataset_name* (String): The dataset name.
-      # * *@dataset_rng* (Random): Random number generator for dataset operations.
-      #
-      # Result::
-      # * Dataset: The dataset that will serve data with Y being true labels, unencoded
-      def new_elements_labels_dataset
-        RubyNeuralNets::Datasets::LabeledDataPartitioner.new(
-          RubyNeuralNets::Datasets::LabeledFiles.new(name: @dataset_name),
-          rng: @dataset_rng
-        )
-      end
-
-      # Create an elements dataset for this data loader.
-      # The following instance variables can be used to initialize the dataset correctly:
-      # * *@dataset_name* (String): The dataset name.
-      # * *@elements_labels_dataset* (Dataset): The elements dataset previously created with true labels.
-      # * *@dataset_rng* (Random): Random number generator for dataset operations.
-      #
-      # Result::
-      # * Dataset: The dataset that will serve data with X and Y being prepared for training
-      def new_elements_dataset
-        RubyNeuralNets::Datasets::EpochShuffler.new(
-          RubyNeuralNets::Datasets::CacheMemory.new(
-            RubyNeuralNets::Datasets::LabeledTorchImages.new(@elements_labels_dataset)
-          ),
-          rng: @dataset_rng
-        )
-      end
-
-      # Return a minibatch dataset for this data loader.
-      # The following instance variables can be used to initialize the dataset correctly:
-      # * *@dataset_name* (String): The dataset name.
-      # * *@elements_labels_dataset* (Dataset): The elements dataset previously created with true labels.
-      # * *@elements_dataset* (Dataset): The elements dataset previously created.
+      # Instantiate a partitioned dataset.
       #
       # Parameters::
+      # * *name* (String): Dataset name containing real data
+      # * *rng* (Random): The random number generator to be used
+      # Result::
+      # * LabeledDataPartitioner: The partitioned dataset.
+      def new_partitioned_dataset(name:, rng:)
+        Datasets::LabeledDataPartitioner.new(
+          Datasets::LabeledFiles.new(name:),
+          rng:
+        )
+      end
+
+      # Return a minibatch dataset for this data loader, from a dataset that has already been partitioned.
+      #
+      # Parameters::
+      # * *dataset* (Dataset): The partitioned dataset serving data for the minibatches
+      # * *rng* (Random): The random number generator to be used
       # * *max_minibatch_size* (Integer): The required minibatch size
       # Result::
       # * Dataset: The dataset that will serve data as minibatches
-      def new_minibatch_dataset(max_minibatch_size:)
-        RubyNeuralNets::Datasets::MinibatchTorch.new(@elements_dataset, max_minibatch_size:)
+      def new_minibatch_dataset(dataset:, rng:, max_minibatch_size:)
+        Datasets::MinibatchTorch.new(
+          Datasets::EpochShuffler.new(
+            Datasets::CacheMemory.new(
+              Datasets::LabeledTorchImages.new(dataset)
+            ),
+            rng:
+          ),
+          max_minibatch_size:
+        )
       end
 
     end

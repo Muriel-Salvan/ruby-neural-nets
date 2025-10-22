@@ -37,13 +37,12 @@ module RubyNeuralNets
             batch_norm_module = ::Torch::NN::BatchNorm1d.new(nbr_units)
             batch_norm_module.register_buffer("running_mean", ::Torch.zeros(nbr_units, dtype: :double))
             batch_norm_module.register_buffer("running_var", ::Torch.ones(nbr_units, dtype: :double))
-            layers_group = [
+            n_x = nbr_units
+            [
               add_module("l#{idx_layer}_linear", linear_module),
               add_module("l#{idx_layer}_batch_norm1d", batch_norm_module),
               add_module("l#{idx_layer}_leaky_relu", ::Torch::NN::LeakyReLU.new)
             ]
-            n_x = nbr_units
-            layers_group
           end.flatten(1)
           final_linear_module = ::Torch::NN::Linear.new(n_x, nbr_classes)
           ::Torch::NN::Init.xavier_normal!(final_linear_module.weight)
@@ -100,6 +99,20 @@ module RubyNeuralNets
       # Result::
       # * Object: The corresponding output layer
       def forward_propagate(x, train: false)
+        debug do
+          <<~EO_Debug
+            Model buffers:
+            #{
+              @torch_net.
+                named_children.
+                select { |_layer_name, mod| !mod.named_buffers.empty? }.
+                map do |layer_name, mod|
+                  mod.named_buffers.map { |n, b| "* #{layer_name}.#{n}: #{data_to_str(b)}" }.join("\n")
+                end.
+                join("\n")
+            }
+          EO_Debug
+        end
         if train
           @torch_net.train
         else

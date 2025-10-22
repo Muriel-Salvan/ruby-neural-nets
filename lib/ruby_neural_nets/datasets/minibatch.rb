@@ -8,6 +8,10 @@ module RubyNeuralNets
     # The y label is an array of the label and the minibatch size.
     class Minibatch < Wrapper
 
+      # Get the individual elements dataset
+      #   Dataset
+      attr_reader :elements_dataset
+
       # Constructor
       #
       # Parameters::
@@ -16,6 +20,7 @@ module RubyNeuralNets
       def initialize(dataset, max_minibatch_size: 1000)
         super(dataset)
         @max_minibatch_size = max_minibatch_size
+        @elements_dataset = dataset
       end
 
       # Return the dataset size

@@ -73,6 +73,14 @@ module RubyNeuralNets
         end
       end
 
+      # Partition name of this dataset
+      #
+      # Resut::
+      # * Symbol: The selected partition
+      def selected_partition
+        @partition
+      end
+
       # Return available partitions
       #
       # Result::
