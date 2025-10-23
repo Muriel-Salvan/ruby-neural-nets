@@ -2,6 +2,27 @@
 
 A Ruby playground for implementing, coding, benchmarking, and comparing neural network techniques and libraries. This project provides a framework for building and training neural networks from scratch using Numo (Ruby's numerical array library) and RMagick for image processing.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Running the Example](#running-the-example)
+- [Running Multiple Experiments](#running-multiple-experiments)
+- [Gradient Checking](#gradient-checking)
+- [Datasets](#datasets)
+- [Creating Custom Datasets](#creating-custom-datasets)
+- [Code Structure](#code-structure)
+- [Contributing](#contributing)
+- [Findings and experiments](#findings-and-experiments)
+  - [One layer model on colors dataset](#one-layer-model-on-colors-dataset)
+  - [One layer model on numbers dataset](#one-layer-model-on-numbers-dataset)
+  - [N layer model on colors dataset](#n-layer-model-on-colors-dataset)
+  - [N layer model on numbers dataset](#n-layer-model-on-numbers-dataset)
+  - [N layer model using PyTorch](#n-layer-model-using-pytorch)
+  - [Performance benchmarks](#performance-benchmarks)
+- [License](#license)
+
 ## Features
 
 - **Experiment Management**: Run multiple experiments with different configurations in a single command, each with unique IDs and separate progress tracking
@@ -182,17 +203,17 @@ To use your own dataset:
 
 ### Code Structure
 
-- `lib/ruby_neural_nets/experiment.rb`: Experiment management system for running multiple configurations
-- `lib/ruby_neural_nets/logger.rb`: Logger mixin providing timestamped logging with lazy-evaluated debug messages
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
 - `lib/ruby_neural_nets/accuracies/`: Accuracy metric implementations (ClassesNumo, ClassesTorch)
 - `lib/ruby_neural_nets/data_loader.rb`: Base data loader framework
 - `lib/ruby_neural_nets/data_loaders/`: Data loader implementations (Numo, Torch) configuring layered dataset processing
 - `lib/ruby_neural_nets/dataset.rb`: Base dataset class
 - `lib/ruby_neural_nets/datasets/`: Dataset processing layers (Wrapper, Partitioning, Shuffling, Caching, Encoding, Minibatching)
+- `lib/ruby_neural_nets/experiment.rb`: Experiment management system for running multiple configurations
 - `lib/ruby_neural_nets/gradient_checker.rb`: Gradient checking for validation
 - `lib/ruby_neural_nets/helpers.rb`: Utility functions and numerical stability checks
 - `lib/ruby_neural_nets/initializers/`: Parameter initialization algorithms (Glorot, Rand, Zero, One)
+- `lib/ruby_neural_nets/logger.rb`: Logger mixin providing timestamped logging with lazy-evaluated debug messages
 - `lib/ruby_neural_nets/loss.rb`: Base loss function class
 - `lib/ruby_neural_nets/losses/`: Loss function implementations (CrossEntropy, CrossEntropyTorch)
 - `lib/ruby_neural_nets/model.rb`: Base model class for neural networks
@@ -241,6 +262,9 @@ With just this model, we can already validate a lot of the framework's capabilit
 * Adding gradient checking severly impacts performance, as forward propagation is run an additional 2 * nbr_gradient_checks_samples * nbr_parameters times.
 * Adding numerical instability checks severly impacts performance as well.
 
+Performance:
+* After 7 epochs, accuracy for both training and dev sets stay at 100%.
+
 ### One layer model on numbers dataset
 
 ```bash
@@ -248,12 +272,14 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 ```
 
 Using the one-layer model on the numbers model validates the following:
-* The learning is quite slow using the constant optimizer, but still gets better and better up to an accuracy of 20% at epoch 100.
-* The learning is more noisy (cost function is doing bounces) but much faster with the Adam optimizer, up to an accuracy of 57% at epoch 100.
-* In both cases there is nearly no variance between training and dev sets.
-* When using the Adam optimizer with a bigger learning rate (0.002) we see numerical instability.
-* When using the N-layer model with 0 hidden layers and without BatchNormalization layers, we see the exact same behavior, which validates the computation of softmax gradients without the dz = a - y shortcut done in OneLayer model.
+* When using the Adam optimizer with a bigger learning rate (0.002) we see that accuracy and cost keep increasing and decreasing. That means the model can't learn anymore certainly due to gradient descent overshooting constantly over the minimum.
+* When using the Adam optimizer with a bigger learning rate (0.003) we see numerical instability starting the third epoch.
+* When using the N-layer model with 0 hidden layers (`--model=NLayers --layers=`), without BatchNormalization layers and with bias in Dense layers, we see the exact same behavior, which validates the computation of softmax gradients without the dz = a - y shortcut done in OneLayer model.
 * We see that removing gradient checking is not modifying any result, proving that gradient checking does not leak in computations.
+
+Performance:
+* The learning is quite slow using the constant optimizer, but still gets better and better up to an accuracy of 20% around epoch 80 that stagnates afterwards. Variance is about 4%, meaning the model has difficulty to learn but tends to overfit a bit the training set.
+* The learning is more noisy (cost function is doing bounces) but much faster with the Adam optimizer, up to an accuracy of 55% at epoch 100. However we see variance increasing a lot starting epoch 60, as dev accuracy stays around 20%. This confirms the overfitting that is also visible with the constant optimizer.
 
 ### N layer model on colors dataset
 
@@ -261,27 +287,48 @@ Using the one-layer model on the numbers model validates the following:
 bundle exec ruby ./bin/run --dataset=colors --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
+Observations:
 * We see that using BatchNormalization layers allow the Adam optimizer to be used without numerical instability.
-* We see that the Adam optimizer converges more slowly on simple datasets like the colors one, but gets better results than the Constant optimizer on complex datasets like the numbers one.
+
+Performance:
+* We see that the Adam optimizer converges more slowly on simple datasets like the colors one (both dev and training sets have 100% accuracy on epoch 59 instead of 7), but gets better results than the Constant optimizer on complex datasets like the numbers one.
 
 ### N layer model on numbers dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
-* [A] We see that just adding the BatchNormalization layer allows the Adam optimizer to be less noisy (cost function is decreasing globally without big bounces) and more quickly converge towards the optimum, reaching 58% accuracy at epoch 37, and 92% (with variance 3% with dev set) at epoch 100. Those figures were obtained without adding any hidden layer in the model.
-* [B] We see that using minibatches the convergence is more noisy but accuracy gets high faster (92% was reached around epoch 70-75). However the final accuracy is around the same as without minibatches, with less variance (around 2% with the dev set).
-* [C] Adding to [A] 1 hidden layer of 100 units with ReLU activation makes accuracy go up slower (epoch 37 got 50% and 58% was reached at epoch 43) and reached 85% accuracy (with 88% on dev set) at epoch 100.
-* [D] Adding to [C] a BatchNormalization layer between the dense and ReLU hidden layers makes accuracy goes up faster (50% was reached at epoch 30, 85% at epoch 67 and 95% at epoch 100). Variance is nearly 0. This confirms the tendency that adding BatchNormalization layers after Dense ones make accuracy go up faster.
-* [E] Replacing in [D] 1 hidden layer of 100 units with 10 hidden layers of 10 units each (with ReLU but without BatchNormalization in between them) gives really bad results. Accuracy is increasing and decreasing, the confusion matrix shows that the network is only capable of learning 2 classes at the same time, and ends with 18% accuracy at epoch 100. Cost function first decreases, but then becomes quite chaotic after epoch 50, while still globally decreasing.
-* [F] Adding to [E] BatchNormalization layers to each one of the previous 10 hidden layers removes the chaos occuring after epoch 50, and smoothes a lot the accuracy curve, without increasing it (ending at 16% on epoch 100). This confirms the tendency that it's better to have a few big layers than a lot of small layers.
-* [G] Using minibatches in [F] (size 50) on previous setup adds a lot of noise, makes cost globally constant and does not improve accuracy (average 15% at epoch 100). This confirms the tendency that using minibatches does not bring benefits apart from memory consumption performance.
-* [H] Adding to [A] 3 hidden layers of 400, 200 and 100 units respectively with BatchNormalization and ReLU activations makes accuracy increase much slower (16% at epoch 37, 18% at epoch 50) reaching 37% at epoch 100 (nearly no variance).
-* [I] Adding to [A] 1 hidden layer of 100 units with BatchNormalization and tanh activation seems to increase accuracy slower than [D]: 50% was reached at epoch 42 and 83% at epoch 100, with nearly no variance.
-* [J] Changing tanh activation with sigmoid from [I] got the exact same results as with tanh.
-* [K] Changing tanh activation with leaky ReLU from [I] got best results: 50% was reached at epoch 29 and 95% at epoch 100. Less than 1% of variance with dev set.
-* When adding visualizations of the hidden layer units, we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster.
+* [A] We see that just adding the BatchNormalization layer allows the Adam optimizer to be less noisy (cost function is decreasing globally without big bounces) and more quickly converge till epoch 65. Afterwards we see more noise in the progression, with the dev dataset stagnating around 15% accuracy (high variance) while training increases till 33% at epoch 100. Those figures were obtained without adding any hidden layer (`--layers=`) in the model. It seems the model overfits some data and can't learn much anyway.
+
+![A](docs/n_layers_numbers/a.png)
+* [B] We see that using minibatches (adding `--max-minibatch-size=100`) on top of [A], the convergence is more noisy but accuracy gets high faster (30% was reached around epoch 35 instead of epoch 65 with just 1 minibatch). Final accuracy at epoch 100 is around 85% (much higher than whithout minibatches) but variance is still very high with dev accuracy staying around 32%. Intuition is that accuracy is increasing faster as each epoch will learn 5 times more than with 1 minibatch. Variance is also a bit better as using minibatches is a form of regularization.
+
+![B](docs/n_layers_numbers/b.png)
+* [C] Adding to [A] 1 hidden layer of 100 units with leaky ReLU activation makes accuracy go up faster (30% reached around epoch 45 instead of epoch 80), and makes learning more stable (less spikes in cost and accuracy even after epoch 70). Performance is much better, with end accuracy around 73%, but variance is still high, with dev accuracy around 31% (still much better than the 15% reached without this hidden layer). Intuition is that this proves the net needed more units to be able to better learn.
+
+![C](docs/n_layers_numbers/c.png)
+* [D] Removing from [C] the BatchNormalization layers between the dense and leaky ReLU hidden layers makes accuracy goes up much slower and in a much more noisy way.
+
+![D](docs/n_layers_numbers/d.png)
+* [E] Replacing in [C] 1 hidden layer of 100 units with 10 hidden layers of 10 units each (using `--layers=10,10,10,10,10,10,10,10,10,10`) gives really bad results. Accuracy is increasing more slowly (reaching 35%) while variance is much worse (dev accuracy lowering towards 6%). It seems that increasing layers without adding units favors overfitting.
+
+![E](docs/n_layers_numbers/e.png)
+* [F] Using 3 hidden layers of 400, 200 and 100 units respectively (using `--layers=400,200,100`) makes accuracy increase much faster (95% at epoch 50, getting and staying at 100% after epoch 75), but keeps a very high variance (stagnating from epoch 15 around 15%). This means the model needed even more units and layers to learn better, but is now highly overfitting. Regularization is needed from here.
+
+![F](docs/n_layers_numbers/f.png)
+* [G] Replacing leaky ReLU with tanh activation from [C] seems to increase accuracy slower than [C] (47% reached at epoch 100 compared to 73%), while increasing variance (dev accuracy around 15% compared to 31%). Also performance is much more noisy than with leaky ReLU.
+
+![G](docs/n_layers_numbers/g.png)
+* [H] Changing tanh activation with sigmoid from [G] got very similar results as with tanh, with the noisy behaviour starting a bit earlier (from epoch 20 compared to 40 with tanh).
+
+![H](docs/n_layers_numbers/h.png)
+* [I] Changing leaky ReLu with ReLU from [C] got very similar results than [C]. Variance seems to be a bit bigger, and accuracy a bit higher.
+
+![I](docs/n_layers_numbers/i.png)
+* When adding visualizations of the hidden layer units (for example using `--track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10` from [C]), we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster, however adding more units on the first layer increases accuracy while creating variance.
+
+![Parameters Visualization](docs/n_layers_numbers/parameters_visualization.png)
 
 ### N layer model using PyTorch
 
@@ -294,6 +341,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch
 * After using 64 bit floats in Torch, the accuracy goes up from 62% to 87%.
 * Changing random seeds has a big impact on the final accuracy using Torch: from 60% to 90%. Looks like the framework is quite unstable with randomness. In comparison, the Numo implementation varies between 72% and 74% with different seeds.
 * We can check that using ::Torch::NN::LogSoftmax layer with ::Torch::NN::NLLLoss loss is equivalent (but slower) than not using this last layer with ::Torch::NN::CrossEntropyLoss.
+* We see that normalizing inputs between -1 and 1 with mean 0 instead of 0 and 1 with mean 0.5 does not change the preformance of the training.
 
 ### Performance benchmarks
 

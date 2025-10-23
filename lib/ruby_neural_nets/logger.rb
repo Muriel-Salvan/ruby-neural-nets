@@ -144,7 +144,7 @@ module RubyNeuralNets
     # Result::
     # * String: The log prefix
     def log_prefix
-      "[#{Time.now.utc.iso8601}] [#{self.class.name.split('::').last}]"
+      "[#{Time.now.utc.strftime('%F %T')}] [#{self.class.name.split('::').last}]"
     end
 
   end
