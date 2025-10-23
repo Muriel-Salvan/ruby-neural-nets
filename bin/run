@@ -83,22 +83,8 @@ options.experiments.each do |exp_info|
     gradient_checker.link_to_model(model, loss)
     profiler = RubyNeuralNets::Profiler.new(profiling: exp_info[:profiling][:value])
 
-    # Create the experiment
-    experiments << RubyNeuralNets::Experiment.new(
-      exp_id: unique_experiment_id("#{exp_info[:exp_id][:value]}_training", experiments),
-      dataset: dataset_training,
-      training_mode: true,
-      accuracy:,
-      data_loader:,
-      loss:,
-      model:,
-      optimizer:,
-      nbr_epochs: ,
-      gradient_checker:,
-      profiler:,
-      display_units: exp_info[:track_layer][:value].to_h
-    )
-
+    # Create the experiments
+    # First the dev one that will be used before parameters are being trained, so that curves of the same X coordinate in graphs match models with the same parameters.
     if exp_info[:eval_dev][:value]
       experiments << RubyNeuralNets::Experiment.new(
         exp_id: unique_experiment_id("#{exp_info[:exp_id][:value]}_dev", experiments),
@@ -115,6 +101,20 @@ options.experiments.each do |exp_info|
         display_units: {}
       )
     end
+    experiments << RubyNeuralNets::Experiment.new(
+      exp_id: unique_experiment_id("#{exp_info[:exp_id][:value]}_training", experiments),
+      dataset: dataset_training,
+      training_mode: true,
+      accuracy:,
+      data_loader:,
+      loss:,
+      model:,
+      optimizer:,
+      nbr_epochs: ,
+      gradient_checker:,
+      profiler:,
+      display_units: exp_info[:track_layer][:value].to_h
+    )
   end
 end
 

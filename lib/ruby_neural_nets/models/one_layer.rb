@@ -22,7 +22,7 @@ module RubyNeuralNets
         n_x = rows * cols * channels
         # Define a very simple neural net with 1 softmax layer to categorize the 10 numbers
         # Softmax layer weights [nbr_classes, n_x]
-        @w_1 = register_parameters([nbr_classes, n_x], Initializers::GlorotUniform)
+        @w_1 = register_parameters([nbr_classes, n_x], Initializers::GlorotNormal)
         # Softmax layer bias [nbr_classes, 1]
         @b_1 = register_parameters([nbr_classes, 1], Initializers::Zero)
       end
@@ -36,7 +36,7 @@ module RubyNeuralNets
       # * Object: The corresponding output layer
       def forward_propagate(x, train: false)
         # Cache some variables
-        @back_propagation_cache[:x] = x
+        @back_propagation_cache[:x] = x if train
         # Forward propagate the minibatch
         # Shape [nbr_classes, minibatch.size]
         z_1 = @w_1.values.dot(x) + @b_1.values

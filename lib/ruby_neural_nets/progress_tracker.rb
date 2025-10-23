@@ -105,7 +105,7 @@ module RubyNeuralNets
     def progress(experiment, idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
       cost = loss.mean.to_f
       accuracy = @experiments[experiment.exp_id][:experiment].accuracy.measure(a, minibatch_y, minibatch_size)
-      log "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}] [Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
+      log "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}] [Minibatch #{idx_minibatch}] - Cost #{cost}, Accuracy #{accuracy * 100}%"
 
       # Update graphs
       if @display_graphs

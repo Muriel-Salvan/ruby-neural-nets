@@ -30,6 +30,7 @@ module RubyNeuralNets
           self << Layers::BatchNormalization.new
           self << Layers::LeakyRelu.new
         end
+        # To mimick the OneLayer model, set use_bias at true and remove the BatchNormalization layer.
         self << Layers::Dense.new(nbr_units: nbr_classes, use_bias: false)
         self << Layers::BatchNormalization.new
         self << Layers::Softmax.new
