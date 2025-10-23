@@ -31,22 +31,14 @@ module RubyNeuralNets
     # Start tracking progress for a training.
     #
     # Parameters::
-    # * *experiment_id* (String): The experiment ID to track progress for
-    # * *model* (Model): The model that we are tracking
-    # * *dataset* (Dataset): The dataset serving data that will be tracked for this experiment
-    # * *loss* (Loss): The loss instance to be used
-    # * *accuracy* (Accuracy): The accuracy instance to be used
-    # * *display_units* (Hash<Symbol, String or Regexp, Integer>): For each parameter name (or regexp matching name), indicate the number of units we want to picture [default: {}]
-    def track(experiment_id, model, dataset, loss, accuracy, display_units: {})
-      @experiments[experiment_id] = {
-        model: model,
-        dataset: dataset,
-        loss: loss,
-        accuracy: accuracy
+    # * *experiment* (Experiment): The experiment object to track progress for
+    def track(experiment)
+      @experiments[experiment.exp_id] = {
+        experiment: experiment
       }
       # Initialize graphs
       if @display_graphs
-        @experiments[experiment_id].merge!(
+        @experiments[experiment.exp_id].merge!(
           costs: [],
           accuracies: []
         )
@@ -55,11 +47,11 @@ module RubyNeuralNets
         create_graph('Accuracy') if @graphs['Accuracy'].nil?
 
         # Create experiment-specific graphs for Confusion Matrix and display units
-        labels = dataset.labels
+        labels = experiment.dataset.labels
         max_idx = (labels.size - 0.5)
         tics = "(#{labels.map.with_index { |class_name, idx| "\"#{class_name}\" #{idx}" }.join(', ')}) "
         create_graph(
-          "Confusion Matrix #{experiment_id}",
+          "Confusion Matrix #{experiment.exp_id}",
           palette: 'gray',
           xlabel: 'Predicted',
           ylabel: 'True',
@@ -68,15 +60,15 @@ module RubyNeuralNets
           xtics: tics,
           ytics: tics
         )
-        unless display_units.empty?
+        unless experiment.display_units.empty?
           # Change it to resolve the exact parameters selected
           # Array< [ Parameter, Array< Array< Integer >           > ] >
           # Array< [ parameter,        unit_indexes_per_graph_row   ] >
-          @experiments[experiment_id][:display_units] = display_units.map.with_index do |(name, nbr_units), idx_param|
+          @experiments[experiment.exp_id][:display_units] = experiment.display_units.map.with_index do |(name, nbr_units), idx_param|
             name = name.to_s if name.is_a?(Symbol)
-            found_param = @experiments[experiment_id][:model].parameters(name:).first
-            raise "Unable to find parameter #{name} for plotting. Parameters are #{@experiments[experiment_id][:model].parameters.map(&:name).join(', ')}" if found_param.nil?
-            create_graph("#{found_param.name} #{experiment_id}")
+            found_param = experiment.model.parameters(name:).first
+            raise "Unable to find parameter #{name} for plotting. Parameters are #{experiment.model.parameters.map(&:name).join(', ')}" if found_param.nil?
+            create_graph("#{found_param.name} #{experiment.exp_id}")
             units_step = found_param.shape[0].to_f / nbr_units
             units_to_plot = nbr_units.times.map { |idx_unit| Integer(idx_unit * units_step) }.uniq
             [
@@ -102,7 +94,7 @@ module RubyNeuralNets
     # Track the progress of a minibatch training
     #
     # Parameters::
-    # * *experiment_id* (String): The experiment ID to track progress for
+    # * *experiment* (Experiment): The experiment object to track progress for
     # * *idx_epoch* (Integer): Epoch's index
     # * *idx_minibatch* (Integer): Minibatch index
     # * *minibatch_x* (Object): Minibatch input that has just be forward propagated
@@ -110,46 +102,24 @@ module RubyNeuralNets
     # * *a* (Object): Minibatch prediction, result of the forward propagation
     # * *loss* (Object): Computed loss for the minibatch
     # * *minibatch_size* (Integer): Minibatch size
-    def progress(experiment_id, idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
+    def progress(experiment, idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
       cost = loss.mean.to_f
-      accuracy = @experiments[experiment_id][:accuracy].measure(a, minibatch_y, minibatch_size)
-      log "[Experiment #{experiment_id} - Epoch #{idx_epoch} - Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
+      accuracy = @experiments[experiment.exp_id][:experiment].accuracy.measure(a, minibatch_y, minibatch_size)
+      log "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}] [Minibatch #{idx_minibatch}] - Cost #{cost}, Training accuracy #{accuracy * 100}%"
 
       # Update graphs
       if @display_graphs
-        @experiments[experiment_id][:costs] << cost
-        # Plot all experiments' cost curves on the shared Cost graph with proper alignment
-        @graphs['Cost'].plot(
-          *@experiments.map do |exp_id, exp_data|
-            nbr_minibatches = exp_data[:dataset].size
-            [
-              (0..nbr_minibatches * idx_epoch + idx_minibatch).map { |i| i.to_f / nbr_minibatches },
-              exp_data[:costs],
-              with: 'lines',
-              title: exp_id.gsub('_', '\_')
-            ]
-          end
-        )
-        @experiments[experiment_id][:accuracies] << accuracy
-        # Plot all experiments' accuracy curves on the shared Accuracy graph with proper alignment
-        @graphs['Accuracy'].plot(
-          *@experiments.map do |exp_id, exp_data|
-            nbr_minibatches = exp_data[:dataset].size
-            [
-              (0..nbr_minibatches * idx_epoch + idx_minibatch).map { |i| i.to_f / nbr_minibatches },
-              exp_data[:accuracies],
-              with: 'lines',
-              title: exp_id.gsub('_', '\_')
-            ]
-          end
-        )
-        @graphs["Confusion Matrix #{experiment_id}"].plot(
-          @experiments[experiment_id][:accuracy].confusion_matrix(a, minibatch_y, minibatch_size),
+        @experiments[experiment.exp_id][:costs] << cost
+        graph_lines(@graphs['Cost'], :costs)
+        @experiments[experiment.exp_id][:accuracies] << accuracy
+        graph_lines(@graphs['Accuracy'], :accuracies)
+        @graphs["Confusion Matrix #{experiment.exp_id}"].plot(
+          @experiments[experiment.exp_id][:experiment].accuracy.confusion_matrix(a, minibatch_y, minibatch_size),
           with: 'image',
           title: ''
         )
-        unless @experiments[experiment_id][:display_units].nil?
-          @experiments[experiment_id][:display_units].each do |(param, row_indices)|
+        unless @experiments[experiment.exp_id][:display_units].nil?
+          @experiments[experiment.exp_id][:display_units].each do |(param, row_indices)|
             tensor_size = param.shape[1]
             values = param.values
             # Consider it to be RGB image if we can divide the number of input values by 3
@@ -180,7 +150,7 @@ module RubyNeuralNets
             end
             # Duplicate all channels in param_img to make it RGB
             param_img = param_img.concatenate(param_img, axis: 2).concatenate(param_img, axis: 2) if nbr_channels == 1
-            @graphs["#{param.name} #{experiment_id}"].plot(
+            @graphs["#{param.name} #{experiment.exp_id}"].plot(
               param_img.reverse(0),
               with: 'rgbimage',
               title: ''
@@ -214,6 +184,25 @@ module RubyNeuralNets
 
       # Store in @graphs hash using title as key
       @graphs[title] = graph
+    end
+
+    # Graph lines of a given measure for all experiments on a GnuPlot graph
+    #
+    # Parameters::
+    # * *gnuplot_graph* (Numo::Gnuplot): The GnuPlot graph to draw on
+    # * *measure* (Symbol): The measure to be graphed
+    def graph_lines(gnuplot_graph, measure)
+      gnuplot_graph.plot(
+        *@experiments.select { |exp_id, exp_data| !exp_data[measure].empty? }.map do |exp_id, exp_data|
+          nbr_minibatches = exp_data[:experiment].dataset.size
+          [
+            (0...exp_data[measure].size).map { |i| i.to_f / nbr_minibatches },
+            exp_data[measure],
+            with: 'lines',
+            title: exp_id.gsub('_', '\_')
+          ]
+        end
+      )
     end
 
   end

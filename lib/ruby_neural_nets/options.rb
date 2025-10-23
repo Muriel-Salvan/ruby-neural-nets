@@ -2,6 +2,10 @@ module RubyNeuralNets
   
   class Options
 
+    # Parsed experiments options
+    #   Array< Hash >
+    attr_reader :experiments
+
     # Constructor
     def initialize
       # Require all classes that can be selectable in the options
@@ -19,23 +23,131 @@ module RubyNeuralNets
           require "ruby_neural_nets/#{component_type}/#{base_name}" if arch.nil? || arch == RUBY_PLATFORM
         end
       end
+      # Keep the list of all kwargs from options are needed to instantiate an experiment.
+      @experiment_kwargs = default_experiment_options.keys
+      @experiments = []
       # Description of options, with their default values, per option name.
       # Options can be changed by CLI arguments.
-      # The description of an option is either its default value, or a Hash with more information:
-      # * *value* (Object): The default value of the option. Is the default property used when not specifying a Hash for the option.
-      # * *from* (Module): In the case values are classes, give the module containing the possible classes for the value.
-      # * *ancestor* (Class): In the case values are classes, give the ancestor possible classes for the value should have. Mandatory if :from is also specified.
-      # * *name* (String): In the case values are classes, give the default class name (when specifying name, value is not needed).
-      # * *desc* (String or Array<String>): Additional description of the option.
-      # * *format* (String): Description of the format of the parameter (defaults by guessing from value).
-      # * *multiple* (Boolean): Is this option allowed several times? Default to false. If true, then value will contain an array of the values given by CLI.
-      # * *parse* (Proc): Parser of the CLI string argument to the real value. Defaults by guessing from value.
-      #   * Parameters::
-      #     * *value_str* (String): The string value from CLI.
-      #   * Result::
-      #     * Object: The value to store in value.
-      # * *options* (Hash): Sub-options that are linked to this option. The structure is the same as the options object itself.
+      # See default_experiment_options doc for details about the structure.
       @options = {
+        debug: {
+          desc: 'Enable debug mode for verbose logging output.',
+          value: false
+        },
+        instability_checks: {
+          desc: [
+            'Possible values are:',
+            '* byebug: Open a byebug prompt for debugging.',
+            '* exception: Raise an exception.',
+            '* off: Turn off checks.',
+            '* warning: Display a warning.'
+          ],
+          value: :byebug
+        },
+        model_seed: {
+          desc: 'Random number generator seed for model initialization and parameters.',
+          value: 0
+        }
+      }
+      prepare_options_for_new_experiment
+    end
+
+    # Parse CLI arguments for options
+    def parse_cli
+      # Parse command-line options
+      require 'optparse'
+      OptionParser.new do |opts|
+        opts.banner = "Usage: run [options]"
+        opts.separator ''
+        opts.separator 'Global options:'
+        opts.on(
+          '-h', '--help',
+          'Display usage and exit'
+        ) do
+          puts opts
+          exit 0
+        end
+        opts.on(
+          '-e', '--experiment',
+          'Separate a new set of options defining another experiment to run'
+        ) do
+          capture_experiment
+        end
+        # Group all non experiment options in global options
+        @options.select { |option, _option_info| !@experiment_kwargs.include?(option) }.each do |option, option_info|
+          add_option(opts, option)
+        end
+        # Then document all options defining 1 experiment
+        opts.separator ''
+        opts.separator ''
+        # First the ones not specific to a class
+        opts.separator 'Experiment options (can be repeated and separated by --experiment several times):'
+        @options.select { |option, option_info| @experiment_kwargs.include?(option) && !option_info.key?(:known_classes) }.each do |option, option_info|
+          add_option(opts, option)
+        end
+        @options.select { |option, option_info| @experiment_kwargs.include?(option) && option_info.key?(:known_classes) }.each do |option, option_info|
+          opts.separator ''
+          opts.separator "Experiment options for #{option}:"
+          add_option(opts, option)
+        end
+      end.parse!
+      capture_experiment
+    end
+
+    # Return the value of an option
+    #
+    # Parameters::
+    # * *options* (Symbol or Array<Symbol>): The option to retrieve. Can be nested in the case of sub-options.
+    # Result::
+    # * Object: The corresponding value
+    def [](*options)
+      info(*options)[:value]
+    end
+
+    # Create a new instance of a class defined in the options, passing arguments and sub-options properly to the constructor.
+    #
+    # Parameters::
+    # * *option_info* (Hash): The option info having info about the class to instantiate.
+    # * *args* (Array): List of arguments to give the constructor.
+    # * *kwargs* (Array): List of kwargs to give the constructor. They will be completed with default ones from sub-options if any.
+    # Result::
+    # * Object: The corresponding instance
+    def instantiate(option_info, *args, **kwargs)
+      option_info[:value].new(
+        *args,
+        **option_info[:known_classes][option_info[:value]].to_h { |kwarg| [kwarg, option_info[:options][kwarg][:value]] }.merge(kwargs)
+      )
+    end
+
+    private
+
+    # Get the default experiment options
+    #
+    # Result::
+    # * Hash< Symbol, Object >: Description of options, with their default values, per option name.
+    #   The description of an option is either its default value, or a Hash with more information:
+    #   * *value* (Object): The default value of the option. Is the default property used when not specifying a Hash for the option.
+    #   * *from* (Module): In the case values are classes, give the module containing the possible classes for the value.
+    #   * *ancestor* (Class): In the case values are classes, give the ancestor possible classes for the value should have. Mandatory if :from is also specified.
+    #   * *name* (String): In the case values are classes, give the default class name (when specifying name, value is not needed).
+    #   * *desc* (String or Array<String>): Additional description of the option.
+    #   * *format* (String): Description of the format of the parameter (defaults by guessing from value).
+    #   * *multiple* (Boolean): Is this option allowed several times? Default to false. If true, then value will contain an array of the values given by CLI.
+    #   * *parse* (Proc): Parser of the CLI string argument to the real value. Defaults by guessing from value.
+    #     * Parameters::
+    #       * *value_str* (String): The string value from CLI.
+    #     * Result::
+    #       * Object: The value to store in value.
+    #   * *options* (Hash): Sub-options that are linked to this option. The structure is the same as the options object itself.
+    def default_experiment_options
+      {
+        exp_id: {
+          desc: [
+            'Define the experiment ID, useful if several experiments are run and need to be displayed.',
+            'In case of duplicates, _<idx> will be added as a suffix.'
+          ],
+          value: 'main'
+        },
         accuracy: {
           from: RubyNeuralNets::Accuracies,
           ancestor: RubyNeuralNets::Accuracy,
@@ -84,16 +196,6 @@ module RubyNeuralNets
           desc: 'Number of times to perform training of the model.',
           value: 1
         },
-        instability_checks: {
-          desc: [
-            'Possible values are:',
-            '* byebug: Open a byebug prompt for debugging.',
-            '* exception: Raise an exception.',
-            '* off: Turn off checks.',
-            '* warning: Display a warning.'
-          ],
-          value: :byebug
-        },
         gradient_checks: {
           desc: [
             'Possible values are:',
@@ -105,15 +207,6 @@ module RubyNeuralNets
           value: :exception
         },
         profiling: false,
-        debug: {
-          desc: 'Enable debug mode for verbose logging output.',
-          value: false
-        },
-        model_seed: {
-          desc: 'Random number generator seed for model initialization and parameters.',
-          value: 0
-        },
-
         track_layer: {
           desc: 'Specify a layer name to be tracked for a given number of hidden units.',
           format: 'string,integer',
@@ -122,64 +215,24 @@ module RubyNeuralNets
             layer_name, nbr_units_str = value_str.split(',')
             [layer_name.to_sym, Integer(nbr_units_str)]
           end
+        },
+        eval_dev: {
+          desc: 'Should we also evaluate the model on the dev dataset?',
+          value: true
         }
-      }.to_h { |option, option_info| [option, normalize_option_info(option_info)] }
+      }
     end
 
-    # Parse CLI arguments for options
-    def parse_cli
-      # Parse command-line options
-      require 'optparse'
-      OptionParser.new do |opts|
-        opts.banner = "Usage: run [options]"
-        opts.separator ''
-        opts.separator 'Global options:'
-        opts.on(
-          '-h', '--help',
-          'Display usage and exit'
-        ) do
-          puts opts
-          exit 0
-        end
-        # Group all non classes options in global options
-        @options.select { |_option, option_info| !option_info.key?(:known_classes) }.each do |option, option_info|
-          add_option(opts, option, option_info)
-        end
-        @options.select { |_option, option_info| option_info.key?(:known_classes) }.each do |option, option_info|
-          opts.separator ''
-          opts.separator "Options for #{option}:"
-          add_option(opts, option, option_info)
-        end
-      end.parse!
+    # Prepare options to receive new values for a new experiment
+    def prepare_options_for_new_experiment
+      @options = @options.merge(default_experiment_options).to_h { |option, option_info| [option, normalize_option_info(option_info)] }
     end
 
-    # Return the value of an option
-    #
-    # Parameters::
-    # * *options* (Symbol or Array<Symbol>): The option to retrieve. Can be nested in the case of sub-options.
-    # Result::
-    # * Object: The corresponding value
-    def [](*options)
-      info(*options)[:value]
+    # Capture parsed options into a new experiment, and reset options to their defaults to parse options for a new experiment
+    def capture_experiment
+      @experiments << @options.select { |option, _option_info| @experiment_kwargs.include?(option) }
+      prepare_options_for_new_experiment
     end
-
-    # Create a new instance of a class defined in the options, passing arguments and sub-options properly to the constructor.
-    #
-    # Parameters::
-    # * *options* (Symbol or Array<Symbol>): The option to retrieve. Can be nested in the case of sub-options.
-    # * *args* (Array): List of arguments to give the constructor.
-    # * *kwargs* (Array): List of kwargs to give the constructor. They will be completed with default ones from sub-options if any.
-    # Result::
-    # * Object: The corresponding instance
-    def instantiate(options, *args, **kwargs)
-      option_info = info(*options)
-      option_info[:value].new(
-        *args,
-        **option_info[:known_classes][option_info[:value]].to_h { |kwarg| [kwarg, self[*options, kwarg]] }.merge(kwargs)
-      )
-    end
-
-    private
 
     # Return an option info, selected from a list of option names (nested in case of sub-options).
     # For example: info(:model, :layers) will return @options[:model][:options][:layers]
@@ -202,14 +255,14 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *opts* (OptionsParser): The options parser to complete
-    # * *option* (Symbol): The option to add
-    # * *option_info* (Hash): The corresponding option information
-    def add_option(opts, option, option_info)
+    # * *options* (Symbol or Array<Symbol>): The option to retrieve. Can be nested in the case of sub-options.
+    def add_option(opts, *options)
+      option_info = info(*options)
       opts.on(
         *(
           [
-            "--#{option.to_s.gsub('_', '-')} #{option_info[:format].upcase.gsub(' ', '_')}",
-            "Specify the #{option} to use."
+            "--#{options.last.to_s.gsub('_', '-')} #{option_info[:format].upcase.gsub(' ', '_')}",
+            "Specify the #{options.last} to use."
           ] +
             option_info[:desc] +
             [
@@ -218,6 +271,7 @@ module RubyNeuralNets
             (option_info[:multiple] ? ['Can be used multiple times'] : ["Defaults to #{option_str(option_info[:value], option_info)}."])
         )
       ) do |value_str|
+        option_info = info(*options)
         value = option_info[:parse].call(value_str)
         if option_info[:multiple]
           option_info[:value] << value
@@ -226,7 +280,7 @@ module RubyNeuralNets
         end
       end
       option_info[:options].each do |sub_option, sub_option_info|
-        add_option(opts, sub_option, sub_option_info)
+        add_option(opts, *options, sub_option)
       end
     end
     

@@ -4,6 +4,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 ## Features
 
+- **Experiment Management**: Run multiple experiments with different configurations in a single command, each with unique IDs and separate progress tracking
 - **Layered Datasets**: Modular dataset processing framework with composable layers (partitioning, shuffling, caching, encoding, minibatching) enabling reusable features between Numo and PyTorch implementations
 - **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits using extensible data loader architecture
 - **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
@@ -107,6 +108,56 @@ The run will:
 - Evaluate final performance on the development set
 - Display a confusion matrix showing prediction accuracy per class
 
+### Running Multiple Experiments
+
+The framework supports running multiple experiments with different configurations in a single command using the `--experiment` flag. Each experiment can have its own unique configuration and will be tracked separately with its own progress visualization.
+
+#### Basic Multiple Experiments
+
+To run multiple experiments, separate them with the `--experiment` flag:
+
+```bash
+bundle exec ruby bin/run \
+  --exp-id=experiment1 --dataset=colors --model=OneLayer --optimizer=Constant \
+  --experiment \
+  --exp-id=experiment2 --dataset=numbers --model=NLayers --optimizer=Adam
+```
+
+This will run two separate experiments:
+- **experiment1**: OneLayer model on colors dataset with Constant optimizer
+- **experiment2**: NLayers model on numbers dataset with Adam optimizer
+
+#### Advanced Experiment Configuration
+
+Each experiment can have completely different configurations:
+
+```bash
+bundle exec ruby bin/run \
+  --exp-id=baseline --dataset=numbers --model=OneLayer --optimizer=Constant --nbr-epochs=50 \
+  --experiment \
+  --exp-id=optimized --dataset=numbers --model=NLayers --optimizer=Adam --learning-rate=0.01 --layers=100,50 \
+  --experiment \
+  --exp-id=comparison --dataset=colors --model=NLayers --optimizer=ExponentialDecay --decay=0.95
+```
+
+#### Experiment Features
+
+- **Unique IDs**: Each experiment gets a unique identifier (with automatic suffixing for duplicates)
+- **Separate Progress Tracking**: Each experiment has its own cost/accuracy curves and confusion matrices
+- **Multiple Training Runs**: Use `--training-times` to run the same experiment configuration multiple times
+- **Development Set Evaluation**: Each experiment can optionally evaluate on the development set using `--eval-dev`
+- **Parameter Tracking**: Use `--track-layer` to visualize specific layer parameters for each experiment
+
+#### Experiment Output
+
+When running multiple experiments, you'll see:
+- Combined progress display with experiment IDs: `[Epoch X] [Exp experiment1] [Minibatch Y] - Cost Z, Training accuracy W%`
+- Separate graphs for each experiment's cost, accuracy, and confusion matrix
+- Individual parameter visualizations when using `--track-layer`
+- Final evaluation results for each experiment
+
+This allows for easy comparison of different architectures, hyperparameters, and training strategies in a single run.
+
 ### Gradient Checking
 
 The framework includes built-in gradient checking to verify that analytical gradients match numerical approximations. This helps ensure the correctness of gradient computations. Gradient checking is enabled by default in the test script and will raise an exception if gradients are incorrect.
@@ -131,6 +182,7 @@ To use your own dataset:
 
 ### Code Structure
 
+- `lib/ruby_neural_nets/experiment.rb`: Experiment management system for running multiple configurations
 - `lib/ruby_neural_nets/logger.rb`: Logger mixin providing timestamped logging with lazy-evaluated debug messages
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
 - `lib/ruby_neural_nets/accuracies/`: Accuracy metric implementations (ClassesNumo, ClassesTorch)
@@ -166,7 +218,7 @@ This is a playground project for experimenting with neural networks in Ruby. Fee
 - Experiment with different datasets
 - Improve performance or add features
 
-## Findings
+## Findings and experiments
 
 ### One layer model on colors dataset
 
