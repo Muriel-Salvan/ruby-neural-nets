@@ -12,15 +12,17 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *learning_rate* (Float): Constant learning rate to apply while learning
+      # * *weight_decay* (Float): Weight decay (L2 regularization) coefficient
       # * *beta_1* (Float): Momentum weight [default: 0.9]
       # * *beta_2* (Float): RMS prop weight [default: 0.999]
       # * *epsilon* (Float): Stability correction [default: 0.00000001]
-      def initialize(learning_rate:, beta_1: 0.9, beta_2: 0.999, epsilon: 0.00000001)
+      def initialize(learning_rate:, weight_decay:, beta_1: 0.9, beta_2: 0.999, epsilon: 0.00000001)
+        super(weight_decay:)
         @learning_rate = learning_rate
         @beta_1 = beta_1
         @beta_2 = beta_2
         @epsilon = epsilon
-        log "learning_rate: #{@learning_rate}, beta_1: #{@beta_1}, beta_2: #{@beta_2}, epsilon: #{@epsilon}"
+        log "learning_rate: #{@learning_rate}, weight_decay: #{@weight_decay}, beta_1: #{@beta_1}, beta_2: #{@beta_2}, epsilon: #{@epsilon}"
       end
 
       # Teach a given set of parameters
@@ -29,14 +31,16 @@ module RubyNeuralNets
       # * *parameters* (Array<Parameter>): Model's parameters that need to be learned
       def teach_parameters(parameters)
         super
-        @torch_optim = ::Torch::Optim::Adam.new(parameters.map(&:torch_parameter), lr: @learning_rate, betas: [@beta_1, @beta_2], eps: @epsilon)
+        # PyTorch's Adam optimizer handles weight_decay scaling internally
+        @torch_optim = ::Torch::Optim::Adam.new(parameters.map(&:torch_parameter), lr: @learning_rate, weight_decay: @weight_decay, betas: [@beta_1, @beta_2], eps: @epsilon)
       end
 
       # Set the current minibatch being processed
       #
       # Parameters::
       # * *idx_minibatch* (Integer): The minibatch index being processed
-      def start_minibatch(idx_minibatch)
+      # * *minibatch_size* (Integer): The size of the current minibatch
+      def start_minibatch(idx_minibatch, minibatch_size)
         super
         @torch_optim.zero_grad
       end

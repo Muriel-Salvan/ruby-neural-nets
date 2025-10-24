@@ -7,6 +7,14 @@ module RubyNeuralNets
   class Optimizer
     include Logger
 
+    # Constructor
+    #
+    # Parameters::
+    # * *weight_decay* (Float): Weight decay (L2 regularization) coefficient
+    def initialize(weight_decay:)
+      @weight_decay = weight_decay
+    end
+
     # Teach a given set of parameters
     #
     # Parameters::
@@ -27,8 +35,10 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *idx_minibatch* (Integer): The minibatch index being processed
-    def start_minibatch(idx_minibatch)
+    # * *minibatch_size* (Integer): The size of the current minibatch
+    def start_minibatch(idx_minibatch, minibatch_size)
       @idx_minibatch = idx_minibatch
+      @minibatch_size = minibatch_size
     end
 
     # Handle a step after back-propogation
@@ -58,6 +68,19 @@ module RubyNeuralNets
       new_params = parameter.values - diff
       Helpers.check_instability(new_params)
       new_params
+    end
+
+    # Learn from back propagation and take weight decay into account.
+    #
+    # Parameters::
+    # * *parameter* (Parameter): Parameters to update
+    # * *dparams* (Numo::DFloat): Corresponding derivatives of those parameters from back propagation
+    # Result::
+    # * Numo::DFloat: New parameter values to take into account for next epoch
+    def learn_with_decay(parameter, dparams)
+      # Add weight decay to the gradient: dparams + (weight_decay / minibatch_size) * parameter
+      # The dparams are already averaged by minibatch_size in the model's gradient_descent method
+      learn(parameter, dparams + (@weight_decay / @minibatch_size) * parameter.values)
     end
 
   end

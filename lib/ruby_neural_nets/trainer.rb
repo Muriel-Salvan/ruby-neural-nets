@@ -40,7 +40,7 @@ module RubyNeuralNets
                 log "#{minibatch_log_prefix} Retrieved minibatch of size #{minibatch_size}"
                 debug { "#{minibatch_log_prefix} Minibatch X input: #{data_to_str(minibatch_x)}" }
                 debug { "#{minibatch_log_prefix} Minibatch Y reference: #{data_to_str(minibatch_y)}" }
-                experiment.optimizer.start_minibatch(idx_minibatch) if experiment.training_mode
+                experiment.optimizer.start_minibatch(idx_minibatch, minibatch_size) if experiment.training_mode
 
                 # Forward propagation
                 experiment.model.initialize_back_propagation_cache
@@ -57,7 +57,7 @@ module RubyNeuralNets
                 experiment.model.initialize_back_propagation_cache
 
                 # Compute the loss for the minibatch
-                loss = experiment.loss.compute_loss(a, minibatch_y)
+                loss = experiment.loss.compute_loss(a, minibatch_y, experiment.model)
                 debug { "#{minibatch_log_prefix} Loss computed: #{data_to_str(loss)}" }
 
                 # Display progress
@@ -68,7 +68,7 @@ module RubyNeuralNets
                   experiment.gradient_checker.check_gradients_for(idx_epoch, minibatch_x, minibatch_y) do
                     # Make sure gradient descent uses caches computed by the normal forward propagation
                     experiment.model.back_propagation_cache = back_propagation_cache
-                    experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch_y), a, minibatch_y, loss, minibatch_size)
+                    experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch_y, experiment.model), a, minibatch_y, loss, minibatch_size)
                   end
                   experiment.optimizer.step
                   debug do

@@ -58,7 +58,7 @@ module RubyNeuralNets
     # * *dparams* (Numo::DFloat): Corresponding derivatives of those parameters
     def learn(dparams)
       @dparams = dparams
-      @values = @optimizer.learn(self, dparams)
+      @values = @optimizer.learn_with_decay(self, dparams)
     end
     
   end

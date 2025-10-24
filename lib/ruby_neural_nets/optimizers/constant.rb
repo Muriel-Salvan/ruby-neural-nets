@@ -11,9 +11,11 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *learning_rate* (Float): Constant learning rate to apply while learning
-      def initialize(learning_rate:)
+      # * *weight_decay* (Float): Weight decay (L2 regularization) coefficient
+      def initialize(learning_rate:, weight_decay:)
+        super(weight_decay:)
         @learning_rate = learning_rate
-        log "learning_rate: #{@learning_rate}"
+        log "learning_rate: #{@learning_rate}, weight_decay: #{@weight_decay}"
       end
 
       # Adapt some parameters from their derivative and eventual optimization techniques.

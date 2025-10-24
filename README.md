@@ -30,6 +30,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits using extensible data loader architecture
 - **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
+- **Weight Decay (L2 Regularization)**: Built-in L2 regularization support across all optimizers to prevent overfitting and improve generalization
 - **Gradient Checking**: Built-in gradient checking to verify analytical gradients against numerical approximations, configurable to run every n epochs
 - **Profiling**: Optional epoch profiling with HTML reports generated using ruby-prof to analyze performance bottlenecks
 - **OpenBLAS Linear Algebra**: Fast matrix operations powered by OpenBLAS through numo-linalg for improved computational performance
@@ -88,7 +89,7 @@ This runs with default settings:
 
 - **`--optimizer`**: Choose optimization algorithm (Adam, Constant, ExponentialDecay, etc.)
   - Controls how model parameters are updated during training
-  - Use `--learning-rate` to set learning rate, `--decay` for decay-based optimizers
+  - Use `--learning-rate` to set learning rate, `--decay` for decay-based optimizers, `--weight-decay` for L2 regularization (default: 0.0)
 
 - **`--data-loader`**: Select data loading method (Numo, Torch)
   - Controls the dataset processing pipeline (partitioning, shuffling, caching, encoding, minibatching)

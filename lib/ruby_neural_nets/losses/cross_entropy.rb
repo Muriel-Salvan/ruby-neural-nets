@@ -13,9 +13,10 @@ module RubyNeuralNets
       # Parameters::
       # * *a* (Numo::DFloat): Tensor of predicted output
       # * *y* (Numo::DFloat): Tensor of real expected output
+      # * *model* (Model): The model
       # Result::
       # * Numo::DFloat: The corresponding loss
-      def compute_loss(a, y)
+      def compute_loss(a, y, model)
         - (y * Numo::DFloat::Math.log(a)).sum(axis: 0)
       end
 
@@ -25,9 +26,10 @@ module RubyNeuralNets
       # Parameters::
       # * *a* (Numo::DFloat): Tensor of predicted output
       # * *y* (Numo::DFloat): Tensor of real expected output
+      # * *model* (Model): The model
       # Result::
       # * Numo::DFloat: The corresponding loss gradient
-      def compute_loss_gradient(a, y)
+      def compute_loss_gradient(a, y, model)
         - y / a
       end
 

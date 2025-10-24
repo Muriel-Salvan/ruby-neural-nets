@@ -19,9 +19,10 @@ module RubyNeuralNets
       # Parameters::
       # * *a* (Object): Tensor of predicted output
       # * *y* (Object): Tensor of real expected output
+      # * *model* (Model): The model
       # Result::
       # * Object: The corresponding loss
-      def compute_loss(a, y)
+      def compute_loss(a, y, model)
         @criterion.call(a, y)
       end
 
@@ -31,9 +32,10 @@ module RubyNeuralNets
       # Parameters::
       # * *a* (Numo::DFloat): Tensor of predicted output
       # * *y* (Numo::DFloat): Tensor of real expected output
+      # * *model* (Model): The model
       # Result::
       # * Numo::DFloat: The corresponding loss gradient
-      def compute_loss_gradient(a, y)
+      def compute_loss_gradient(a, y, model)
         # Nothing to do here: PyTorch will handle it.
       end
 

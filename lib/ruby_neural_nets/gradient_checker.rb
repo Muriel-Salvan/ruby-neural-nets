@@ -54,9 +54,9 @@ module RubyNeuralNets
               value_original = parameter.values[idx_param]
               begin
                 parameter.values[idx_param] = value_original - gradient_checking_epsilon
-                cost_minus = @loss.compute_loss(@model.forward_propagate(minibatch_x), minibatch_y).sum / m
+                cost_minus = @loss.compute_loss(@model.forward_propagate(minibatch_x), minibatch_y, @model).sum / m
                 parameter.values[idx_param] = value_original + gradient_checking_epsilon
-                cost_plus = @loss.compute_loss(@model.forward_propagate(minibatch_x), minibatch_y).sum / m
+                cost_plus = @loss.compute_loss(@model.forward_propagate(minibatch_x), minibatch_y, @model).sum / m
                 (cost_plus - cost_minus) / (2 * gradient_checking_epsilon)
               ensure
                 parameter.values[idx_param] = value_original

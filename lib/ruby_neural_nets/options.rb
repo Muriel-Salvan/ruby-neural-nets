@@ -188,7 +188,8 @@ module RubyNeuralNets
           name: 'Adam',
           options: {
             decay: 0.9,
-            learning_rate: 0.001
+            learning_rate: 0.001,
+            weight_decay: 0.0
           }
         },
         nbr_epochs: 100,

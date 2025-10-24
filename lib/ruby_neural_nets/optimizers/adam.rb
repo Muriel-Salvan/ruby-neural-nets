@@ -11,15 +11,17 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *learning_rate* (Float): Constant learning rate to apply while learning
+      # * *weight_decay* (Float): Weight decay (L2 regularization) coefficient
       # * *beta_1* (Float): Momentum weight [default: 0.9]
       # * *beta_2* (Float): RMS prop weight [default: 0.999]
       # * *epsilon* (Float): Stability correction [default: 0.00000001]
-      def initialize(learning_rate:, beta_1: 0.9, beta_2: 0.999, epsilon: 0.00000001)
+      def initialize(learning_rate:, weight_decay:, beta_1: 0.9, beta_2: 0.999, epsilon: 0.00000001)
+        super(weight_decay:)
         @learning_rate = learning_rate
         @beta_1 = beta_1
         @beta_2 = beta_2
         @epsilon = epsilon
-        log "learning_rate: #{@learning_rate}, beta_1: #{@beta_1}, beta_2: #{@beta_2}, epsilon: #{@epsilon}"
+        log "learning_rate: #{@learning_rate}, weight_decay: #{@weight_decay}, beta_1: #{@beta_1}, beta_2: #{@beta_2}, epsilon: #{@epsilon}"
       end
 
       # Adapt some parameters from their derivative and eventual optimization techniques.

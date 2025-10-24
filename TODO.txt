@@ -1,4 +1,5 @@
 * Implement regularization as it appears dev accuracy is too low.
+* Implement data augmentation to reduce variance.
 * Glorot is supposed to be not great with ReLU. Try randn*sqrt(2/n[l-1])
 * Understand why PyTorch still differs from Numo implementation.
 * Use Keras or Torch and continue next steps in recognition using convolutional layers, transfer & multitask learning (C3W2), data augmentation, skip connections, RNNs...
