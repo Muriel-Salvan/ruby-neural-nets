@@ -17,7 +17,7 @@ module RubyNeuralNets
       # * y: The element Y of the dataset
       def [](index)
         file, y = @dataset[index]
-        [Magick::ImageList.new(file).first.export_pixels.map { |color| (color >> 8).to_f / 255.0 }, y]
+        [Magick::ImageList.new(file).first, y]
       end
 
       # Get some images stats.

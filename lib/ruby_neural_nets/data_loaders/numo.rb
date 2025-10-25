@@ -2,6 +2,7 @@ require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
 require 'ruby_neural_nets/datasets/images_from_files'
+require 'ruby_neural_nets/datasets/image_normalize'
 require 'ruby_neural_nets/datasets/one_hot_encoder'
 require 'ruby_neural_nets/datasets/cache_memory'
 require 'ruby_neural_nets/datasets/epoch_shuffler'
@@ -40,7 +41,9 @@ module RubyNeuralNets
           Datasets::EpochShuffler.new(
             Datasets::CacheMemory.new(
               Datasets::OneHotEncoder.new(
-                Datasets::ImagesFromFiles.new(dataset)
+                Datasets::ImageNormalize.new(
+                  Datasets::ImagesFromFiles.new(dataset)
+                )
               )
             ),
             rng:
