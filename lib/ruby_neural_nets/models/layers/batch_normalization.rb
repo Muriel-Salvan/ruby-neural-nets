@@ -34,9 +34,10 @@ module RubyNeuralNets
         #
         # Parameters::
         # * *input* (Numo::DFloat): The input [n_x, m]
+        # * *train* (Boolean): Are we in training mode?
         # Result::
         # * Numo::DFloat: The corresponding layer output
-        def forward_propagate(input)
+        def forward_propagate(input, train)
           back_propagation_cache[:input] = input
           mean = input.mean(axis: 1, keepdims: true)
           back_propagation_cache[:mean] = mean

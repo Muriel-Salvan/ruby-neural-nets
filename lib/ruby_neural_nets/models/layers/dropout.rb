@@ -1,5 +1,4 @@
 require 'numo/narray'
-require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/models/activation_layer'
 
 module RubyNeuralNets
@@ -8,8 +7,16 @@ module RubyNeuralNets
 
     module Layers
 
-      # Simple softmax layer
-      class Softmax < ActivationLayer
+      # Dropout layer to prevent overfitting
+      class Dropout < ActivationLayer
+
+        # Constructor
+        #
+        # Parameters::
+        # * *rate* (Float): Dropout rate (fraction of units to drop) [default: 0.5]
+        def initialize(rate: 0.5)
+          @rate = rate
+        end
 
         # Forward propagate an input through this layer
         #
@@ -19,27 +26,26 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input, train)
-          output = Helpers.softmax(input)
-          back_propagation_cache[:output] = output
-          Helpers.check_instability(output, types: %i[not_finite zero one])
-          output
+          back_propagation_cache[:input] = input
+          if train
+            # Create dropout mask
+            mask = (Numo::DFloat.new(input.shape).rand > @rate)
+            back_propagation_cache[:mask] = mask
+            # Apply dropout and scale
+            input * mask / (1 - @rate)
+          else
+            input
+          end
         end
 
         # Backward propagate an input da (coming from next layers) through this layer.
-        # Some examples of the purpose of this function:
-        # * da * g'(z) in the case of an activation layer using a function g.
-        # * W.transpose.dot(da) in the case of a dense layer.
-        # Learning and optiomization can be called on eventual parameters by calling w = learn(w, dw).
         #
         # Parameters::
         # * *da* (Numo::DFloat): The input da coming from the next layers
         # Result::
         # * Numo::DFloat: The corresponding layer output da
         def backward_propagate(da)
-          # Computes dz = J^T * da where J is the softmax Jacobian.
-          a = back_propagation_cache[:output]
-          sum_term = (a * da).sum(axis: 0)
-          a * da - a * sum_term
+          da * back_propagation_cache[:mask] / (1 - @rate)
         end
 
       end

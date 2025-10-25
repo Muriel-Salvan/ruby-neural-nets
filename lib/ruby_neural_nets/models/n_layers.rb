@@ -3,6 +3,7 @@ require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/model'
 require 'ruby_neural_nets/models/layers/batch_normalization'
 require 'ruby_neural_nets/models/layers/dense'
+require 'ruby_neural_nets/models/layers/dropout'
 require 'ruby_neural_nets/models/layers/leaky_relu'
 require 'ruby_neural_nets/models/layers/softmax'
 
@@ -20,18 +21,21 @@ module RubyNeuralNets
       # * *channels* (Integer): Number of channels per image
       # * *nbr_classes* (Integer): Number of classes to identify
       # * *layers* (Array<Integer>): List of hidden units per layer before the last one
-      def initialize(rows, cols, channels, nbr_classes, layers:)
+      # * *dropout_rate* (Float): Dropout rate for regularization
+      def initialize(rows, cols, channels, nbr_classes, layers:, dropout_rate:)
         super(rows, cols, channels, nbr_classes)
         @n_x = rows * cols * channels
         # Define a simple neural net with layers densily connected with sigmoid activation + 1 softmax layer to classify at the end
         @layers = []
         layers.each do |nbr_units|
           self << Layers::Dense.new(nbr_units:, use_bias: false)
+          self << Layers::Dropout.new(rate: dropout_rate)
           self << Layers::BatchNormalization.new
           self << Layers::LeakyRelu.new
         end
         # To mimick the OneLayer model, set use_bias at true and remove the BatchNormalization layer.
         self << Layers::Dense.new(nbr_units: nbr_classes, use_bias: false)
+        self << Layers::Dropout.new(rate: dropout_rate)
         self << Layers::BatchNormalization.new
         self << Layers::Softmax.new
       end
@@ -69,7 +73,7 @@ module RubyNeuralNets
         a = x
         @layers.each do |layer|
           n_x = a.shape[0]
-          a = layer.forward_propagate(a)
+          a = layer.forward_propagate(a, train)
           debug { "Forward propagate #{n_x} => #{layer.class.name.split('::').last} => #{a.shape[0]}." }
           debug { "=> Output data: #{data_to_str(a)}" }
           Helpers.check_instability(a)

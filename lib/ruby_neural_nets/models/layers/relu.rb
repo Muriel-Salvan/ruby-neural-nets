@@ -14,9 +14,10 @@ module RubyNeuralNets
         #
         # Parameters::
         # * *input* (Numo::DFloat): The input
+        # * *train* (Boolean): Are we in training mode?
         # Result::
         # * Numo::DFloat: The corresponding layer output
-        def forward_propagate(input)
+        def forward_propagate(input, train)
           back_propagation_cache[:input] = input
           input.clip(0, nil)
         end

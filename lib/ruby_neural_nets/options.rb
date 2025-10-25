@@ -187,7 +187,11 @@ module RubyNeuralNets
           ancestor: RubyNeuralNets::Model,
           name: 'OneLayer',
           options: {
-            layers: [100]
+            layers: [100],
+            dropout_rate: {
+              desc: 'Dropout rate for regularization.',
+              value: 0.0
+            }
           }
         },
         optimizer: {

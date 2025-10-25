@@ -30,7 +30,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **Layered Datasets**: Modular dataset processing framework with composable layers (partitioning, shuffling, caching, encoding, minibatching) enabling reusable features between Numo and PyTorch implementations
 - **Data Augmentation**: Built-in data augmentation capabilities with Clone and ImageTransform layers for expanding datasets through duplication and random transformations
 - **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits using extensible data loader architecture
-- **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
+- **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, Dropout, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
 - **Weight Decay (L2 Regularization)**: Built-in L2 regularization support across all optimizers to prevent overfitting and improve generalization
 - **Gradient Checking**: Built-in gradient checking to verify analytical gradients against numerical approximations, configurable to run every n epochs
@@ -135,6 +135,11 @@ This runs with default settings:
   - Format: `--track-layer layer_name,num_units`
   - Example: `--track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10`
   - Useful for visualizing parameter evolution in specific layers during training
+
+- **`--dropout-rate`**: Dropout rate for regularization in NLayers model (float, default: 0.0)
+  - Controls the fraction of units to drop during training to prevent overfitting
+  - Use values between 0.0 (no dropout) and 1.0 (drop all units)
+  - Example: `--dropout-rate 0.5` drops 50% of units randomly during training
 
 The run will:
 - Load the specified dataset and display statistics
@@ -277,7 +282,7 @@ This configuration will:
 - `lib/ruby_neural_nets/losses/`: Loss function implementations (CrossEntropy, CrossEntropyTorch)
 - `lib/ruby_neural_nets/model.rb`: Base model class for neural networks
 - `lib/ruby_neural_nets/models/`: Specific model implementations (OneLayer, NLayers, NLayersTorch)
-  - `lib/ruby_neural_nets/models/layers/`: Individual neural network layers (Dense, BatchNormalization, ReLU, Sigmoid, Softmax, Tanh, LeakyReLU)
+  - `lib/ruby_neural_nets/models/layers/`: Individual neural network layers (Dense, BatchNormalization, Dropout, ReLU, Sigmoid, Softmax, Tanh, LeakyReLU)
   - `lib/ruby_neural_nets/models/activation_layer.rb`: Activation layer implementation
   - `lib/ruby_neural_nets/models/layer.rb`: Base layer class
 - `lib/ruby_neural_nets/optimizer.rb`: Base optimizer class
