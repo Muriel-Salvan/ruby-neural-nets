@@ -7,6 +7,10 @@ module RubyNeuralNets
     # Dataset encoding labels as one-hot vectors
     class OneHotEncoder < Wrapper
 
+      # Get the mapping of labels to one-hot vectors
+      #   Hash< String, Array< Integer > >
+      attr_reader :one_hot_labels
+
       # Constructor
       #
       # Parameters::

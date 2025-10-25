@@ -48,6 +48,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 1. **Ruby**: Ensure Ruby is installed on your system
 2. **ImageMagick**: Download and install ImageMagick from [https://imagemagick.org/script/download.php](https://imagemagick.org/script/download.php)
    - Make sure to include DLL and C/C++ headers during installation
+   - Use the Q16-x64-dll.exe version, not the HDRI or static version (details [https://github.com/rmagick/rmagick?tab=readme-ov-file#windows](here)).
 3. **Bundler**: Install Bundler if not already available: `gem install bundler`
 
 ### Setup
