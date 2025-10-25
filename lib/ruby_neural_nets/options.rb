@@ -166,6 +166,14 @@ module RubyNeuralNets
             dataset_seed: {
               desc: 'Random number generator seed for dataset shuffling and data order.',
               value: 0
+            },
+            nbr_clones: {
+              desc: 'Number of times each element should be cloned in the Clone dataset wrapper layer.',
+              value: 1
+            },
+            rot_angle: {
+              desc: 'Maximum rotation angle in degrees for random image transformations (rotation between -angle and +angle).',
+              value: 0
             }
           }
         },

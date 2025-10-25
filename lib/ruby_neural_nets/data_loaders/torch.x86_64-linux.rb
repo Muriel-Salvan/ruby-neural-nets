@@ -7,7 +7,7 @@ require 'ruby_neural_nets/datasets/labeled_torch_images'
 require 'ruby_neural_nets/datasets/minibatch_torch'
 
 module RubyNeuralNets
-  
+
   module DataLoaders
 
     class Torch < DataLoader

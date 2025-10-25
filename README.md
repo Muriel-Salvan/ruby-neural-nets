@@ -12,6 +12,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - [Gradient Checking](#gradient-checking)
 - [Datasets](#datasets)
 - [Creating Custom Datasets](#creating-custom-datasets)
+- [Data Augmentation](#data-augmentation)
 - [Code Structure](#code-structure)
 - [Contributing](#contributing)
 - [Findings and experiments](#findings-and-experiments)
@@ -27,6 +28,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 - **Experiment Management**: Run multiple experiments with different configurations in a single command, each with unique IDs and separate progress tracking
 - **Layered Datasets**: Modular dataset processing framework with composable layers (partitioning, shuffling, caching, encoding, minibatching) enabling reusable features between Numo and PyTorch implementations
+- **Data Augmentation**: Built-in data augmentation capabilities with Clone and ImageTransform layers for expanding datasets through duplication and random transformations
 - **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits using extensible data loader architecture
 - **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
@@ -117,6 +119,16 @@ This runs with default settings:
   - Controls the randomness in dataset shuffling and data ordering
   - Use specific seeds for reproducible data loading and shuffling across runs
 
+- **`--nbr-clones`**: Number of times each element should be cloned in the Clone dataset wrapper layer (integer, default: 1)
+  - Controls data augmentation through sample duplication
+  - Use values > 1 to expand dataset size by duplicating each sample multiple times
+  - Useful for balancing datasets or increasing training data volume
+
+- **`--rot-angle`**: Maximum rotation angle in degrees for random image transformations (integer, default: 0)
+  - Controls random rotation data augmentation (rotation between -angle and +angle)
+  - Use values > 0 to enable random image rotations during training
+  - Helps improve model robustness to image orientation variations
+
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
   - Format: `--track-layer layer_name,num_units`
@@ -201,6 +213,51 @@ To use your own dataset:
 2. Organize images in subdirectories named after their classes
 3. Ensure all images are in PNG format
 4. Instantiate the dataset in your code: `RubyNeuralNets::Dataset.new('your_dataset_name')`
+
+### Data Augmentation
+
+The framework includes built-in data augmentation capabilities through composable dataset wrapper layers. These layers can be configured via command-line options and are automatically applied to the Numo data loader pipeline.
+
+#### Available Augmentation Layers
+
+**Clone Layer** (`--nbr-clones`)
+- Duplicates each dataset element multiple times
+- Useful for expanding small datasets or balancing class distributions
+- Example: `--nbr-clones 3` triples the dataset size by duplicating each sample 3 times
+
+**ImageTransform Layer** (`--rot-angle`)
+- Applies random image transformations using ImageMagick
+- Currently supports random rotation between `-angle` and `+angle` degrees
+- Automatically crops rotated images back to original dimensions, centered
+- Example: `--rot-angle 45` enables random rotations up to 45 degrees in either direction
+- Helps improve model robustness to image orientation variations
+
+#### Data Augmentation Pipeline
+
+The augmentation layers are applied in the following order in the Numo data loader:
+1. **ImagesFromFiles**: Load images from disk as ImageMagick objects
+2. **Clone**: Duplicate samples (if `--nbr-clones > 1`)
+3. **ImageTransform**: Apply random transformations and crop back to original dimensions (if `--rot-angle > 0`)
+4. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
+5. **OneHotEncoder**: Convert labels to one-hot encoding
+6. **CacheMemory**: Cache processed data in memory
+7. **EpochShuffler**: Shuffle data between epochs
+8. **Minibatch**: Group data into minibatches
+
+#### Example Usage
+
+```bash
+# Basic data augmentation
+bundle exec ruby bin/run --dataset=numbers --nbr-clones 2 --rot-angle 30
+
+# Aggressive augmentation for small datasets
+bundle exec ruby bin/run --dataset=colors --nbr-clones 5 --rot-angle 90
+```
+
+This configuration will:
+- Load each image 5 times (once original + 4 duplicates)
+- Apply random rotation between -90° and +90° to each image
+- Result in a 5x larger dataset with varied image orientations
 
 ### Code Structure
 
