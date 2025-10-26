@@ -9,8 +9,12 @@ module RubyNeuralNets
     class CrossEntropyTorch < Loss
 
       # Constructor
-      def initialize
-        super
+      #
+      # Parameters::
+      # * *weight_decay* (Float): Weight decay (L2 regularization) coefficient [default: 0.0]
+      def initialize(weight_decay: 0.0)
+        super()
+        @weight_decay = weight_decay
         @criterion = ::Torch::NN::CrossEntropyLoss.new
       end
 
@@ -23,7 +27,9 @@ module RubyNeuralNets
       # Result::
       # * Object: The corresponding loss
       def compute_loss(a, y, model)
-        @criterion.call(a, y)
+        # Add L2 regularization term if weight decay is configured
+        @criterion.call(a, y) +
+          0.5 * @weight_decay * model.parameters.sum { |param| (param.values ** 2).sum }
       end
 
       # Compute the loss gradient from a predicted output and a real one.
@@ -36,7 +42,8 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: The corresponding loss gradient
       def compute_loss_gradient(a, y, model)
-        # Nothing to do here: PyTorch will handle it.
+        # Nothing to do here: PyTorch will handle the cross-entropy gradient.
+        # L2 regularization gradient is handled by the optimizer.
       end
 
     end

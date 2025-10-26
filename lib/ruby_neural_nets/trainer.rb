@@ -33,8 +33,8 @@ module RubyNeuralNets
       training_experiments = experiments.select(&:training_mode)
       dev_experiments = experiments.reject(&:training_mode)
 
-      # Track dev accuracies per epoch
-      dev_accuracies = {}
+      # Track dev losses per epoch
+      dev_losses = {}
 
       # Track early stopping state per training experiment
       early_stopping_state = {}
@@ -42,7 +42,8 @@ module RubyNeuralNets
       max_epochs.times do |idx_epoch|
         # Evaluate on dev experiments first
         dev_experiments.each do |dev_exp|
-          dev_accuracies[dev_exp.exp_id] = process_experiment(dev_exp, idx_epoch, false)
+          result = process_experiment(dev_exp, idx_epoch, false)
+          dev_losses[dev_exp.exp_id] = result[:loss] if result
         end
 
         # Train on training experiments
@@ -51,22 +52,23 @@ module RubyNeuralNets
 
           # Check early stopping for this training experiment
           if training_exp.dev_experiment
-            dev_accuracy = dev_accuracies[training_exp.dev_experiment.exp_id]
-            if dev_accuracy
-              state = early_stopping_state[training_exp.exp_id] ||= { best_accuracy: 0.0, epochs_without_improvement: 0, early_stopping_reached: false }
+            dev_loss = dev_losses[training_exp.dev_experiment.exp_id]
+            if dev_loss
+              state = early_stopping_state[training_exp.exp_id] ||= { best_loss: Float::INFINITY, epochs_without_improvement: 0, early_stopping_reached: false }
               unless state[:early_stopping_reached]
-                if dev_accuracy > state[:best_accuracy]
-                  state[:best_accuracy] = dev_accuracy
+                if dev_loss < state[:best_loss]
+                  state[:best_loss] = dev_loss
                   state[:epochs_without_improvement] = 0
-                  log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] New best dev accuracy: #{dev_accuracy * 100}%"
+                  log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] New best dev loss: #{dev_loss}"
                 else
                   state[:epochs_without_improvement] += 1
-                  log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] No improvement in dev accuracy for #{state[:epochs_without_improvement]} epochs"
+                  log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] No improvement in dev loss for #{state[:epochs_without_improvement]} epochs"
                 end
 
                 if state[:epochs_without_improvement] >= @early_stopping_patience
                   log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] Early stopping reached at epoch #{idx_epoch}"
                   @progress_tracker.notify_early_stopping(training_exp, idx_epoch)
+                  @progress_tracker.notify_early_stopping(training_exp.dev_experiment, idx_epoch)
                   # Stop tracking early stopping for this experiment
                   state[:early_stopping_reached] = true
                 end
@@ -86,9 +88,9 @@ module RubyNeuralNets
     # * *idx_epoch* (Integer): Current epoch index
     # * *is_training* (Boolean): Whether to perform training or evaluation
     # Result::
-    # * Float or nil: The average accuracy for the epoch (if applicable)
+    # * Hash or nil: Hash with :loss and :accuracy keys, or nil if not applicable
     def process_experiment(experiment, idx_epoch, is_training)
-      average_accuracy = nil
+      result = nil
       if idx_epoch < experiment.nbr_epochs
         experiment.profiler.profile(idx_epoch) do
           log_prefix = "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}]"
@@ -96,6 +98,7 @@ module RubyNeuralNets
           experiment.optimizer.start_epoch(idx_epoch) if is_training
           experiment.dataset.prepare_for_epoch
           idx_minibatch = 0
+          total_loss = 0.0
           total_accuracy = 0.0
           total_size = 0
           experiment.dataset.each do |minibatch_x, (minibatch_y, minibatch_size)|
@@ -119,7 +122,7 @@ module RubyNeuralNets
             # Make sure other processing like gradient checking won't modify the cache again
             experiment.model.initialize_back_propagation_cache
 
-            # Compute the loss for the minibatch
+            # Compute the loss for the minibatch (including L2 regularization if applicable)
             loss = experiment.loss.compute_loss(a, minibatch_y, experiment.model)
             debug { "#{minibatch_log_prefix} Loss computed: #{data_to_str(loss)}" }
 
@@ -128,7 +131,7 @@ module RubyNeuralNets
 
             # Back propagation and gradient descent if training
             if is_training
-              experiment.gradient_checker.check_gradients_for(idx_epoch, minibatch_x, minibatch_y) do
+              experiment.gradient_checker.check_gradients_for(idx_epoch, minibatch_x, minibatch_y, minibatch_size) do
                 # Make sure gradient descent uses caches computed by the normal forward propagation
                 experiment.model.back_propagation_cache = back_propagation_cache
                 experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch_y, experiment.model), a, minibatch_y, loss, minibatch_size)
@@ -141,16 +144,20 @@ module RubyNeuralNets
                 EO_Debug
               end
             end
-            # Accumulate accuracy for evaluation
+
+            # Accumulate loss and accuracy for evaluation
+            total_loss += loss.mean * minibatch_size
             accuracy = experiment.accuracy.measure(a, minibatch_y, minibatch_size)
             total_accuracy += accuracy * minibatch_size
             total_size += minibatch_size
             idx_minibatch += 1
           end
+          average_loss = total_loss / total_size
           average_accuracy = total_accuracy / total_size
+          result = { loss: average_loss, accuracy: average_accuracy }
         end
       end
-      average_accuracy
+      result
     end
 
   end

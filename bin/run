@@ -74,7 +74,7 @@ options.experiments.each do |exp_info|
 
     # Define the accuracy measure and loss
     accuracy = options.instantiate(exp_info[:accuracy])
-    loss = options.instantiate(exp_info[:loss])
+    loss = options.instantiate(exp_info[:loss], weight_decay: exp_info[:optimizer][:options][:weight_decay][:value])
 
     optimizer = options.instantiate(exp_info[:optimizer])
     optimizer.teach_parameters(model.parameters)

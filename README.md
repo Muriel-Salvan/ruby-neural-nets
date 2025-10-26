@@ -142,8 +142,8 @@ This runs with default settings:
   - Use values between 0.0 (no dropout) and 1.0 (drop all units)
   - Example: `--dropout-rate 0.5` drops 50% of units randomly during training
 
-- **`--early-stopping-patience`**: Number of epochs to wait for development set accuracy improvement before notifying early stopping (integer, default: 10)
-  - Monitors development set accuracy and notifies when no improvement occurs for the specified number of epochs
+- **`--early-stopping-patience`**: Number of epochs to wait for development set loss improvement before notifying early stopping (integer, default: 10)
+  - Monitors development set loss (including L2 regularization) and notifies when no improvement occurs for the specified number of epochs
   - Training continues, but a red circle marker is placed on the graphs at the early stopping epoch
   - Use `--eval-dev` to enable development set evaluation (required for early stopping)
   - Example: `--early-stopping-patience 5` will notify early stopping after 5 epochs without improvement
@@ -400,6 +400,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 * When adding visualizations of the hidden layer units (for example using `--track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10` from [C]), we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster, however adding more units on the first layer increases accuracy while creating variance.
 
 ![Parameters Visualization](docs/n_layers_numbers/parameters_visualization.png)
+* When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
 
 ### N layer model using PyTorch
 

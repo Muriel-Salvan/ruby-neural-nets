@@ -36,13 +36,18 @@ module RubyNeuralNets
     # * *idx_epoch* (Integer): Index of the epoch for which we perform gradient checking
     # * *minibatch_x* (Numo::DFloat): The input minibatch
     # * *minibatch_y* (Numo::DFloat): The reference minibatch
+    # * *minibatch_size* (Integer): The size of the current minibatch
     # * Code: Code called to perform gradient descent on the model
-    def check_gradients_for(idx_epoch, minibatch_x, minibatch_y)
+    def check_gradients_for(idx_epoch, minibatch_x, minibatch_y, minibatch_size)
       # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
       gradient_checking_epsilon = 1e-7
       d_theta_approx = nil
       parameters = nil
-      perform_gradient_checking = @gradient_checks != :off && idx_epoch % @gradient_checks_epochs_interval == 0
+      perform_gradient_checking = @gradient_checks != :off &&
+        idx_epoch % @gradient_checks_epochs_interval == 0 &&
+        # Skip gradient checking if L2 regularization is used (they don't work well together)
+        (!@loss.respond_to?(:weight_decay) || @loss.weight_decay == 0)
+
       if perform_gradient_checking
         m = minibatch_x.shape[1]
         parameters = @model.parameters
