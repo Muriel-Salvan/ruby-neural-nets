@@ -19,6 +19,7 @@ module RubyNeuralNets
       profiler
       training_mode
       display_units
+      dev_experiment
     ],
     keyword_init: true
   )

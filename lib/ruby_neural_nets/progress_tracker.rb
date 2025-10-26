@@ -34,7 +34,8 @@ module RubyNeuralNets
     # * *experiment* (Experiment): The experiment object to track progress for
     def track(experiment)
       @experiments[experiment.exp_id] = {
-        experiment: experiment
+        experiment: experiment,
+        early_stopping_epoch: nil
       }
       # Initialize graphs
       if @display_graphs
@@ -89,6 +90,16 @@ module RubyNeuralNets
           Thread.new { gnuplot_graph.pause 'mouse close' }
         end.each(&:join)
       end
+    end
+
+    # Notify that early stopping has occurred for a training experiment
+    #
+    # Parameters::
+    # * *training_experiment* (Experiment): The training experiment that reached early stopping
+    # * *epoch* (Integer): The epoch at which early stopping occurred
+    def notify_early_stopping(training_experiment, epoch)
+      @experiments[training_experiment.exp_id][:early_stopping_epoch] = epoch
+      log "Early stopping notified for [Exp #{training_experiment.exp_id}] at epoch #{epoch}"
     end
 
     # Track the progress of a minibatch training
@@ -192,17 +203,19 @@ module RubyNeuralNets
     # * *gnuplot_graph* (Numo::Gnuplot): The GnuPlot graph to draw on
     # * *measure* (Symbol): The measure to be graphed
     def graph_lines(gnuplot_graph, measure)
-      gnuplot_graph.plot(
-        *@experiments.select { |exp_id, exp_data| !exp_data[measure].empty? }.map do |exp_id, exp_data|
-          nbr_minibatches = exp_data[:experiment].dataset.size
-          [
-            (0...exp_data[measure].size).map { |i| i.to_f / nbr_minibatches },
-            exp_data[measure],
-            with: 'lines',
-            title: exp_id.gsub('_', '\_')
-          ]
-        end
-      )
+      plot_data = []
+      @experiments.select { |exp_id, exp_data| !exp_data[measure].empty? }.each do |exp_id, exp_data|
+        nbr_minibatches = exp_data[:experiment].dataset.size
+        x_values = (0...exp_data[measure].size).map { |i| i.to_f / nbr_minibatches }
+        y_values = exp_data[measure]
+
+        # Add line plot
+        plot_data << [x_values, y_values, with: 'lines', title: exp_id.gsub('_', '\_')]
+
+        # Add point for early stopping if applicable
+        plot_data << [[x_values[exp_data[:early_stopping_epoch]]], [y_values[exp_data[:early_stopping_epoch]]], with: 'points pt 7 ps 1 lc rgb "red"', title: ''] if exp_data[:early_stopping_epoch] && exp_data[:early_stopping_epoch] < x_values.size
+      end
+      gnuplot_graph.plot(*plot_data)
     end
 
   end

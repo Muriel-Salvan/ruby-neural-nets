@@ -85,8 +85,9 @@ options.experiments.each do |exp_info|
 
     # Create the experiments
     # First the dev one that will be used before parameters are being trained, so that curves of the same X coordinate in graphs match models with the same parameters.
+    dev_experiment = nil
     if exp_info[:eval_dev][:value]
-      experiments << RubyNeuralNets::Experiment.new(
+      dev_experiment = RubyNeuralNets::Experiment.new(
         exp_id: unique_experiment_id("#{exp_info[:exp_id][:value]}_dev", experiments),
         dataset: data_loader.dataset(:dev),
         training_mode: false,
@@ -95,11 +96,13 @@ options.experiments.each do |exp_info|
         loss:,
         model:,
         optimizer:,
-        nbr_epochs: ,
+        nbr_epochs:,
         gradient_checker:,
         profiler:,
-        display_units: {}
+        display_units: {},
+        dev_experiment: nil
       )
+      experiments << dev_experiment
     end
     experiments << RubyNeuralNets::Experiment.new(
       exp_id: unique_experiment_id("#{exp_info[:exp_id][:value]}_training", experiments),
@@ -110,10 +113,11 @@ options.experiments.each do |exp_info|
       loss:,
       model:,
       optimizer:,
-      nbr_epochs: ,
+      nbr_epochs:,
       gradient_checker:,
       profiler:,
-      display_units: exp_info[:track_layer][:value].to_h
+      display_units: exp_info[:track_layer][:value].to_h,
+      dev_experiment: dev_experiment
     )
   end
 end
@@ -122,7 +126,7 @@ end
 experiments.each { |experiment| progress_tracker.track(experiment) }
 
 require 'ruby_neural_nets/trainer'
-RubyNeuralNets::Trainer.new(progress_tracker:).train(experiments)
+RubyNeuralNets::Trainer.new(progress_tracker:, early_stopping_patience: options[:early_stopping_patience]).train(experiments)
 
 # Close graphs
 progress_tracker.close_graphs

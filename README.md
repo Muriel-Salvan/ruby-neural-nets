@@ -40,6 +40,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **Named Parameters**: Parameters include names for better identification and visualization
 - **Logger Mixin**: Unified logging system with ISO8601 UTC timestamps and class name prefixes, supporting both regular and debug (lazy-evaluated) logging across all major components
 - **Extensible Architecture**: Modular design for easy addition of new models, optimizers, and loss functions
+- **Early Stopping**: Automatic early stopping based on development set accuracy to prevent overfitting, with configurable patience and visual markers on training graphs
 
 ## Installation
 
@@ -140,6 +141,12 @@ This runs with default settings:
   - Controls the fraction of units to drop during training to prevent overfitting
   - Use values between 0.0 (no dropout) and 1.0 (drop all units)
   - Example: `--dropout-rate 0.5` drops 50% of units randomly during training
+
+- **`--early-stopping-patience`**: Number of epochs to wait for development set accuracy improvement before notifying early stopping (integer, default: 10)
+  - Monitors development set accuracy and notifies when no improvement occurs for the specified number of epochs
+  - Training continues, but a red circle marker is placed on the graphs at the early stopping epoch
+  - Use `--eval-dev` to enable development set evaluation (required for early stopping)
+  - Example: `--early-stopping-patience 5` will notify early stopping after 5 epochs without improvement
 
 The run will:
 - Load the specified dataset and display statistics
