@@ -136,6 +136,11 @@ This runs with default settings:
   - Use to change image dimensions before training
   - Example: `--resize 64,64` resizes all images to 64x64 pixels
 
+- **`--noise-intensity`**: Intensity of Gaussian noise for random image transformations (float, default: 0)
+  - Controls the standard deviation of Gaussian noise added to images for data augmentation
+  - Use values > 0 to enable Gaussian noise data augmentation
+  - Example: `--noise-intensity 0.1` adds Gaussian noise with scaled standard deviation
+
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
   - Format: `--track-layer layer_name,num_units`
@@ -243,19 +248,19 @@ The framework includes built-in data augmentation capabilities through composabl
 - Useful for expanding small datasets or balancing class distributions
 - Example: `--nbr-clones 3` triples the dataset size by duplicating each sample 3 times
 
-**ImageTransform Layer** (`--rot-angle`, `--resize`)
+**ImageTransform Layer** (`--rot-angle`, `--resize`, `--noise-intensity`)
 - Applies random image transformations using ImageMagick
-- Supports random rotation between `-angle` and `+angle` degrees and resizing to specified dimensions
+- Supports random rotation between `-angle` and `+angle` degrees, resizing to specified dimensions, and adding Gaussian noise
 - Automatically crops transformed images back to target dimensions, centered
-- Example: `--rot-angle 45 --resize 64,64` enables random rotations up to 45 degrees and resizes to 64x64
-- Helps improve model robustness to image orientation and scale variations
+- Example: `--rot-angle 45 --resize 64,64 --noise-intensity 0.1` enables random rotations up to 45 degrees, resizes to 64x64, and adds Gaussian noise
+- Helps improve model robustness to image orientation, scale variations, and noise
 
 #### Data Augmentation Pipeline
 
 The augmentation layers are applied in the following order in the Numo data loader:
 1. **ImagesFromFiles**: Load images from disk as ImageMagick objects
 2. **Clone**: Duplicate samples (if `--nbr-clones > 1`)
-3. **ImageTransform**: Apply random transformations and crop back to target dimensions (if `--rot-angle > 0` or `--resize` specified)
+3. **ImageTransform**: Apply random transformations and crop back to target dimensions (if `--rot-angle > 0`, `--resize` specified, or `--noise-intensity > 0`)
 4. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
 5. **OneHotEncoder**: Convert labels to one-hot encoding
 6. **CacheMemory**: Cache processed data in memory
@@ -270,6 +275,9 @@ bundle exec ruby bin/run --dataset=numbers --nbr-clones 2 --rot-angle 30
 
 # Aggressive augmentation for small datasets
 bundle exec ruby bin/run --dataset=colors --nbr-clones 5 --rot-angle 90 --resize 64,64
+
+# Augmentation with noise for robustness
+bundle exec ruby bin/run --dataset=numbers --noise-intensity 0.1 --rot-angle 45
 ```
 
 This configuration will:
@@ -277,6 +285,11 @@ This configuration will:
 - Apply random rotation between -90° and +90° to each image
 - Resize all images to 64x64 pixels
 - Result in a 5x larger dataset with varied image orientations and sizes
+
+For the noise example:
+- Add Gaussian noise with intensity 0.1 to each image
+- Apply random rotation between -45° and +45°
+- Helps improve model robustness to noise and orientation variations
 
 ### Code Structure
 
@@ -413,7 +426,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
 * The Parameter-to-sample ratio rule can help estimating the desired complexity of the model. nbr_parameters / nbr_training_samples should be between 0.1 and 10. With the experiment [C], we have this ratio = (36300 * 100 + 100 + 100 + 100 * 10 + 10 + 10) / 593 = 6123. Clearly the model is far too complex.
-* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32`.
+* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32 --noise-intensity=0.1`.
 
 ### N layer model using PyTorch
 

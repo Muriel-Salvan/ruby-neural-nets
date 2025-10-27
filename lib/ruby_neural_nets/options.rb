@@ -184,6 +184,10 @@ module RubyNeuralNets
               value: [110, 110],
               format: 'integer,integer',
               parse: proc { |value_str| value_str.split(',').map { |dim_str| Integer(dim_str) } }
+            },
+            noise_intensity: {
+              desc: 'Intensity of Gaussian noise (standard deviation) for data augmentation.',
+              value: 0.0
             }
           }
         },
