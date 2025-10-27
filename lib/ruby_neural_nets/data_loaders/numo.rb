@@ -58,17 +58,17 @@ module RubyNeuralNets
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
             Datasets::CacheMemory.new(
-              Datasets::OneHotEncoder.new(
-                Datasets::ImageNormalize.new(
-                  Datasets::ImageTransform.new(
-                    Datasets::Clone.new(
-                      Datasets::ImagesFromFiles.new(dataset),
-                      nbr_clones: @nbr_clones
+              Datasets::ImageNormalize.new(
+                Datasets::ImageTransform.new(
+                  Datasets::Clone.new(
+                    Datasets::ImagesFromFiles.new(
+                      Datasets::OneHotEncoder.new(dataset)
                     ),
-                    rng: rng,
-                    rot_angle: @rot_angle,
-                    resize: @resize
-                  )
+                    nbr_clones: @nbr_clones
+                  ),
+                  rng: rng,
+                  rot_angle: @rot_angle,
+                  resize: @resize
                 )
               )
             ),

@@ -413,7 +413,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
 * The Parameter-to-sample ratio rule can help estimating the desired complexity of the model. nbr_parameters / nbr_training_samples should be between 0.1 and 10. With the experiment [C], we have this ratio = (36300 * 100 + 100 + 100 + 100 * 10 + 10 + 10) / 593 = 6123. Clearly the model is far too complex.
-* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --layers=10 --nbr-clones=52 --resize=32,32`.
+* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32`.
 
 ### N layer model using PyTorch
 

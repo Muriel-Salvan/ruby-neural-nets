@@ -213,7 +213,10 @@ module RubyNeuralNets
         plot_data << [x_values, y_values, with: 'lines', title: exp_id.gsub('_', '\_')]
 
         # Add point for early stopping if applicable
-        plot_data << [[x_values[exp_data[:early_stopping_epoch]]], [y_values[exp_data[:early_stopping_epoch]]], with: 'points pt 7 ps 1 lc rgb "red"', title: ''] if exp_data[:early_stopping_epoch] && exp_data[:early_stopping_epoch] < x_values.size
+        if exp_data[:early_stopping_epoch]
+          index = exp_data[:early_stopping_epoch] * nbr_minibatches
+          plot_data << [[x_values[index]], [y_values[index]], with: 'points pt 7 ps 1 lc rgb "red"', title: '']
+        end
       end
       gnuplot_graph.plot(*plot_data)
     end
