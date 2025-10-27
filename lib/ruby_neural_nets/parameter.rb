@@ -60,6 +60,14 @@ module RubyNeuralNets
       @dparams = dparams
       @values = @optimizer.learn_with_decay(self, dparams)
     end
+
+    # Return the size of this parameter
+    #
+    # Result::
+    # * Integer: Size of this parameter
+    def size
+      shape.inject(1) { |mult, dim| mult * dim }
+    end
     
   end
 

@@ -24,9 +24,11 @@ module RubyNeuralNets
       # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
       # * *nbr_clones* (Integer): Number of times each element should be cloned
       # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
-      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:)
+      # * *resize* (Array): Resize dimensions [width, height] for image transformations
+      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, resize:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
+        @resize = resize
         super(dataset:, max_minibatch_size:, dataset_seed:)
       end
 
@@ -64,7 +66,8 @@ module RubyNeuralNets
                       nbr_clones: @nbr_clones
                     ),
                     rng: rng,
-                    rot_angle: @rot_angle
+                    rot_angle: @rot_angle,
+                    resize: @resize
                   )
                 )
               )

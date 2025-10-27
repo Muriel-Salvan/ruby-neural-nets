@@ -131,6 +131,11 @@ This runs with default settings:
   - Use values > 0 to enable random image rotations during training
   - Helps improve model robustness to image orientation variations
 
+- **`--resize`**: Resize dimensions [width, height] for image transformations (integer,integer, default: 110,110)
+  - Controls image resizing as part of data augmentation
+  - Use to change image dimensions before training
+  - Example: `--resize 64,64` resizes all images to 64x64 pixels
+
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
   - Format: `--track-layer layer_name,num_units`
@@ -238,19 +243,19 @@ The framework includes built-in data augmentation capabilities through composabl
 - Useful for expanding small datasets or balancing class distributions
 - Example: `--nbr-clones 3` triples the dataset size by duplicating each sample 3 times
 
-**ImageTransform Layer** (`--rot-angle`)
+**ImageTransform Layer** (`--rot-angle`, `--resize`)
 - Applies random image transformations using ImageMagick
-- Currently supports random rotation between `-angle` and `+angle` degrees
-- Automatically crops rotated images back to original dimensions, centered
-- Example: `--rot-angle 45` enables random rotations up to 45 degrees in either direction
-- Helps improve model robustness to image orientation variations
+- Supports random rotation between `-angle` and `+angle` degrees and resizing to specified dimensions
+- Automatically crops transformed images back to target dimensions, centered
+- Example: `--rot-angle 45 --resize 64,64` enables random rotations up to 45 degrees and resizes to 64x64
+- Helps improve model robustness to image orientation and scale variations
 
 #### Data Augmentation Pipeline
 
 The augmentation layers are applied in the following order in the Numo data loader:
 1. **ImagesFromFiles**: Load images from disk as ImageMagick objects
 2. **Clone**: Duplicate samples (if `--nbr-clones > 1`)
-3. **ImageTransform**: Apply random transformations and crop back to original dimensions (if `--rot-angle > 0`)
+3. **ImageTransform**: Apply random transformations and crop back to target dimensions (if `--rot-angle > 0` or `--resize` specified)
 4. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
 5. **OneHotEncoder**: Convert labels to one-hot encoding
 6. **CacheMemory**: Cache processed data in memory
@@ -264,13 +269,14 @@ The augmentation layers are applied in the following order in the Numo data load
 bundle exec ruby bin/run --dataset=numbers --nbr-clones 2 --rot-angle 30
 
 # Aggressive augmentation for small datasets
-bundle exec ruby bin/run --dataset=colors --nbr-clones 5 --rot-angle 90
+bundle exec ruby bin/run --dataset=colors --nbr-clones 5 --rot-angle 90 --resize 64,64
 ```
 
 This configuration will:
 - Load each image 5 times (once original + 4 duplicates)
 - Apply random rotation between -90° and +90° to each image
-- Result in a 5x larger dataset with varied image orientations
+- Resize all images to 64x64 pixels
+- Result in a 5x larger dataset with varied image orientations and sizes
 
 ### Code Structure
 
@@ -370,6 +376,8 @@ Performance:
 bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
+#### Observations without regularization
+
 * [A] We see that just adding the BatchNormalization layer allows the Adam optimizer to be less noisy (cost function is decreasing globally without big bounces) and more quickly converge till epoch 65. Afterwards we see more noise in the progression, with the dev dataset stagnating around 15% accuracy (high variance) while training increases till 33% at epoch 100. Those figures were obtained without adding any hidden layer (`--layers=`) in the model. It seems the model overfits some data and can't learn much anyway.
 
 ![A](docs/n_layers_numbers/a.png)
@@ -400,7 +408,12 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 * When adding visualizations of the hidden layer units (for example using `--track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10` from [C]), we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster, however adding more units on the first layer increases accuracy while creating variance.
 
 ![Parameters Visualization](docs/n_layers_numbers/parameters_visualization.png)
+
+#### Regularization
+
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
+* The Parameter-to-sample ratio rule can help estimating the desired complexity of the model. nbr_parameters / nbr_training_samples should be between 0.1 and 10. With the experiment [C], we have this ratio = (36300 * 100 + 100 + 100 + 100 * 10 + 10 + 10) / 593 = 6123. Clearly the model is far too complex.
+* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --layers=10 --nbr-clones=52 --resize=32,32`.
 
 ### N layer model using PyTorch
 

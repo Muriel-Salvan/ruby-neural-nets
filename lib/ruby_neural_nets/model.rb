@@ -77,6 +77,25 @@ module RubyNeuralNets
       param
     end
 
+    # Return some model statistics
+    #
+    # Result::
+    # * Hash: Model statistics:
+    #   * *parameters* (Hash< String, Hash >): Parameters statistics, per parameter name
+    #     * *size* (Integer): Parameter size
+    def stats
+      {
+        parameters: parameters.to_h do |parameter|
+          [
+            parameter.name,
+            {
+              size: parameter.size
+            }
+          ]
+        end
+      }
+    end
+
   end
 
 end

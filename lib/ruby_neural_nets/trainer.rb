@@ -94,7 +94,7 @@ module RubyNeuralNets
       if idx_epoch < experiment.nbr_epochs
         experiment.profiler.profile(idx_epoch) do
           log_prefix = "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}]"
-          log "#{log_prefix} Start epoch #{is_training ? 'training' : 'evaluation'}..."
+          log "#{log_prefix} Start epoch #{is_training ? 'training' : 'evaluation'} on #{experiment.model.parameters.map(&:size).sum} parameters..."
           experiment.optimizer.start_epoch(idx_epoch) if is_training
           experiment.dataset.prepare_for_epoch
           idx_minibatch = 0

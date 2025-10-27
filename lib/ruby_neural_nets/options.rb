@@ -178,6 +178,12 @@ module RubyNeuralNets
             rot_angle: {
               desc: 'Maximum rotation angle in degrees for random image transformations (rotation between -angle and +angle).',
               value: 0
+            },
+            resize: {
+              desc: 'Resize dimensions [width, height] for image transformations.',
+              value: [110, 110],
+              format: 'integer,integer',
+              parse: proc { |value_str| value_str.split(',').map { |dim_str| Integer(dim_str) } }
             }
           }
         },

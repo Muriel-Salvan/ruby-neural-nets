@@ -71,6 +71,8 @@ options.experiments.each do |exp_info|
 
     # Create the model
     model = options.instantiate(exp_info[:model], image_stats[:rows], image_stats[:cols], image_stats[:channels], labels.size)
+    require 'json'
+    puts "Model statistics:\n#{JSON.pretty_generate(model.stats)}"
 
     # Define the accuracy measure and loss
     accuracy = options.instantiate(exp_info[:accuracy])
