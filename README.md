@@ -144,8 +144,15 @@ This runs with default settings:
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
   - Format: `--track-layer layer_name,num_units`
-  - Example: `--track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10`
+  - Example: `--track-layer L0_Dense_W,10 --track-layer L4_Dense_W,10`
   - Useful for visualizing parameter evolution in specific layers during training
+
+- **`--display-samples`**: Number of samples to display in the progress graph (integer, default: 0)
+  - Shows input samples from each minibatch as grid visualizations using GnuPlot
+  - Format: `--display-samples num_samples`
+  - Example: `--display-samples 4` displays a grid of 4 input samples per progress update
+  - Useful for monitoring what the model is training on and verifying data loading
+  - Applies to both training and development set evaluations when `--eval-dev` is enabled
 
 - **`--dropout-rate`**: Dropout rate for regularization in NLayers model (float, default: 0.0)
   - Controls the fraction of units to drop during training to prevent overfitting
@@ -433,7 +440,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 * [I] Changing leaky ReLu with ReLU from [C] got very similar results than [C]. Variance seems to be a bit bigger, and accuracy a bit higher.
 
 ![I](docs/n_layers_numbers/i.png)
-* When adding visualizations of the hidden layer units (for example using `--track-layer L0_Dense_W,10 --track-layer L3_Dense_W,10` from [C]), we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster, however adding more units on the first layer increases accuracy while creating variance.
+* When adding visualizations of the hidden layer units (for example using `--track-layer=L0_Dense_W,10 --track-layer=L4_Dense_W,10` from [C]), we see during training that only the first layer evolves a lot, the remaining dense ones stay very close to their initial values. This also confirms the tendency that adding more layers does not make the network learn faster, however adding more units on the first layer increases accuracy while creating variance.
 
 ![Parameters Visualization](docs/n_layers_numbers/parameters_visualization.png)
 
@@ -441,7 +448,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
 * The Parameter-to-sample ratio rule can help estimating the desired complexity of the model. nbr_parameters / nbr_training_samples should be between 0.1 and 10. With the experiment [C], we have this ratio = (36300 * 100 + 100 + 100 + 100 * 10 + 10 + 10) / 593 = 6123. Clearly the model is far too complex.
-* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32 --noise-intensity=0.1`. Resulting accuracies at epoch 100 are 49% for training and 18% for dev. We see that now more epochs are needed to train properly, but the early stopping epoch is around 65 instead of 40 without data augmentation.
+* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --early-stopping-patience=10 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32 --noise-intensity=0.1`. Resulting accuracies at epoch 100 are 46% for training and 17% for dev. We see that now more epochs are needed to train properly, and the early stopping epoch is around 17 instead of 40 without data augmentation. Looking at the cost graph it seems the early epoch patience should be increased, as cost continues to decrease after epoch 17. It looks like the startup phase of the training is visible: cost starts to decrease and accuracy increase steadily only after epoch 30.
 
 ![J](docs/n_layers_numbers/j.png)
 * Experiment [K] adds a lot of data regularization with dropout and weight decay: `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32 --noise-intensity=0.1 --dropout-rate=0.1 --weight-decay=0.1 --early-stopping-patience=20`

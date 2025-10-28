@@ -243,6 +243,10 @@ module RubyNeuralNets
             [layer_name.to_sym, Integer(nbr_units_str)]
           end
         },
+        display_samples: {
+          desc: 'Number of samples to display in the progress graph.',
+          value: 0
+        },
         eval_dev: {
           desc: 'Should we also evaluate the model on the dev dataset?',
           value: true

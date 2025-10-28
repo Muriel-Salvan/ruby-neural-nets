@@ -78,6 +78,9 @@ module RubyNeuralNets
             ]
           end
         end
+
+        # Initialize display samples if specified
+        create_graph("Samples #{experiment.exp_id}") if experiment.display_samples > 0
       end
     end
 
@@ -133,45 +136,93 @@ module RubyNeuralNets
           @experiments[experiment.exp_id][:display_units].each do |(param, row_indices)|
             tensor_size = param.shape[1]
             values = param.values
-            # Consider it to be RGB image if we can divide the number of input values by 3
             nbr_channels = tensor_size % 3 == 0 ? 3 : 1
             width_float = Math.sqrt(tensor_size / nbr_channels)
             width = width_float.floor == width_float ? width_float.floor : width_float.floor + 1
-            # Compute possible padding needed to consider it a square image
             padding = width * width - tensor_size / nbr_channels
-            param_img = nil
-            row_indices.each do |indices|
-              row_img = nil
-              indices.each do |idx_unit|
-                normalized_image = values[idx_unit, nil]
-                min_value = normalized_image.min
-                unit_img = Numo::UInt8[*(((normalized_image - min_value) / (normalized_image.max - min_value)) * 255).round].
-                  concatenate(Numo::UInt8.zeros(padding * nbr_channels)).
-                  reshape(width, width, nbr_channels)
-                row_img = row_img.nil? ? unit_img : row_img.concatenate(unit_img, axis: 1)
-              end
-            param_img =
-              if param_img.nil?
-                row_img
-              else
-                # Pad row_img with white pixels on the right to match param_img width
-                row_img = row_img.concatenate(Numo::UInt8.zeros(width, param_img.shape[1] - row_img.shape[1], nbr_channels) + 255, axis: 1) if row_img.shape[1] < param_img.shape[1]
-                param_img.concatenate(row_img)
-              end
+            bitmaps = []
+            row_indices.flatten.each do |idx_unit|
+              normalized_image = values[idx_unit, nil]
+              min_value = normalized_image.min
+              unit_img = Numo::UInt8[*(((normalized_image - min_value) / (normalized_image.max - min_value)) * 255).round].
+                concatenate(Numo::UInt8.zeros(padding * nbr_channels)).
+                reshape(width, width, nbr_channels)
+              bitmaps << unit_img
             end
-            # Duplicate all channels in param_img to make it RGB
-            param_img = param_img.concatenate(param_img, axis: 2).concatenate(param_img, axis: 2) if nbr_channels == 1
-            @graphs["#{param.name} #{experiment.exp_id}"].plot(
-              param_img.reverse(0),
-              with: 'rgbimage',
-              title: ''
-            )
+            plot_bitmaps(@graphs["#{param.name} #{experiment.exp_id}"], bitmaps)
           end
+        end
+
+        # Display samples
+        if experiment.display_samples > 0
+          image_stats = experiment.data_loader.image_stats
+          rows = image_stats[:rows]
+          cols = image_stats[:cols]
+          channels = image_stats[:channels]
+          # Detect the sample dimension based on minibatch_size
+          sample_dim = minibatch_x.shape.index(minibatch_size)
+          raise "Unable to determine sample dimension for minibatch_x shape #{minibatch_x.shape} and minibatch_size #{minibatch_size}" if sample_dim.nil?
+
+          slices = Array.new(minibatch_x.shape.size, nil)
+          plot_bitmaps(
+            @graphs["Samples #{experiment.exp_id}"],
+            [experiment.display_samples, minibatch_size].min.times.map do |idx_sample|
+              slices[sample_dim] = idx_sample
+              Numo::UInt8[*((minibatch_x[*slices].flatten * 255).round)].reshape(rows, cols, channels)
+            end
+          )
         end
       end
     end
 
     private
+
+    # Plot bitmaps on a given graph, stacking them horizontally and vertically
+    #
+    # Parameters:::
+    # * *gnuplot_graph* (Numo::Gnuplot): The graph to plot on
+    # * *bitmaps* (Array<Array<Array<Numo::UInt8>>>): Array of bitmaps, each bitmap is [rows, cols, channels]
+    def plot_bitmaps(gnuplot_graph, bitmaps)
+      # Group by rows
+      rows_per_group = Math.sqrt(bitmaps.size).ceil.to_i
+      max_width = 0
+      row_imgs = bitmaps.each_slice(rows_per_group).map do |row_bitmaps|
+        row_img = nil
+        row_bitmaps.each do |bitmap|
+          nbr_channels = bitmap.shape[2]
+          # Ensure RGB
+          bitmap_rgb = if nbr_channels == 1
+                         bitmap.concatenate(bitmap, axis: 2).concatenate(bitmap, axis: 2)
+                       else
+                         bitmap
+                       end
+          row_img = row_img.nil? ? bitmap_rgb : row_img.concatenate(bitmap_rgb, axis: 1)
+        end
+        max_width = [max_width, row_img.shape[1]].max
+        row_img
+      end
+
+      # Pad rows to max_width
+      height = row_imgs.first.shape[0]
+      channels = row_imgs.first.shape[2]
+
+      gnuplot_graph.plot(
+        row_imgs.
+          map do |row_img|
+            if row_img.shape[1] < max_width
+              padding = Numo::UInt8.zeros(height, max_width - row_img.shape[1], channels) + 255
+              row_img.concatenate(padding, axis: 1)
+            else
+              row_img
+            end
+          end.
+          # Concatenate vertically
+          reduce { |accum, row| accum.concatenate(row) }.
+          reverse(0),
+        with: 'rgbimage',
+        title: ''
+      )
+    end
 
     # Create a new graph with automatic positioning
     #
