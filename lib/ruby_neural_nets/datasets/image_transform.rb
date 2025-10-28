@@ -1,5 +1,6 @@
 require 'rmagick'
 require 'ruby_neural_nets/datasets/wrapper'
+require 'numo/narray'
 
 module RubyNeuralNets
 
@@ -14,12 +15,14 @@ module RubyNeuralNets
       # Parameters::
       # * *dataset* (Dataset): Dataset to be wrapped
       # * *rng* (Random): Random number generator for transformations
+      # * *numo_rng* (Numo::Random::Generator): Random number generator for Numo transformations
       # * *rot_angle* (Float): Maximum rotation angle in degrees (rotation will be between -rot_angle and +rot_angle)
       # * *resize* (Array): Array of 2 integers [width, height] for resizing
       # * *noise_intensity* (Float): Intensity of Gaussian noise for transformations
-      def initialize(dataset, rng:, rot_angle:, resize:, noise_intensity:)
+      def initialize(dataset, rng:, numo_rng:, rot_angle:, resize:, noise_intensity:)
         super(dataset)
         @rng = rng
+        @numo_rng = numo_rng
         @rot_angle = rot_angle
         @target_width, @target_height = resize
         @noise_intensity = noise_intensity
@@ -98,7 +101,7 @@ module RubyNeuralNets
       # * (Magick::Image): Cropped image or original if no crop needed
       def apply_crop(image)
         if image.columns > @target_width || image.rows > @target_height
-          image.crop( (image.columns - @target_width)/2, (image.rows - @target_height)/2, @target_width, @target_height )
+          image.crop((image.columns - @target_width) / 2, (image.rows - @target_height) / 2, @target_width, @target_height)
         else
           image
         end
@@ -112,41 +115,17 @@ module RubyNeuralNets
       # * (Magick::Image): Image with Gaussian noise added or original if no noise needed
       def apply_gaussian_noise(image)
         if @noise_intensity > 0
-          # Generate noisy pixels using @rng for Gaussian noise
-          image.store_pixels(
+          original_pixels = Numo::DFloat[image.export_pixels]
+          image.import_pixels(
             0,
             0,
             image.columns,
             image.rows,
-            image.get_pixels(0, 0, image.columns, image.rows).map do |pixel|
-              noise = gaussian_random(@rng, 0, @noise_intensity * 65535)
-              Magick::Pixel.new(
-                [0, [65535, (pixel.red + noise).round].min].max.to_i,
-                [0, [65535, (pixel.green + noise).round].min].max.to_i,
-                [0, [65535, (pixel.blue + noise).round].min].max.to_i
-              )
-            end
+            'RGB',
+            (original_pixels + @numo_rng.normal(shape: original_pixels.shape, loc: 0.0, scale: @noise_intensity * 65535)).clip(0, 65535).flatten.to_a
           )
         end
         image
-      end
-
-      # Generate a Gaussian random number using Box-Muller transform
-      #
-      # Parameters::
-      # * *rng* (Random): Random number generator
-      # * *mean* (Float): Mean of the distribution
-      # * *std* (Float): Standard deviation of the distribution
-      # Result::
-      # * Float: Gaussian random number
-      def gaussian_random(rng, mean, std)
-        loop do
-          u1 = rng.rand
-          u2 = rng.rand
-          next if u1 == 0.0  # Avoid log(0)
-          z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math::PI * u2)
-          return mean + std * z0
-        end
       end
 
     end

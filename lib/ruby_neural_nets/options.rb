@@ -186,7 +186,7 @@ module RubyNeuralNets
               parse: proc { |value_str| value_str.split(',').map { |dim_str| Integer(dim_str) } }
             },
             noise_intensity: {
-              desc: 'Intensity of Gaussian noise (standard deviation) for data augmentation.',
+              desc: 'Intensity for Gaussian noise application in data augmentation (standard deviation between 0 and 1).',
               value: 0.0
             }
           }

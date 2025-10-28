@@ -39,9 +39,10 @@ module RubyNeuralNets
       # Parameters::
       # * *name* (String): Dataset name containing real data
       # * *rng* (Random): The random number generator to be used
+      # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
       # Result::
       # * LabeledDataPartitioner: The partitioned dataset.
-      def new_partitioned_dataset(name:, rng:)
+      def new_partitioned_dataset(name:, rng:, numo_rng:)
         Datasets::LabeledDataPartitioner.new(
           Datasets::LabeledFiles.new(name:),
           rng:
@@ -53,10 +54,11 @@ module RubyNeuralNets
       # Parameters::
       # * *dataset* (Dataset): The partitioned dataset serving data for the minibatches
       # * *rng* (Random): The random number generator to be used
+      # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
       # * *max_minibatch_size* (Integer): The required minibatch size
       # Result::
       # * Dataset: The dataset that will serve data as minibatches
-      def new_minibatch_dataset(dataset:, rng:, max_minibatch_size:)
+      def new_minibatch_dataset(dataset:, rng:, numo_rng:, max_minibatch_size:)
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
             Datasets::CacheMemory.new(
@@ -68,7 +70,8 @@ module RubyNeuralNets
                     ),
                     nbr_clones: @nbr_clones
                   ),
-                  rng: rng,
+                  rng:,
+                  numo_rng:,
                   rot_angle: @rot_angle,
                   resize: @resize,
                   noise_intensity: @noise_intensity

@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/logger'
+require 'numo/random'
 
 module RubyNeuralNets
 
@@ -14,8 +15,10 @@ module RubyNeuralNets
     # * *dataset* (String): The dataset name
     # * *max_minibatch_size* (Integer): Max size each minibatch should have
     def initialize(dataset:, max_minibatch_size:, dataset_seed:)
-      dataset_rng = Random.new(dataset_seed)
-      @partitioned_dataset = new_partitioned_dataset(name: dataset, rng: dataset_rng)
+      rng = Random.new(dataset_seed)
+      numo_rng = Numo::Random::Generator.new(seed: dataset_seed)
+
+      @partitioned_dataset = new_partitioned_dataset(name: dataset, rng:, numo_rng:)
       # Build the set of minibatches datasets, per partition name
       # Hash< String, Dataset >
       @partition_datasets = @partitioned_dataset.partitions.to_h do |partition|
@@ -23,7 +26,7 @@ module RubyNeuralNets
         partition_dataset.select_partition(partition)
         [
           partition,
-          new_minibatch_dataset(dataset: partition_dataset, rng: dataset_rng, max_minibatch_size:)
+          new_minibatch_dataset(dataset: partition_dataset, rng:, numo_rng:, max_minibatch_size:)
         ]
       end
     end
@@ -33,9 +36,10 @@ module RubyNeuralNets
     # Parameters::
     # * *name* (String): Dataset name containing real data
     # * *rng* (Random): The random number generator to be used
+    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
     # Result::
     # * LabeledDataPartitioner: The partitioned dataset.
-    def new_partitioned_dataset(name:, rng:)
+    def new_partitioned_dataset(name:, rng:, numo_rng:)
       raise 'Not implemented'
     end
 
@@ -44,10 +48,11 @@ module RubyNeuralNets
     # Parameters::
     # * *dataset* (Dataset): The partitioned dataset serving data for the minibatches
     # * *rng* (Random): The random number generator to be used
+    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
     # * *max_minibatch_size* (Integer): The required minibatch size
     # Result::
     # * Dataset: The dataset that will serve data as minibatches
-    def new_minibatch_dataset(dataset:, rng:, max_minibatch_size:)
+    def new_minibatch_dataset(dataset:, rng:, numo_rng:, max_minibatch_size:)
       raise 'Not implemented'
     end
 
