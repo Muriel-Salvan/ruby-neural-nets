@@ -21,6 +21,7 @@ module RubyNeuralNets
       display_units
       display_samples
       dev_experiment
+      early_stopping_patience
     ],
     keyword_init: true
   )

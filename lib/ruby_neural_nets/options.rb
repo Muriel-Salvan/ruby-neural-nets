@@ -47,10 +47,6 @@ module RubyNeuralNets
         model_seed: {
           desc: 'Random number generator seed for model initialization and parameters.',
           value: 0
-        },
-        early_stopping_patience: {
-          desc: 'Number of epochs to wait for dev accuracy improvement before stopping training.',
-          value: 10
         }
       }
       prepare_options_for_new_experiment
@@ -250,6 +246,10 @@ module RubyNeuralNets
         eval_dev: {
           desc: 'Should we also evaluate the model on the dev dataset?',
           value: true
+        },
+        early_stopping_patience: {
+          desc: 'Number of epochs to wait for dev accuracy improvement before stopping training.',
+          value: 10
         }
       }
     end

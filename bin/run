@@ -121,7 +121,8 @@ options.experiments.each do |exp_info|
       profiler:,
       display_units: exp_info[:track_layer][:value].to_h,
       display_samples: exp_info[:display_samples][:value],
-      dev_experiment: dev_experiment
+      dev_experiment: dev_experiment,
+      early_stopping_patience: exp_info[:early_stopping_patience][:value]
     )
   end
 end
@@ -130,7 +131,7 @@ end
 experiments.each { |experiment| progress_tracker.track(experiment) }
 
 require 'ruby_neural_nets/trainer'
-RubyNeuralNets::Trainer.new(progress_tracker:, early_stopping_patience: options[:early_stopping_patience]).train(experiments)
+RubyNeuralNets::Trainer.new(progress_tracker:).train(experiments)
 
 # Close graphs
 progress_tracker.close_graphs

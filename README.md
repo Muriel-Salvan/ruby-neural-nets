@@ -112,6 +112,11 @@ This runs with default settings:
 - **`--debug`**: Enable debug mode for verbose logging output (boolean, default: false)
   - When enabled, shows detailed debug messages from model forward/backward propagation and other internal operations
   - Debug messages use lazy evaluation to avoid performance overhead when disabled
+- **`--early-stopping-patience`**: Number of epochs to wait for development set loss improvement before notifying early stopping (integer, default: 10)
+  - Monitors development set loss (including L2 regularization) and notifies when no improvement occurs for the specified number of epochs
+  - Training continues, but a red circle marker is placed on the graphs at the early stopping epoch
+  - Use `--eval-dev` to enable development set evaluation (required for early stopping)
+  - Example: `--early-stopping-patience 5` will notify early stopping after 5 epochs without improvement
 
 - **`--model-seed`**: Random number generator seed for model initialization and parameters (integer, default: 0)
   - Controls the randomness in model parameter initialization
@@ -158,12 +163,6 @@ This runs with default settings:
   - Controls the fraction of units to drop during training to prevent overfitting
   - Use values between 0.0 (no dropout) and 1.0 (drop all units)
   - Example: `--dropout-rate 0.5` drops 50% of units randomly during training
-
-- **`--early-stopping-patience`**: Number of epochs to wait for development set loss improvement before notifying early stopping (integer, default: 10)
-  - Monitors development set loss (including L2 regularization) and notifies when no improvement occurs for the specified number of epochs
-  - Training continues, but a red circle marker is placed on the graphs at the early stopping epoch
-  - Use `--eval-dev` to enable development set evaluation (required for early stopping)
-  - Example: `--early-stopping-patience 5` will notify early stopping after 5 epochs without improvement
 
 The run will:
 - Load the specified dataset and display statistics

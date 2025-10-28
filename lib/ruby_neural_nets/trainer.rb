@@ -15,10 +15,8 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *progress_tracker* (ProgressTracker): The gradients checker to be used [default: ProgressTracker.new]
-    # * *early_stopping_patience* (Integer): Number of epochs to wait for dev accuracy improvement before stopping [default: 10]
-    def initialize(progress_tracker: ProgressTracker.new, early_stopping_patience: 10)
+    def initialize(progress_tracker: ProgressTracker.new)
       @progress_tracker = progress_tracker
-      @early_stopping_patience = early_stopping_patience
     end
 
     # Train experiments
@@ -65,7 +63,7 @@ module RubyNeuralNets
                   log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] No improvement in dev loss for #{state[:epochs_without_improvement]} epochs"
                 end
 
-                if state[:epochs_without_improvement] >= @early_stopping_patience
+                if state[:epochs_without_improvement] >= training_exp.early_stopping_patience
                   log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] Early stopping reached at epoch #{idx_epoch}"
                   @progress_tracker.notify_early_stopping(training_exp, idx_epoch)
                   @progress_tracker.notify_early_stopping(training_exp.dev_experiment, idx_epoch)
