@@ -55,7 +55,7 @@ module RubyNeuralNets
       # * (Magick::Image): Cropped image or original if no crop needed
       def apply_crop(image)
         if image.columns > @target_width || image.rows > @target_height
-          image.crop((image.columns - @target_width) / 2, (image.rows - @target_height) / 2, @target_width, @target_height)
+          image.crop(0, 0, @target_width, @target_height)
         else
           image
         end
