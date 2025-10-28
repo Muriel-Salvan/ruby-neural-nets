@@ -3,7 +3,10 @@ require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
 require 'ruby_neural_nets/datasets/images_from_files'
 require 'ruby_neural_nets/datasets/image_normalize'
-require 'ruby_neural_nets/datasets/image_transform'
+require 'ruby_neural_nets/datasets/image_resize'
+require 'ruby_neural_nets/datasets/image_rotate'
+require 'ruby_neural_nets/datasets/image_crop'
+require 'ruby_neural_nets/datasets/image_noise'
 require 'ruby_neural_nets/datasets/clone'
 require 'ruby_neural_nets/datasets/one_hot_encoder'
 require 'ruby_neural_nets/datasets/cache_memory'
@@ -63,17 +66,24 @@ module RubyNeuralNets
           Datasets::EpochShuffler.new(
             Datasets::CacheMemory.new(
               Datasets::ImageNormalize.new(
-                Datasets::ImageTransform.new(
-                  Datasets::Clone.new(
-                    Datasets::ImagesFromFiles.new(
-                      Datasets::OneHotEncoder.new(dataset)
+                Datasets::ImageNoise.new(
+                  Datasets::ImageCrop.new(
+                    Datasets::ImageRotate.new(
+                      Datasets::ImageResize.new(
+                        Datasets::Clone.new(
+                          Datasets::ImagesFromFiles.new(
+                            Datasets::OneHotEncoder.new(dataset)
+                          ),
+                          nbr_clones: @nbr_clones
+                        ),
+                        resize: @resize
+                      ),
+                      rng:,
+                      rot_angle: @rot_angle
                     ),
-                    nbr_clones: @nbr_clones
+                    crop_size: @resize
                   ),
-                  rng:,
                   numo_rng:,
-                  rot_angle: @rot_angle,
-                  resize: @resize,
                   noise_intensity: @noise_intensity
                 )
               )

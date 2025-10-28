@@ -28,7 +28,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 - **Experiment Management**: Run multiple experiments with different configurations in a single command, each with unique IDs and separate progress tracking
 - **Layered Datasets**: Modular dataset processing framework with composable layers (partitioning, shuffling, caching, encoding, minibatching) enabling reusable features between Numo and PyTorch implementations
-- **Data Augmentation**: Built-in data augmentation capabilities with Clone and ImageTransform layers for expanding datasets through duplication and random transformations
+- **Data Augmentation**: Built-in data augmentation capabilities with Clone and modular image transformation layers for expanding datasets through duplication and various random transformations
 - **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits using extensible data loader architecture
 - **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, Dropout, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
@@ -248,11 +248,14 @@ The framework includes built-in data augmentation capabilities through composabl
 - Useful for expanding small datasets or balancing class distributions
 - Example: `--nbr-clones 3` triples the dataset size by duplicating each sample 3 times
 
-**ImageTransform Layer** (`--rot-angle`, `--resize`, `--noise-intensity`)
-- Applies random image transformations using ImageMagick
-- Supports random rotation between `-angle` and `+angle` degrees, resizing to specified dimensions, and adding Gaussian noise
-- Automatically crops transformed images back to target dimensions, centered
-- Example: `--rot-angle 45 --resize 64,64 --noise-intensity 0.1` enables random rotations up to 45 degrees, resizes to 64x64, and adds Gaussian noise
+**Image Transformation Layers** (`--rot-angle`, `--resize`, `--noise-intensity`)
+- Apply random image transformations using ImageMagick through separate specialized layers:
+  - **ImageResize**: Resizes images to target dimensions
+  - **ImageRotate**: Applies random rotations between `-angle` and `+angle` degrees
+  - **ImageCrop**: Crops images back to target dimensions after transformations, centered
+  - **ImageNoise**: Adds Gaussian noise to images
+- Example: `--rot-angle 45 --resize 64,64 --noise-intensity 0.1` enables resizing to 64x64, random rotations up to 45 degrees, and adds Gaussian noise
+- The layers are applied in order: Resize → Rotate → Crop → Noise to maintain consistent transformations
 - Helps improve model robustness to image orientation, scale variations, and noise
 
 #### Data Augmentation Pipeline
@@ -260,12 +263,15 @@ The framework includes built-in data augmentation capabilities through composabl
 The augmentation layers are applied in the following order in the Numo data loader:
 1. **ImagesFromFiles**: Load images from disk as ImageMagick objects
 2. **Clone**: Duplicate samples (if `--nbr-clones > 1`)
-3. **ImageTransform**: Apply random transformations and crop back to target dimensions (if `--rot-angle > 0`, `--resize` specified, or `--noise-intensity > 0`)
-4. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
-5. **OneHotEncoder**: Convert labels to one-hot encoding
-6. **CacheMemory**: Cache processed data in memory
-7. **EpochShuffler**: Shuffle data between epochs
-8. **Minibatch**: Group data into minibatches
+3. **ImageResize**: Resize images to target dimensions
+4. **ImageRotate**: Apply random rotations (if `--rot-angle > 0`)
+5. **ImageCrop**: Crop images back to target dimensions after transformations
+6. **ImageNoise**: Add Gaussian noise (if `--noise-intensity > 0`)
+7. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
+8. **OneHotEncoder**: Convert labels to one-hot encoding
+9. **CacheMemory**: Cache processed data in memory
+10. **EpochShuffler**: Shuffle data between epochs
+11. **Minibatch**: Group data into minibatches
 
 #### Example Usage
 
@@ -426,7 +432,10 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
 * The Parameter-to-sample ratio rule can help estimating the desired complexity of the model. nbr_parameters / nbr_training_samples should be between 0.1 and 10. With the experiment [C], we have this ratio = (36300 * 100 + 100 + 100 + 100 * 10 + 10 + 10) / 593 = 6123. Clearly the model is far too complex.
-* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32 --noise-intensity=0.1`.
+* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32 --noise-intensity=0.1`. Resulting accuracies at epoch 100 are 49% for training and 18% for dev. We see that now more epochs are needed to train properly, but the early stopping epoch is around 65 instead of 40 without data augmentation.
+
+![J](docs/n_layers_numbers/j.png)
+* Experiment [K] adds a lot of data regularization with dropout and weight decay: `--nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --resize=32,32 --noise-intensity=0.1 --dropout-rate=0.1 --weight-decay=0.1 --early-stopping-patience=20`
 
 ### N layer model using PyTorch
 
