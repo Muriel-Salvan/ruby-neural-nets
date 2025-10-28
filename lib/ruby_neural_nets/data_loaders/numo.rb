@@ -52,42 +52,63 @@ module RubyNeuralNets
         )
       end
 
-      # Return a minibatch dataset for this data loader, from a dataset that has already been partitioned.
+      # Return a preprocessing dataset for this data loader.
       #
       # Parameters::
-      # * *dataset* (Dataset): The partitioned dataset serving data for the minibatches
+      # * *dataset* (Dataset): The partitioned dataset
+      # Result::
+      # * Dataset: The dataset with preprocessing applied
+      def new_preprocessing_dataset(dataset)
+        Datasets::CacheMemory.new(
+          Datasets::ImageResize.new(
+            Datasets::ImagesFromFiles.new(
+              Datasets::OneHotEncoder.new(dataset)
+            ),
+            resize: @resize
+          )
+        )
+      end
+
+      # Return an augmentation dataset for this data loader.
+      # This is only used for the training dataset.
+      #
+      # Parameters::
+      # * *preprocessed_dataset* (Dataset): The preprocessed dataset
+      # * *rng* (Random): The random number generator to be used
+      # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
+      # Result::
+      # * Dataset: The dataset with augmentation applied
+      def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
+        Datasets::ImageNoise.new(
+          Datasets::ImageCrop.new(
+            Datasets::ImageRotate.new(
+              Datasets::Clone.new(
+                preprocessed_dataset,
+                nbr_clones: @nbr_clones
+              ),
+              rot_angle: @rot_angle,
+              rng:
+            ),
+            crop_size: @resize
+          ),
+          numo_rng:,
+          noise_intensity: @noise_intensity
+        )
+      end
+
+      # Return a batching dataset for this data loader.
+      #
+      # Parameters::
+      # * *augmented_dataset* (Dataset): The augmented dataset
       # * *rng* (Random): The random number generator to be used
       # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
       # * *max_minibatch_size* (Integer): The required minibatch size
       # Result::
-      # * Dataset: The dataset that will serve data as minibatches
-      def new_minibatch_dataset(dataset:, rng:, numo_rng:, max_minibatch_size:)
+      # * Dataset: The dataset with batching applied
+      def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
-            Datasets::CacheMemory.new(
-              Datasets::ImageNormalize.new(
-                Datasets::ImageNoise.new(
-                  Datasets::ImageCrop.new(
-                    Datasets::ImageRotate.new(
-                      Datasets::ImageResize.new(
-                        Datasets::Clone.new(
-                          Datasets::ImagesFromFiles.new(
-                            Datasets::OneHotEncoder.new(dataset)
-                          ),
-                          nbr_clones: @nbr_clones
-                        ),
-                        resize: @resize
-                      ),
-                      rng:,
-                      rot_angle: @rot_angle
-                    ),
-                    crop_size: @resize
-                  ),
-                  numo_rng:,
-                  noise_intensity: @noise_intensity
-                )
-              )
-            ),
+            Datasets::ImageNormalize.new(augmented_dataset),
             rng:
           ),
           max_minibatch_size:

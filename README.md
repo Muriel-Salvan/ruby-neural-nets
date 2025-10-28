@@ -258,20 +258,29 @@ The framework includes built-in data augmentation capabilities through composabl
 - The layers are applied in order: Resize → Rotate → Crop → Noise to maintain consistent transformations
 - Helps improve model robustness to image orientation, scale variations, and noise
 
-#### Data Augmentation Pipeline
+#### Data Processing Pipeline
 
-The augmentation layers are applied in the following order in the Numo data loader:
+The Numo data loader splits data processing into three phases that work together to prepare data for training:
+
+##### Preprocessing Phase
+Applied once for each dataset partition (training, dev, test), these are deterministic transformations that can be cached for performance:
 1. **ImagesFromFiles**: Load images from disk as ImageMagick objects
-2. **Clone**: Duplicate samples (if `--nbr-clones > 1`)
+2. **OneHotEncoder**: Convert labels to one-hot encoding
 3. **ImageResize**: Resize images to target dimensions
-4. **ImageRotate**: Apply random rotations (if `--rot-angle > 0`)
-5. **ImageCrop**: Crop images back to target dimensions after transformations
-6. **ImageNoise**: Add Gaussian noise (if `--noise-intensity > 0`)
-7. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
-8. **OneHotEncoder**: Convert labels to one-hot encoding
-9. **CacheMemory**: Cache processed data in memory
-10. **EpochShuffler**: Shuffle data between epochs
-11. **Minibatch**: Group data into minibatches
+4. **CacheMemory**: Cache processed data in memory for faster access
+
+##### Augmentation Phase
+Applied only during training, these are random transformations that increase dataset variety and improve model robustness:
+1. **Clone**: Duplicate samples (if `--nbr-clones > 1`)
+2. **ImageRotate**: Apply random rotations (if `--rot-angle > 0`)
+3. **ImageCrop**: Crop images back to target dimensions after transformations
+4. **ImageNoise**: Add Gaussian noise (if `--noise-intensity > 0`)
+
+##### Batching Phase
+Applied to prepare final training batches, these handle shuffling and data grouping:
+1. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
+2. **EpochShuffler**: Shuffle data between epochs
+3. **Minibatch**: Group data into minibatches
 
 #### Example Usage
 
