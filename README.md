@@ -443,6 +443,19 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 ![Parameters Visualization](docs/n_layers_numbers/parameters_visualization.png)
 
+#### Effects of hyper parameters changes
+
+* Changing number of units in 1 layer: `--exp-id=5_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
+
+| # units | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 5       | 2.27          | 17%               | 2.44     | 15%          |                  | 83%            | 2%       |
+| 10      | 2.10          | 25%               | 2.55     | 9%           | 11               | 75%            | 14%      |
+| 50      | 1.53          | 54%               | 2.36     | 17%          | 64               | 46%            | 37%      |
+| 100     | 1.10          | 77%               | 2.27     | 23%          | 52               | 23%            | 54%      |
+
+![Units comparison](docs/n_layers_numbers/hyper_parameters/units.png)
+
 #### Regularization
 
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.

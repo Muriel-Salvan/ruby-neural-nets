@@ -280,7 +280,7 @@ module RubyNeuralNets
           with: 'lines',
           title: exp_id.gsub('_', '\_'),
           linecolor: "rgb \"#{experiment.dev_experiment.nil? ? exp_data[:colors][1] : @experiments[experiment.dev_experiment.exp_id][:colors][0]}\"",
-          linewidth: experiment.dev_experiment.nil? ? 2 : 1
+          linewidth: experiment.dev_experiment.nil? ? 1.5 : 1
         ]
 
         # Add point for early stopping if applicable
