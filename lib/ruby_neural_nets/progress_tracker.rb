@@ -41,7 +41,8 @@ module RubyNeuralNets
       if @display_graphs
         @experiments[experiment.exp_id].merge!(
           costs: [],
-          accuracies: []
+          accuracies: [],
+          colors: GNUPLOT_COLORS[@experiments.select { |exp_id, exp_data| exp_id != experiment.exp_id && exp_data[:experiment].dev_experiment.nil? }.size % GNUPLOT_COLORS.size]
         )
         # Create shared Cost and Accuracy graphs (reused across experiments)
         create_graph('Cost', key: ['below', font: ',7']) if @graphs['Cost'].nil?
@@ -177,6 +178,17 @@ module RubyNeuralNets
 
     private
 
+    # List of Gnuplot colors pairs to be used in graphs.
+    # First color is a vivid one, second color is the same hue but darker.
+    GNUPLOT_COLORS = [
+      %w[blue midnight-blue],
+      %w[red dark-red],
+      %w[green dark-green],
+      %w[magenta dark-violet],
+      %w[gold dark-goldenrod],
+      %w[orange dark-orange]
+    ]
+
     # Plot bitmaps on a given graph, stacking them horizontally and vertically
     #
     # Parameters:::
@@ -256,12 +268,20 @@ module RubyNeuralNets
     def graph_lines(gnuplot_graph, measure)
       plot_data = []
       @experiments.select { |exp_id, exp_data| !exp_data[measure].empty? }.each do |exp_id, exp_data|
-        nbr_minibatches = exp_data[:experiment].dataset.size
+        experiment = exp_data[:experiment]
+        nbr_minibatches = experiment.dataset.size
         x_values = (0...exp_data[measure].size).map { |i| i.to_f / nbr_minibatches }
         y_values = exp_data[measure]
 
         # Add line plot
-        plot_data << [x_values, y_values, with: 'lines', title: exp_id.gsub('_', '\_')]
+        plot_data << [
+          x_values,
+          y_values,
+          with: 'lines',
+          title: exp_id.gsub('_', '\_'),
+          linecolor: "rgb \"#{experiment.dev_experiment.nil? ? exp_data[:colors][1] : @experiments[experiment.dev_experiment.exp_id][:colors][0]}\"",
+          linewidth: experiment.dev_experiment.nil? ? 2 : 1
+        ]
 
         # Add point for early stopping if applicable
         if exp_data[:early_stopping_epoch]

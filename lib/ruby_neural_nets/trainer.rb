@@ -57,14 +57,14 @@ module RubyNeuralNets
                 if dev_loss < state[:best_loss]
                   state[:best_loss] = dev_loss
                   state[:epochs_without_improvement] = 0
-                  log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] New best dev loss: #{dev_loss}"
+                  debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] New best dev loss: #{dev_loss}" }
                 else
                   state[:epochs_without_improvement] += 1
-                  log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] No improvement in dev loss for #{state[:epochs_without_improvement]} epochs"
+                  debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] No improvement in dev loss for #{state[:epochs_without_improvement]} epochs" }
                 end
 
                 if state[:epochs_without_improvement] >= training_exp.early_stopping_patience
-                  log "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] Early stopping reached at epoch #{idx_epoch}"
+                  debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] Early stopping reached at epoch #{idx_epoch}" }
                   @progress_tracker.notify_early_stopping(training_exp, idx_epoch)
                   @progress_tracker.notify_early_stopping(training_exp.dev_experiment, idx_epoch)
                   # Stop tracking early stopping for this experiment
