@@ -44,8 +44,8 @@ module RubyNeuralNets
           accuracies: []
         )
         # Create shared Cost and Accuracy graphs (reused across experiments)
-        create_graph('Cost') if @graphs['Cost'].nil?
-        create_graph('Accuracy') if @graphs['Accuracy'].nil?
+        create_graph('Cost', key: ['below', font: ',7']) if @graphs['Cost'].nil?
+        create_graph('Accuracy', key: ['below', font: ',7']) if @graphs['Accuracy'].nil?
 
         # Create experiment-specific graphs for Confusion Matrix and display units
         labels = experiment.dataset.labels
