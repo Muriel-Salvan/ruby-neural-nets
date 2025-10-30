@@ -15,10 +15,33 @@ module RubyNeuralNets
       if @display_graphs
         require 'numo/gnuplot'
         require 'numo/narray'
-        @screen_width = 2560
-        @graph_width = 640
-        @graph_height = 400
         @graph_row_padding = 80
+        # Width of the graphs, unless this width would prevent all graphs to fit on screen.
+        @graph_default_width = 800
+        @graph_aspect_ratio = 0.75
+        @screen_width, @screen_height =
+          begin
+            if RUBY_PLATFORM.include?('mingw') || RUBY_PLATFORM.include?('mswin')
+              # Windows
+              [
+                `wmic path Win32_VideoController get CurrentHorizontalResolution /value`.split('=')[1].strip.to_i,
+                `wmic path Win32_VideoController get CurrentVerticalResolution /value`.split('=')[1].strip.to_i
+              ]
+            elsif RUBY_PLATFORM.include?('linux')
+              # Linux
+              [
+                `xrandr --current | grep '*' | head -1 | awk -F'x' '{print $1}'`.strip.to_i,
+                `xrandr --current | grep '*' | head -1 | awk -F'x' '{print $2}' | cut -d' ' -f1`.strip.to_i
+              ]
+            else
+              # Other platforms or fallback
+              [2560, 1600]
+            end
+          rescue
+            [2560, 1600] # Fallback if detection fails
+          end
+        # Apply some margins (taskbar, windows...)
+        @screen_height -= 128
         # Set of named graphs
         # Hash< String, Numo::GnuPlot >
         @graphs = {}
@@ -243,14 +266,7 @@ module RubyNeuralNets
     # * *kwargs: GnuPlot properties to set as keyword arguments
     def create_graph(title, **kwargs)
       graph = Numo::Gnuplot.new
-      # Calculate position based on number of existing graphs
-      graph_index = @graphs.size
-      x_pos = (graph_index * @graph_width) % @screen_width
-      y_pos = ((graph_index * @graph_width) / @screen_width).floor * (@graph_height + @graph_row_padding)
-
-      graph.set terminal: "wxt 0 position #{x_pos},#{y_pos} size #{@graph_width},#{@graph_height}"
       graph.set title: title.gsub('_', '\_')
-
       # Set additional properties
       kwargs.each do |property, value|
         graph.set property => value
@@ -258,6 +274,45 @@ module RubyNeuralNets
 
       # Store in @graphs hash using title as key
       @graphs[title] = graph
+
+      # Make sure all graphs fit in the screen
+      # Compute the optimal graph width that would allow @graphs.size graphs of aspect ratio @graph_aspect_ratio to fit in a screen of dimensions @screen_width, @screen_height, also taking into account that each row of graphs is separated by @graph_row_padding
+
+      # Find the min possible value of number of graphs per row by computing the max graph width that allow all pixels to fit in the screen pixels, without considering geometry constraints.
+      # Formula comes from the following:
+      # * max_graph_pixels = max_graph_width * ((max_graph_width * @graph_aspect_ratio).to_i + @graph_row_padding)
+      # * nbr_graphs_max = @screen_width * @screen_height / max_graph_pixels
+      # * We look for max_graph_width that ensures @graphs.size <= nbr_graphs_max
+      # * This gives us max_graph_width = - @graph_row_padding + Math.sqrt(@graph_row_padding * @graph_row_padding + (4 * @graph_aspect_ratio * @screen_width * @screen_height) / @graphs.size.to_f) / (2 * @graph_aspect_ratio)
+      # We therefore start by considering those number of graphs per row, and increase them till it fits using the geometry constraints.
+      nbr_graphs_per_row = @screen_width / ((- @graph_row_padding + Math.sqrt(@graph_row_padding * @graph_row_padding + (4 * @graph_aspect_ratio * @screen_width * @screen_height) / @graphs.size.to_f) / (2 * @graph_aspect_ratio)).to_i)
+      nbr_graphs_rows = nil
+      loop do
+        nbr_graphs_rows = (@graphs.size.to_f / nbr_graphs_per_row).ceil
+        # Find the minimal width that would fit nbr_graphs_per_row on our screen without leaving place for an extra graph on the same row
+        min_width = @screen_width / (nbr_graphs_per_row + 1) + 1
+        min_height = (min_width * @graph_aspect_ratio).to_i
+        break if nbr_graphs_rows * (min_height + @graph_row_padding) <= @screen_height
+        # That doesn't fit: increase the number of graphs per row
+        nbr_graphs_per_row += 1
+      end
+      # Here we know which number of graphs per row we can fit.
+      # Compute the max width possible that makes sure it fits for both width and height.
+      # We look for the max width that satisfies both conditions:
+      # * nbr_graphs_per_row * width <= @screen_width
+      # * (nbr_graphs_rows * ((width * @graph_aspect_ratio).to_i + @graph_row_padding) <= @screen_height
+      # Then we cap it at @graph_default_width (we don't need huge graphs on screen)
+      graph_width = [
+        @screen_width / nbr_graphs_per_row,
+        ((@screen_height / nbr_graphs_rows - @graph_row_padding) / @graph_aspect_ratio).to_i,
+        @graph_default_width
+      ].min
+
+      # Apply those dimensions and place all graphs
+      graph_height = (graph_width * @graph_aspect_ratio).to_i
+      @graphs.each_with_index do |(_name, graph), graph_index|
+        graph.set terminal: "wxt 0 position #{(graph_index % nbr_graphs_per_row) * graph_width},#{(graph_index / nbr_graphs_per_row) * (graph_height + @graph_row_padding)} size #{graph_width},#{graph_height}"
+      end
     end
 
     # Graph lines of a given measure for all experiments on a GnuPlot graph

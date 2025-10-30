@@ -33,10 +33,15 @@ module RubyNeuralNets
         partition_dataset = @partitioned_dataset.clone
         partition_dataset.select_partition(partition)
         preprocessed_dataset = new_preprocessing_dataset(partition_dataset)
-        augmented_dataset = partition == :training ? new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:) : preprocessed_dataset
+        # Minibatches and data augmentation are only used for the training partition.
         [
           partition,
-          new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
+          new_batching_dataset(
+            partition == :training ? new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:) : preprocessed_dataset,
+            rng:,
+            numo_rng:,
+            max_minibatch_size: partition == :training ? max_minibatch_size : 1000000000
+          )
         ]
       end
     end
@@ -88,8 +93,6 @@ module RubyNeuralNets
     def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
       raise 'Not implemented'
     end
-
-
 
     # Return the labels of the dataset.
     #

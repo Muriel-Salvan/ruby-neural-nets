@@ -447,14 +447,149 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 * Changing number of units in 1 layer: `--exp-id=5_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
 
-| # units | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| ------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 5       | 2.27          | 17%               | 2.44     | 15%          |                  | 83%            | 2%       |
-| 10      | 2.10          | 25%               | 2.55     | 9%           | 11               | 75%            | 14%      |
-| 50      | 1.53          | 54%               | 2.36     | 17%          | 64               | 46%            | 37%      |
-| 100     | 1.10          | 77%               | 2.27     | 23%          | 52               | 23%            | 54%      |
+| # units | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 5       | 181580       | 181                  | 2.27          | 17%               | 2.44     | 15%          |                  | 83%            | 2%       |
+| 10      | 363140       | 612                  | 2.10          | 25%               | 2.55     | 9%           | 11               | 75%            | 14%      |
+| 50      | 1815620      | 3062                 | 1.53          | 54%               | 2.36     | 17%          | 64               | 46%            | 37%      |
+| 100     | 3631220      | 6123                 | 1.10          | 77%               | 2.27     | 23%          | 52               | 23%            | 54%      |
 
 ![Units comparison](docs/n_layers_numbers/hyper_parameters/units.png)
+
+* Changing number of layers: `--exp-id=0_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers= --experiment --exp-id=1_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=2_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10 --experiment --exp-id=5_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10,10,10,10`
+
+| # layers | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| -------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 0        | 363020       | 612                  | 1.96          | 33%               | 2.35     | 19%          | 80               | 67%            | 24%      |
+| 1        | 363140       | 612                  | 2.14          | 25%               | 2.40     | 11%          | 10               | 75%            | 14%      |
+| 2        | 363260       | 613                  | 2.09          | 22%               | 2.44     | 14%          | 79               | 78%            | 8%       |
+| 5        | 363620       | 613                  | 2.10          | 23%               | 2.74     | 13%          | 11               | 77%            | 10%      |
+
+![Layers comparison](docs/n_layers_numbers/hyper_parameters/layers.png)
+
+* Changing input image size: `--exp-id=size_8 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=8,8 --experiment --exp-id=size_16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=16,16 --experiment --exp-id=size_32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=32,32 --experiment --exp-id=size_110 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=110,110`
+
+| Size | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ---- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 8    | 6548         | 11                   | 1.91          | 33%               | 2.35     | 18%          | 40               | 67%            | 15%      |
+| 16   | 24980        | 42                   | 1.35          | 63%               | 2.29     | 22%          | 22               | 37%            | 41%      |
+| 32   | 98708        | 166                  | 1.01          | 80%               | 2.23     | 27%          | 44               | 20%            | 53%      |
+| 110  | 1162004      | 1960                 | 1.62          | 48%               | 2.37     | 17%          | 67               | 52%            | 31%      |
+
+![Input size comparison](docs/n_layers_numbers/hyper_parameters/resizes.png)
+
+* Changing minibatch size: `--exp-id=size_50 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50 --layers=16 --experiment --exp-id=size_100 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100 --layers=16 --experiment --exp-id=size_300 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=300 --layers=16 --experiment --exp-id=size_1000 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=1000 --layers=16`
+
+| Size | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ---- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 50   | 0.86          | 78%               | 2.41     | 25%          | 40               | 22%            | 53%      |
+| 100  | 0.83          | 84%               | 2.36     | 28%          | 43               | 16%            | 56%      |
+| 300  | 1.38          | 64%               | 2.36     | 18%          | 17               | 36%            | 46%      |
+| 1000 | 1.92          | 34%               | 2.40     | 14%          | 10               | 66%            | 20%      |
+
+![Minibatch size comparison](docs/n_layers_numbers/hyper_parameters/minibatch_sizes.png)
+
+* Changing random seed (by executing the same model several times on the same dataset): `--training-times=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| # | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| - | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 1 | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
+| 2 | 1.77          | 39%               | 2.32     | 17%          | 51               | 61%            | 22%      |
+| 3 | 1.94          | 31%               | 2.37     | 14%          |                  | 69%            | 17%      |
+| 4 | 1.92          | 34%               | 2.40     | 14%          | 10               | 66%            | 20%      |
+
+![Random seeds comparison](docs/n_layers_numbers/hyper_parameters/randoms.png)
+
+* Changing datasets random seed: `--exp-id=exp_1 --dataset-seed=0 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_2 --dataset-seed=10 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_3 --dataset-seed=20 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_4 --dataset-seed=30 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| # | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| - | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 1 | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
+| 2 | 1.87          | 35%               | 2.30     | 14%          | 94               | 65%            | 21%      |
+| 3 | 2.05          | 25%               | 2.40     | 12%          | 90               | 75%            | 13%      |
+| 4 | 1.58          | 52%               | 2.49     | 15%          | 17               | 49%            | 37%      |
+
+![Dataset random seeds comparison](docs/n_layers_numbers/hyper_parameters/dataset_randoms.png)
+
+* Changing Adam learning rate: `--exp-id=lr_0001 --learning-rate=0.0001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_001 --learning-rate=0.001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_002 --learning-rate=0.002 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_01 --learning-rate=0.01 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Learning rate | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 1e-4          | 1.38          | 66%               | 2.40     | 23%          | 28               | 34%            | 43%      |
+| 1e-3          | 1.77          | 39%               | 2.32     | 17%          | 51               | 61%            | 22%      |
+| 2e-3          | 2.14          | 23%               | 2.33     | 14%          | 99               | 77%            | 9%       |
+| 1e-2          | 2.14          | 21%               | 2.42     | 10%          | 45               | 79%            | 11%      |
+
+![Learning rates comparison](docs/n_layers_numbers/hyper_parameters/learning_rates.png)
+
+* Changing optimizers: `--exp-id=adam --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=constant --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Constant --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_decay --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=ExponentialDecay --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Optimizer         | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ----------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Adam              | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
+| Constant          | 2.06          | 27%               | 2.46     | 20%          | 50               | 73%            | 7%       |
+| Exponential decay | 2.61          | 11%               | 2.67     | 8%           | 46               | 89%            | 3%       |
+
+![Optimizers comparison](docs/n_layers_numbers/hyper_parameters/optimizers.png)
+
+* Changing dataset Gaussian noise: `--exp-id=noise_0 --noise-intensity=0 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_01 --noise-intensity=0.01 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_1 --noise-intensity=0.1 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_5 --noise-intensity=0.5 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_9 --noise-intensity=0.9 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Noise intensity | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| --------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 0%              | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
+| 1%              | 1.77          | 41%               | 2.34     | 11%          | 81               | 59%            | 30%      |
+| 10%             | 1.70          | 48%               | 2.37     | 19%          | 78               | 52%            | 29%      |
+| 50%             | 1.60          | 49%               | 2.33     | 17%          | 10               | 51%            | 32%      |
+| 90%             | 1.89          | 32%               | 2.28     | 17%          | 74               | 68%            | 15%      |
+
+![Dataset noise comparison](docs/n_layers_numbers/hyper_parameters/dataset_noises.png)
+
+* Changing dataset rotations: `--exp-id=rot_0 --rot-angle=0 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_5 --rot-angle=5 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_30 --rot-angle=30 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_90 --rot-angle=90 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_180 --rot-angle=180 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Rotation | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| -------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 0°       | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
+| 5°       | 1.78          | 40%               | 2.28     | 21%          | 10               | 60%            | 19%      |
+| 30°      | 2.16          | 20%               | 2.31     | 16%          |                  | 80%            | 4%       |
+| 90°      | 2.25          | 18%               | 2.42     | 11%          | 10               | 82%            | 7%       |
+| 180°     | 2.24          | 19%               | 2.38     | 10%          | 97               | 81%            | 9%       |
+
+![Dataset rotations comparison](docs/n_layers_numbers/hyper_parameters/dataset_rotations.png)
+
+* Changing number of augmented samples: `--exp-id=nbr_1 --nbr-clones=1 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=nbr_2 --nbr-clones=2 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=nbr_10 --nbr-clones=10 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=nbr_100 --nbr-clones=100 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Samples multiplier | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ------------------ | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 1                  | 27860        | 47                   |               |                   |          |              |                  |                |          |
+| 2                  | 27860        | 23                   |               |                   |          |              |                  |                |          |
+| 10                 | 27860        | 4.7                  |               |                   |          |              |                  |                |          |
+| 100                | 27860        | 0.47                 |               |                   |          |              |                  |                |          |
+
+![Number of samples comparison](docs/n_layers_numbers/hyper_parameters/dataset_samples.png)
+
+* Changing dropout: `--exp-id=drop_0 --dropout-rate=0 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_10 --dropout-rate=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_50 --dropout-rate=0.5 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_80 --dropout-rate=0.8 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Dropout rate | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ------------ | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 0%           |               |                   |          |              |                  |                |          |
+| 10%          |               |                   |          |              |                  |                |          |
+| 50%          |               |                   |          |              |                  |                |          |
+| 80%          |               |                   |          |              |                  |                |          |
+
+![Dropouts comparison](docs/n_layers_numbers/hyper_parameters/dropouts.png)
+
+* Changing weight decay: `--exp-id=wd_0 --weight-decay=0 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_0001 --weight-decay=0.0001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_001 --weight-decay=0.001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_01 --weight-decay=0.01 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_1 --weight-decay=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Weight decay | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ------------ | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 0            |               |                   |          |              |                  |                |          |
+| 1e-4         |               |                   |          |              |                  |                |          |
+| 1e-3         |               |                   |          |              |                  |                |          |
+| 1e-2         |               |                   |          |              |                  |                |          |
+| 1e-1         |               |                   |          |              |                  |                |          |
+
+![Weights decay comparison](docs/n_layers_numbers/hyper_parameters/weights_decay.png)
+
 
 #### Regularization
 
