@@ -7,6 +7,16 @@ module RubyNeuralNets
     # Dataset wrapper that normalizes image pixel values to [0, 1]
     class ImageNormalize < Wrapper
 
+      # Constructor
+      #
+      # Parameters::
+      # * *dataset* (Dataset): The dataset to wrap
+      # * *minmax_normalize* (Boolean): Whether to apply minmax normalization before dispatching
+      def initialize(dataset, minmax_normalize:)
+        super(dataset)
+        @minmax_normalize = minmax_normalize
+      end
+
       # Access an element of the dataset
       #
       # Parameters::
@@ -16,7 +26,7 @@ module RubyNeuralNets
       # * y: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), true), y]
+        [(@minmax_normalize ? image.normalize_channel(Magick::AllChannels) : image).dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), true), y]
       end
 
     end

@@ -31,12 +31,14 @@ module RubyNeuralNets
       # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
-      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, resize:, noise_intensity:)
+      # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
+      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, resize:, noise_intensity:, minmax_normalize:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
         @resize = resize
         @noise_intensity = noise_intensity
+        @minmax_normalize = minmax_normalize
         super(dataset:, max_minibatch_size:, dataset_seed:)
       end
 
@@ -110,7 +112,10 @@ module RubyNeuralNets
       def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
-            Datasets::ImageNormalize.new(augmented_dataset),
+            Datasets::ImageNormalize.new(
+              augmented_dataset,
+              minmax_normalize: @minmax_normalize
+            ),
             rng:
           ),
           max_minibatch_size:

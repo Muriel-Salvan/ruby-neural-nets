@@ -150,6 +150,9 @@ This runs with default settings:
   - Reduces channel count from RGB to grayscale during preprocessing
   - When enabled, applies transformation before resizing for reduced memory usage
 
+- **`--minmax-normalize`**: Scale image data to always be within the range 0 to 1 (boolean, default: false)
+  - Applies min-max normalization to pixel values before standard 0-1 scaling
+
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
   - Format: `--track-layer layer_name,num_units`
@@ -598,7 +601,7 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 
 ![Weights decay comparison](docs/n_layers_numbers/hyper_parameters/weights_decay.png)
 
-* Applying grayscale: `--exp-id=color --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=gray --grayscale=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10`
+* Applying grayscale: `--exp-id=color --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=gray --grayscale=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
 
 | Color space | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ----------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -608,6 +611,17 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 ![Grayscale comparison](docs/n_layers_numbers/hyper_parameters/grayscale.png)
 
 Analysis: There is a smaller variance when using grayscale. The model is focusing more on the number shapes rather than on the colors.
+
+* Applying min-max normalization: `--exp-id=no_norm --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=minmax_norm --minmax-normalize=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+
+| Min-max normalization | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| --------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Off                   | 1.64          | 46%               | 2.39     | 17%          | 82               | 29%            | 29%      |
+| On                    | 1.15          | 75%               | 2.19     | 30%          | 73               | 45%            | 45%      |
+
+![Min-max normalization comparison](docs/n_layers_numbers/hyper_parameters/minmax_normalization.png)
+
+Analysis: We see that the model is learning in a faster way using minmax normalization. However the learning slopes seem similar, indicating that the variance is not really affected by it.
 
 #### Regularization
 

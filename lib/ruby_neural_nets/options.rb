@@ -188,6 +188,10 @@ module RubyNeuralNets
             noise_intensity: {
               desc: 'Intensity for Gaussian noise application in data augmentation (standard deviation between 0 and 1).',
               value: 0.0
+            },
+            minmax_normalize: {
+              desc: 'Scale image data to always be within the range 0 to 1.',
+              value: false
             }
           }
         },
