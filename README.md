@@ -445,7 +445,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 #### Effects of hyper parameters changes
 
-* Changing number of units in 1 layer: `--exp-id=5_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
+* Changing number of units in 1 layer: `--exp-id=5_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
 
 | # units | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -456,16 +456,20 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 ![Units comparison](docs/n_layers_numbers/hyper_parameters/units.png)
 
-* Changing number of layers: `--exp-id=0_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers= --experiment --exp-id=1_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=2_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10 --experiment --exp-id=5_layers --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10,10,10,10`
+Analysis: Adding units increases accuracy of both training and dev, but also increases variance.
+
+* Changing number of layers: `--exp-id=0_layers --resize=16,16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers= --experiment --exp-id=1_layers --resize=16,16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=2_layers --resize=16,16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10 --experiment --exp-id=5_layers --resize=16,16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10,10,10,10`
 
 | # layers | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | -------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 0        | 363020       | 612                  | 1.96          | 33%               | 2.35     | 19%          | 80               | 67%            | 24%      |
-| 1        | 363140       | 612                  | 2.14          | 25%               | 2.40     | 11%          | 10               | 75%            | 14%      |
-| 2        | 363260       | 613                  | 2.09          | 22%               | 2.44     | 14%          | 79               | 78%            | 8%       |
-| 5        | 363620       | 613                  | 2.10          | 23%               | 2.74     | 13%          | 11               | 77%            | 10%      |
+| 0        | 7700         | 12.98                | 1.95          | 33%               | 2.32     | 20%          | 43               | 67%            | 13%      |
+| 1        | 7820         | 13.19                | 1.83          | 36%               | 2.31     | 19%          | 10               | 64%            | 17%      |
+| 2        | 7940         | 13.39                | 1.83          | 37%               | 2.28     | 17%          | 89               | 63%            | 20%      |
+| 5        | 8300         | 14                   | 1.87          | 34%               | 2.55     | 12%          | 13               | 66%            | 22%      |
 
 ![Layers comparison](docs/n_layers_numbers/hyper_parameters/layers.png)
+
+Analysis: We see a normal curve for the 0 layer model, where early stopping correctly detects when overfitting is starting. Having more than 1 layer is not performing: the dev accuracy is plateauing and the model does not learn correctly. The 1 layer model has a big warm-up phase but then seems to steadily learn without increasing variance a lot. the 0-layer or 1-layer models seem to be safe choices.
 
 * Changing input image size: `--exp-id=size_8 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=8,8 --experiment --exp-id=size_16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=16,16 --experiment --exp-id=size_32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=32,32 --experiment --exp-id=size_110 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=110,110`
 
@@ -560,10 +564,10 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 | Samples multiplier | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------------------ | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 1                  | 27860        | 47                   |               |                   |          |              |                  |                |          |
-| 2                  | 27860        | 23                   |               |                   |          |              |                  |                |          |
-| 10                 | 27860        | 4.7                  |               |                   |          |              |                  |                |          |
-| 100                | 27860        | 0.47                 |               |                   |          |              |                  |                |          |
+| 1                  | 27860        | 47                   | 1.90          | 33%               | 2.42     | 19%          | 15               | 67%            | 14%      |
+| 2                  | 27860        | 23                   | 1.86          | 34%               | 2.30     | 21%          | 46               | 66%            | 13%      |
+| 10                 | 27860        | 4.7                  | 1.81          | 37%               | 2.23     | 20%          | 34               | 63%            | 17%      |
+| 100                | 27860        | 0.47                 | 1.86          | 36%               | 2.24     | 17%          | 93               | 64%            | 19%      |
 
 ![Number of samples comparison](docs/n_layers_numbers/hyper_parameters/dataset_samples.png)
 
@@ -590,12 +594,11 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 ![Weights decay comparison](docs/n_layers_numbers/hyper_parameters/weights_decay.png)
 
-
 #### Regularization
 
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
 * The Parameter-to-sample ratio rule can help estimating the desired complexity of the model. nbr_parameters / nbr_training_samples should be between 0.1 and 10. With the experiment [C], we have this ratio = (36300 * 100 + 100 + 100 + 100 * 10 + 10 + 10) / 593 = 6123. Clearly the model is far too complex.
-* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --early-stopping-patience=10 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --rot-angle=10 --resize=32,32 --noise-intensity=0.02 --display-samples=4`. Resulting accuracies at epoch 100 are 44% for training and 24% for dev. We see that now more epochs are needed to train properly, and the dev accuracy is steadily decreasing. It looks like the startup phase of the training is visible: dev cost starts to decrease and dev accuracy starts to increase steadily only after epoch 25.
+* On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --early-stopping-patience=10 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --rot-angle=10 --resize=32,32 --noise-intensity=0.02 --display-samples=4`. Resulting accuracies at epoch 100 are 44% for training and 24% for dev. We see that now more epochs are needed to train properly, and the dev accuracy is steadily decreasing. It looks like the warm-up phase of the training is visible: dev cost starts to decrease and dev accuracy starts to increase steadily only after epoch 25.
 
 ![J](docs/n_layers_numbers/j.png)
 * Experiment [K] adds a lot of data regularization with dropout and weight decay: `--nbr-epochs=100 --early-stopping-patience=10 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --rot-angle=10 --resize=32,32 --noise-intensity=0.02 --dropout-rate=0.5 --weight-decay=0.1`
