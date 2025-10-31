@@ -12,8 +12,8 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * x: The element X of the dataset
-      # * y: The element Y of the dataset
+      # * Object: The element X of the dataset
+      # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
         [apply_grayscale(image), y]
@@ -38,7 +38,7 @@ module RubyNeuralNets
       # Parameters::
       # * *image* (Magick::Image): Input image to convert to grayscale
       # Result::
-      # * (Magick::Image): Single-channel grayscale image
+      # * Magick::Image: Single-channel grayscale image
       def apply_grayscale(image)
         gray_image = image.copy
         gray_image.colorspace = Magick::GRAYColorspace

@@ -26,8 +26,8 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * x: The element X of the dataset
-      # * y: The element Y of the dataset
+      # * Object: The element X of the dataset
+      # * Object: The element Y of the dataset
       def [](index)
         @cache[index] = @dataset[index] unless @cache.key?(index)
         @cache[index]

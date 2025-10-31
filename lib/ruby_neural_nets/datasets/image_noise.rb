@@ -26,8 +26,8 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * x: The element X of the dataset
-      # * y: The element Y of the dataset
+      # * Object: The element X of the dataset
+      # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
         [apply_gaussian_noise(image), y]
@@ -40,7 +40,7 @@ module RubyNeuralNets
       # Parameters::
       # * *image* (Magick::Image): Input image to add noise to
       # Result::
-      # * (Magick::Image): Image with Gaussian noise added or original if no noise needed
+      # * Magick::Image: Image with Gaussian noise added or original if no noise needed
       def apply_gaussian_noise(image)
         if @noise_intensity > 0
           pixels_map = Helpers.image_pixels_map(image)

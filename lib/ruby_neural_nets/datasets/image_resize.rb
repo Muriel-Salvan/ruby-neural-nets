@@ -22,8 +22,8 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * x: The element X of the dataset
-      # * y: The element Y of the dataset
+      # * Object: The element X of the dataset
+      # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
         [apply_resize(image), y]
@@ -52,7 +52,7 @@ module RubyNeuralNets
       # Parameters::
       # * *image* (Magick::Image): Input image to resize
       # Result::
-      # * (Magick::Image): Resized image or original if no resize needed
+      # * Magick::Image: Resized image or original if no resize needed
       def apply_resize(image)
         if image.columns != @target_width || image.rows != @target_height
           image.resize(@target_width, @target_height)

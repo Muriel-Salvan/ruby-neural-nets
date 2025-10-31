@@ -24,8 +24,8 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * x: The element X of the dataset
-      # * y: The element Y of the dataset
+      # * Object: The element X of the dataset
+      # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
         [apply_rotate(image), y]
@@ -38,11 +38,10 @@ module RubyNeuralNets
       # Parameters::
       # * *image* (Magick::Image): Input image to rotate
       # Result::
-      # * (Magick::Image): Rotated image or original if no rotation needed
+      # * Magick::Image: Rotated image or original if no rotation needed
       def apply_rotate(image)
         if @rot_angle > 0
-          random_angle = @rng.rand(-@rot_angle..@rot_angle)
-          image.rotate(random_angle)
+          image.rotate(@rng.rand(-@rot_angle..@rot_angle))
         else
           image
         end

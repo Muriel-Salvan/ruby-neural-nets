@@ -22,8 +22,8 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * x: The element X of the dataset
-      # * y: The element Y of the dataset
+      # * Object: The element X of the dataset
+      # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
         [(@minmax_normalize ? image.normalize_channel(Magick::AllChannels) : image).dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), true), y]
