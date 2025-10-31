@@ -175,6 +175,10 @@ module RubyNeuralNets
               desc: 'Maximum rotation angle in degrees for random image transformations (rotation between -angle and +angle).',
               value: 0
             },
+            grayscale: {
+              desc: 'Convert images to grayscale, reducing the number of channels from 3 to 1.',
+              value: false
+            },
             resize: {
               desc: 'Resize dimensions [width, height] for image transformations.',
               value: [110, 110],

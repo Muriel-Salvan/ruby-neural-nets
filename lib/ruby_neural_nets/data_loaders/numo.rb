@@ -2,6 +2,7 @@ require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
 require 'ruby_neural_nets/datasets/images_from_files'
+require 'ruby_neural_nets/datasets/image_grayscale'
 require 'ruby_neural_nets/datasets/image_normalize'
 require 'ruby_neural_nets/datasets/image_resize'
 require 'ruby_neural_nets/datasets/image_rotate'
@@ -27,11 +28,13 @@ module RubyNeuralNets
       # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
       # * *nbr_clones* (Integer): Number of times each element should be cloned
       # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
+      # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
-      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, resize:, noise_intensity:)
+      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, resize:, noise_intensity:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
+        @grayscale = grayscale
         @resize = resize
         @noise_intensity = noise_intensity
         super(dataset:, max_minibatch_size:, dataset_seed:)
@@ -59,14 +62,13 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
-        Datasets::CacheMemory.new(
-          Datasets::ImageResize.new(
-            Datasets::ImagesFromFiles.new(
-              Datasets::OneHotEncoder.new(dataset)
-            ),
-            resize: @resize
-          )
+        inner_dataset = Datasets::ImageResize.new(
+          Datasets::ImagesFromFiles.new(
+            Datasets::OneHotEncoder.new(dataset)
+          ),
+          resize: @resize
         )
+        Datasets::CacheMemory.new(@grayscale ? Datasets::ImageGrayscale.new(inner_dataset) : inner_dataset)
       end
 
       # Return an augmentation dataset for this data loader.
@@ -134,13 +136,25 @@ module RubyNeuralNets
         rows = stats[:rows]
         cols = stats[:cols]
 
-        # Convert normalized pixel data back to ImageMagick format
-        # The data is in 0-1 range, need to convert back to 0-255 range
-        pixel_data = found_x.flatten.map { |pixel_value| (pixel_value * 255).round }
-
-        # Create ImageMagick image from pixel data
+        # Create ImageMagick image from pixel data using appropriate format
         image = Magick::Image.new(cols, rows)
-        image.import_pixels(0, 0, cols, rows, 'RGB', pixel_data.pack('C*'))
+        image.import_pixels(
+          0,
+          0,
+          cols,
+          rows,
+          case image_stats[:channels]
+          when 1
+            'I'
+          when 3
+            'RGB'
+          else
+            raise "Unsupported number of channels for display: #{image_stats[:channels]}"
+          end,
+          # Convert normalized pixel data back to ImageMagick format
+          # The data is in 0-1 range, need to convert back to 0-65535 range
+          found_x.flatten.map { |pixel_value| (pixel_value * 65535).round }
+        )
 
         log "Display sample image of label #{label} from #{dataset_type} dataset"
         Helpers.display_image(image)

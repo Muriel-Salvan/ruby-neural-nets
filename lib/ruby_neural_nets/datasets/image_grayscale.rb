@@ -1,12 +1,11 @@
-require 'rmagick'
 require 'ruby_neural_nets/datasets/wrapper'
 
 module RubyNeuralNets
 
   module Datasets
 
-    # Dataset of images read from files
-    class ImagesFromFiles < Wrapper
+    # Dataset wrapper that applies image grayscale conversion.
+    class ImageGrayscale < Wrapper
 
       # Access an element of the dataset
       #
@@ -16,8 +15,8 @@ module RubyNeuralNets
       # * x: The element X of the dataset
       # * y: The element Y of the dataset
       def [](index)
-        file, y = @dataset[index]
-        [Magick::ImageList.new(file).first, y]
+        image, y = @dataset[index]
+        [apply_grayscale(image), y]
       end
 
       # Get some images stats.
@@ -27,22 +26,23 @@ module RubyNeuralNets
       # * Hash: Image stats:
       #   * *rows* (Integer): Number of rows
       #   * *cols* (Integer): Number of columns
-      #   * *channels* (Integer): Number of channels
+      #   * *channels* (Integer): Number of channels (1 for grayscale)
       def image_stats
-        sample_image = Magick::ImageList.new(@dataset[0][0]).first
-        {
-          rows: sample_image.rows,
-          cols: sample_image.columns,
-          channels:
-            case sample_image.colorspace
-            when Magick::GRAYColorspace
-              1
-            when Magick::RGBColorspace, Magick::SRGBColorspace
-              3
-            else
-              raise "Unknown colorspace: #{sample_image.colorspace}"
-            end
-        }
+        @dataset.image_stats.merge(channels: 1)
+      end
+
+      private
+
+      # Apply grayscale transformation to the image
+      #
+      # Parameters::
+      # * *image* (Magick::Image): Input image to convert to grayscale
+      # Result::
+      # * (Magick::Image): Single-channel grayscale image
+      def apply_grayscale(image)
+        gray_image = image.copy
+        gray_image.colorspace = Magick::GRAYColorspace
+        gray_image
       end
 
     end

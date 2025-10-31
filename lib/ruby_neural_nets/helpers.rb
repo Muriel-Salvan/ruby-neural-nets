@@ -141,6 +141,24 @@ module RubyNeuralNets
       end
     end
 
+    # Return the pixels map used by export/import pixels methods.
+    # In case of grayscale images, return only the intensity.
+    #
+    # Parameters::
+    # * *image* (RMagick::Image): The RMagick image
+    # Result::
+    # * String: Corresponding pixels map
+    def self.image_pixels_map(image)
+      case image.colorspace
+      when Magick::GRAYColorspace
+        'I'
+      when Magick::RGBColorspace, Magick::SRGBColorspace
+        'RGB'
+      else
+        raise "Unknown colorspace: #{image.colorspace}"
+      end
+    end
+
   end
 
 end

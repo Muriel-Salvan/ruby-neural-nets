@@ -16,7 +16,7 @@ module RubyNeuralNets
       # * y: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [image.export_pixels.map { |color| (color >> 8).to_f / 255.0 }, y]
+        [image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), true), y]
       end
 
     end

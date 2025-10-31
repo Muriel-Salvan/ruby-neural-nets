@@ -1,6 +1,7 @@
 * Find a way to reduce variance.
 * Improve ImageMagick performance for data augmentation.
-* Try grayscale.
+* Try image normalize (scale any image between 0 and 1).
+* Try rotate with virtual_pixel_method = Magick::VirtualPixelMethodEdge
 * Use GPU to speed-up.
 * Glorot is supposed to be not great with ReLU. Try randn*sqrt(2/n[l-1])
 * Understand why PyTorch still differs from Numo implementation.

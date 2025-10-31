@@ -146,6 +146,10 @@ This runs with default settings:
   - Use values > 0 to enable Gaussian noise data augmentation
   - Example: `--noise-intensity 0.1` adds Gaussian noise with scaled standard deviation
 
+- **`--grayscale`**: Convert images to grayscale, reducing the number of channels from 3 to 1 (boolean, default: false)
+  - Reduces channel count from RGB to grayscale during preprocessing
+  - When enabled, applies transformation before resizing for reduced memory usage
+
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
   - Format: `--track-layer layer_name,num_units`
@@ -593,6 +597,17 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 | 1e-1         | 5.08          | 68%               | 6.11     | 25%          | 19               | 32%            | 43%      |
 
 ![Weights decay comparison](docs/n_layers_numbers/hyper_parameters/weights_decay.png)
+
+* Applying grayscale: `--exp-id=color --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=gray --grayscale=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10`
+
+| Color space | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ----------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Color       | 30860        | 52                   | 1.64          | 46%               | 2.39     | 17%          | 82               | 29%            | 28%      |
+| Grayscale   | 10380        | 17.5                 | 1.83          | 38%               | 2.21     | 26%          | 90               | 12%            | 12%      |
+
+![Grayscale comparison](docs/n_layers_numbers/hyper_parameters/grayscale.png)
+
+Analysis: There is a smaller variance when using grayscale. The model is focusing more on the number shapes rather than on the colors.
 
 #### Regularization
 
