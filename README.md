@@ -559,22 +559,24 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 
 | Rotation | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | -------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 0°       | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
-| 5°       | 1.78          | 40%               | 2.28     | 21%          | 10               | 60%            | 19%      |
-| 30°      | 2.16          | 20%               | 2.31     | 16%          |                  | 80%            | 4%       |
-| 90°      | 2.25          | 18%               | 2.42     | 11%          | 10               | 82%            | 7%       |
-| 180°     | 2.24          | 19%               | 2.38     | 10%          | 97               | 81%            | 9%       |
+| 0°       | 1.93          | 33.56%            | 2.37     | 15.15%       | 97               | 66%            | 18%      |
+| 5°       | 1.86          | 36.42%            | 2.31     | 14.39%       | 81               | 64%            | 22%      |
+| 30°      | 2.19          | 19.56%            | 2.42     | 14.39%       | 84               | 80%            | 5%       |
+| 90°      | 2.27          | 19.73%            | 2.56     | 6.82%        | 10               | 80%            | 13%      |
+| 180°     | 2.24          | 15.85%            | 2.35     | 8.33%        |                  | 84%            | 8%       |
 
 ![Dataset rotations comparison](docs/n_layers_numbers/hyper_parameters/dataset_rotations.png)
+
+Analysis: Smaller rotations show decent learning while larger rotations significantly degrade performance.
 
 * Changing number of augmented samples: `--exp-id=nbr_1 --nbr-clones=1 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_2 --nbr-clones=2 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_10 --nbr-clones=10 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_100 --nbr-clones=100 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16`
 
 | Samples multiplier | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------------------ | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 1                  | 27860        | 47                   | 1.90          | 33%               | 2.42     | 19%          | 15               | 67%            | 14%      |
-| 2                  | 27860        | 23                   | 1.86          | 34%               | 2.30     | 21%          | 46               | 66%            | 13%      |
-| 10                 | 27860        | 4.7                  | 1.81          | 37%               | 2.23     | 20%          | 34               | 63%            | 17%      |
-| 100                | 27860        | 0.47                 | 1.86          | 36%               | 2.24     | 17%          | 93               | 64%            | 19%      |
+| 1                  | 27860        | 47                   | 1.91          | 32.38%            | 2.37     | 15.91%       | 11               | 68%            | 16%      |
+| 2                  | 27860        | 23                   | 1.89          | 34.32%            | 2.25     | 22.73%       | 70               | 66%            | 12%      |
+| 10                 | 27860        | 4.7                  | 1.83          | 36.39%            | 2.20     | 21.97%       | 14               | 64%            | 14%      |
+| 100                | 27860        | 0.47                 | 1.84          | 35.68%            | 2.24     | 22.73%       | 31               | 64%            | 13%      |
 
 ![Number of samples comparison](docs/n_layers_numbers/hyper_parameters/dataset_samples.png)
 

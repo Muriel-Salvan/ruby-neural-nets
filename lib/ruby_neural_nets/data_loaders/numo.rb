@@ -84,16 +84,13 @@ module RubyNeuralNets
       # * Dataset: The dataset with augmentation applied
       def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
         Datasets::ImageNoise.new(
-          Datasets::ImageCrop.new(
-            Datasets::ImageRotate.new(
-              Datasets::Clone.new(
-                preprocessed_dataset,
-                nbr_clones: @nbr_clones
-              ),
-              rot_angle: @rot_angle,
-              rng:
+          Datasets::ImageRotate.new(
+            Datasets::Clone.new(
+              preprocessed_dataset,
+              nbr_clones: @nbr_clones
             ),
-            crop_size: @resize
+            rot_angle: @rot_angle,
+            rng:
           ),
           numo_rng:,
           noise_intensity: @noise_intensity

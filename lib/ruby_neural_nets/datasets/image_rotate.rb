@@ -41,7 +41,8 @@ module RubyNeuralNets
       # * Magick::Image: Rotated image or original if no rotation needed
       def apply_rotate(image)
         if @rot_angle > 0
-          image.rotate(@rng.rand(-@rot_angle..@rot_angle))
+          image.virtual_pixel_method = Magick::EdgeVirtualPixelMethod
+          image.distort(Magick::ScaleRotateTranslateDistortion, [@rng.rand(-@rot_angle..@rot_angle)])
         else
           image
         end
