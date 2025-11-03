@@ -6,13 +6,26 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 - [Features](#features)
 - [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
 - [Usage](#usage)
-- [Running the Example](#running-the-example)
-- [Running Multiple Experiments](#running-multiple-experiments)
-- [Gradient Checking](#gradient-checking)
-- [Datasets](#datasets)
-- [Creating Custom Datasets](#creating-custom-datasets)
-- [Data Augmentation](#data-augmentation)
+  - [Running the Example](#running-the-example)
+    - [Key Options Explained](#key-options-explained)
+  - [Running Multiple Experiments](#running-multiple-experiments)
+    - [Basic Multiple Experiments](#basic-multiple-experiments)
+    - [Advanced Experiment Configuration](#advanced-experiment-configuration)
+    - [Experiment Features](#experiment-features)
+    - [Experiment Output](#experiment-output)
+  - [Gradient Checking](#gradient-checking)
+  - [Datasets](#datasets)
+  - [Creating Custom Datasets](#creating-custom-datasets)
+  - [Data Augmentation](#data-augmentation)
+    - [Available Augmentation Layers](#available-augmentation-layers)
+    - [Data Processing Pipeline](#data-processing-pipeline)
+      - [Preprocessing Phase](#preprocessing-phase)
+      - [Augmentation Phase](#augmentation-phase)
+      - [Batching Phase](#batching-phase)
+    - [Example Usage](#example-usage)
 - [Code Structure](#code-structure)
 - [Contributing](#contributing)
 - [Findings and experiments](#findings-and-experiments)
@@ -20,8 +33,17 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
   - [One layer model on numbers dataset](#one-layer-model-on-numbers-dataset)
   - [N layer model on colors dataset](#n-layer-model-on-colors-dataset)
   - [N layer model on numbers dataset](#n-layer-model-on-numbers-dataset)
+    - [Observations without regularization](#observations-without-regularization)
+    - [Effects of hyper parameters changes](#effects-of-hyper-parameters-changes)
+      - [Data preparation hyper parameters](#data-preparation-hyper-parameters)
+      - [Data stochastic augmentation hyper parameters](#data-stochastic-augmentation-hyper-parameters)
+      - [Model hyper parameters](#model-hyper-parameters)
+      - [Regularization hyper parameters](#regularization-hyper-parameters)
+    - [Regularization](#regularization)
   - [N layer model using PyTorch](#n-layer-model-using-pytorch)
   - [Performance benchmarks](#performance-benchmarks)
+    - [Ruby Numo](#ruby-numo)
+    - [Torch.rb](#torchrb)
 - [License](#license)
 
 ## Features
@@ -507,6 +529,62 @@ Analysis: The model learns faster and with less noise when using adaptive invert
 
 Analysis: We see that the model learns much faster, still keeping the variance.
 
+* Changing input image size: `--exp-id=size_8 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=8,8 --experiment --exp-id=size_16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=16,16 --experiment --exp-id=size_32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=32,32 --experiment --exp-id=size_110 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=110,110`
+
+| Size | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ---- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 8    | 6548         | 11                   | 1.91          | 33%               | 2.35     | 18%          | 40               | 67%            | 15%      |
+| 16   | 24980        | 42                   | 1.35          | 63%               | 2.29     | 22%          | 22               | 37%            | 41%      |
+| 32   | 98708        | 166                  | 1.01          | 80%               | 2.23     | 27%          | 44               | 20%            | 53%      |
+| 110  | 1162004      | 1960                 | 1.62          | 48%               | 2.37     | 17%          | 67               | 52%            | 31%      |
+
+![Input size comparison](docs/n_layers_numbers/hyper_parameters/resizes.png)
+
+Analysis: Using a size between 16 and 32 seems to be a good balance between the model's performance and avoiding too much variance.
+
+##### Data stochastic augmentation hyper parameters
+
+* Changing dataset Gaussian noise: `--exp-id=noise_0 --noise-intensity=0 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_01 --noise-intensity=0.01 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_1 --noise-intensity=0.1 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_5 --noise-intensity=0.5 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_9 --noise-intensity=0.9 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Noise intensity | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| --------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 0%              | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
+| 1%              | 1.77          | 41%               | 2.34     | 11%          | 81               | 59%            | 30%      |
+| 10%             | 1.70          | 48%               | 2.37     | 19%          | 78               | 52%            | 29%      |
+| 50%             | 1.60          | 49%               | 2.33     | 17%          | 10               | 51%            | 32%      |
+| 90%             | 1.89          | 32%               | 2.28     | 17%          | 74               | 68%            | 15%      |
+
+![Dataset noise comparison](docs/n_layers_numbers/hyper_parameters/dataset_noises.png)
+
+Analysis: Adding between 10% and 50% noise gives good results: accuracy is good (around 50%) while keeping variance under control (around 30%). More noise prevents the model from learning, as well as less noise.
+
+* Changing dataset rotations: `--exp-id=rot_0 --rot-angle=0 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_5 --rot-angle=5 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_30 --rot-angle=30 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_90 --rot-angle=90 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_180 --rot-angle=180 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+
+| Rotation | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| -------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 0°       | 1.93          | 33.56%            | 2.37     | 15.15%       | 97               | 66%            | 18%      |
+| 5°       | 1.86          | 36.42%            | 2.31     | 14.39%       | 81               | 64%            | 22%      |
+| 30°      | 2.19          | 19.56%            | 2.42     | 14.39%       | 84               | 80%            | 5%       |
+| 90°      | 2.27          | 19.73%            | 2.56     | 6.82%        | 10               | 80%            | 13%      |
+| 180°     | 2.24          | 15.85%            | 2.35     | 8.33%        |                  | 84%            | 8%       |
+
+![Dataset rotations comparison](docs/n_layers_numbers/hyper_parameters/dataset_rotations.png)
+
+Analysis: Smaller rotations show decent learning while larger rotations significantly degrade performance.
+
+* Changing number of augmented samples: `--exp-id=nbr_1 --nbr-clones=1 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_2 --nbr-clones=2 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_10 --nbr-clones=10 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_100 --nbr-clones=100 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16`
+
+| Samples multiplier | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ------------------ | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| 1                  | 27860        | 47                   | 1.91          | 32.38%            | 2.37     | 15.91%       | 11               | 68%            | 16%      |
+| 2                  | 27860        | 23                   | 1.89          | 34.32%            | 2.25     | 22.73%       | 70               | 66%            | 12%      |
+| 10                 | 27860        | 4.7                  | 1.83          | 36.39%            | 2.20     | 21.97%       | 14               | 64%            | 14%      |
+| 100                | 27860        | 0.47                 | 1.84          | 35.68%            | 2.24     | 22.73%       | 31               | 64%            | 13%      |
+
+![Number of samples comparison](docs/n_layers_numbers/hyper_parameters/dataset_samples.png)
+
+Analysis: We see a good regularization effect by using data augmentationwith more samples. There seems to have no need for a lot of samples to benfit from it. Around x10 seems to give already best results.
+
 ##### Model hyper parameters
 
 * Changing number of units in 1 layer: `--exp-id=5_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
@@ -535,17 +613,6 @@ Analysis: Adding units increases accuracy of both training and dev, but also inc
 
 Analysis: We see a normal curve for the 0 layer model, where early stopping correctly detects when overfitting is starting. Having more than 1 layer is not performing: the dev accuracy is plateauing and the model does not learn correctly. The 1 layer model has a big warm-up phase but then seems to steadily learn without increasing variance a lot. The 0-layer or 1-layer models seem to be safe choices.
 
-* Changing input image size: `--exp-id=size_8 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=8,8 --experiment --exp-id=size_16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=16,16 --experiment --exp-id=size_32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=32,32 --experiment --exp-id=size_110 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=110,110`
-
-| Size | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| ---- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 8    | 6548         | 11                   | 1.91          | 33%               | 2.35     | 18%          | 40               | 67%            | 15%      |
-| 16   | 24980        | 42                   | 1.35          | 63%               | 2.29     | 22%          | 22               | 37%            | 41%      |
-| 32   | 98708        | 166                  | 1.01          | 80%               | 2.23     | 27%          | 44               | 20%            | 53%      |
-| 110  | 1162004      | 1960                 | 1.62          | 48%               | 2.37     | 17%          | 67               | 52%            | 31%      |
-
-![Input size comparison](docs/n_layers_numbers/hyper_parameters/resizes.png)
-
 * Changing minibatch size: `--exp-id=size_50 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50 --layers=16 --experiment --exp-id=size_100 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100 --layers=16 --experiment --exp-id=size_300 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=300 --layers=16 --experiment --exp-id=size_1000 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=1000 --layers=16`
 
 | Size | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
@@ -556,6 +623,8 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 | 1000 | 1.92          | 34%               | 2.40     | 14%          | 10               | 66%            | 20%      |
 
 ![Minibatch size comparison](docs/n_layers_numbers/hyper_parameters/minibatch_sizes.png)
+
+Analysis: Using minibatches clearly helps in making the model learn faster, however the regularization effect is still limited as the variance grows.
 
 * Changing random seed (by executing the same model several times on the same dataset): `--training-times=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
@@ -568,6 +637,8 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 
 ![Random seeds comparison](docs/n_layers_numbers/hyper_parameters/randoms.png)
 
+Analysis: A few differences can be seen in accuracy (8% range) and variance (5% range). This indicates some sensitivity to the initial random conditions of the model.
+
 * Changing datasets random seed: `--exp-id=exp_1 --dataset-seed=0 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_2 --dataset-seed=10 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_3 --dataset-seed=20 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_4 --dataset-seed=30 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | # | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
@@ -579,7 +650,7 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 
 ![Dataset random seeds comparison](docs/n_layers_numbers/hyper_parameters/dataset_randoms.png)
 
-Analysis: We see big differences in the accuracy (26%) and variance (24%) with different random seeds. This indicates that the model is very sensitive to random initial conditions.
+Analysis: We see big differences in the accuracy (26% range) and variance (24% range) with different random seeds. This indicates that the model is very sensitive to random initial conditions of the data. This is also giving the intuition that data preparation needs to be improved to reduce this randomness from the data itself.
 
 * Changing Adam learning rate: `--exp-id=lr_0001 --learning-rate=0.0001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_001 --learning-rate=0.001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_002 --learning-rate=0.002 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_01 --learning-rate=0.01 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
@@ -592,6 +663,8 @@ Analysis: We see big differences in the accuracy (26%) and variance (24%) with d
 
 ![Learning rates comparison](docs/n_layers_numbers/hyper_parameters/learning_rates.png)
 
+Analysis: The smaller learning rate is, the more overfitting we get and the faster learning is happening. If we use a small learning rate, we have to also work on regularaization at the same time.
+
 * Changing optimizers: `--exp-id=adam --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=constant --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Constant --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_decay --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=ExponentialDecay --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | Optimizer         | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
@@ -602,42 +675,9 @@ Analysis: We see big differences in the accuracy (26%) and variance (24%) with d
 
 ![Optimizers comparison](docs/n_layers_numbers/hyper_parameters/optimizers.png)
 
-* Changing dataset Gaussian noise: `--exp-id=noise_0 --noise-intensity=0 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_01 --noise-intensity=0.01 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_1 --noise-intensity=0.1 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_5 --noise-intensity=0.5 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_9 --noise-intensity=0.9 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+Analysis: Exponential decay is a bad choice, as it plateaus very quickly. Constant has good results, but ultimately Adam beats them all with a lot of epochs.
 
-| Noise intensity | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| --------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 0%              | 1.93          | 34%               | 2.37     | 15%          | 97               | 66%            | 19%      |
-| 1%              | 1.77          | 41%               | 2.34     | 11%          | 81               | 59%            | 30%      |
-| 10%             | 1.70          | 48%               | 2.37     | 19%          | 78               | 52%            | 29%      |
-| 50%             | 1.60          | 49%               | 2.33     | 17%          | 10               | 51%            | 32%      |
-| 90%             | 1.89          | 32%               | 2.28     | 17%          | 74               | 68%            | 15%      |
-
-![Dataset noise comparison](docs/n_layers_numbers/hyper_parameters/dataset_noises.png)
-
-* Changing dataset rotations: `--exp-id=rot_0 --rot-angle=0 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_5 --rot-angle=5 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_30 --rot-angle=30 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_90 --rot-angle=90 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_180 --rot-angle=180 --display-samples=4 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
-
-| Rotation | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| -------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 0°       | 1.93          | 33.56%            | 2.37     | 15.15%       | 97               | 66%            | 18%      |
-| 5°       | 1.86          | 36.42%            | 2.31     | 14.39%       | 81               | 64%            | 22%      |
-| 30°      | 2.19          | 19.56%            | 2.42     | 14.39%       | 84               | 80%            | 5%       |
-| 90°      | 2.27          | 19.73%            | 2.56     | 6.82%        | 10               | 80%            | 13%      |
-| 180°     | 2.24          | 15.85%            | 2.35     | 8.33%        |                  | 84%            | 8%       |
-
-![Dataset rotations comparison](docs/n_layers_numbers/hyper_parameters/dataset_rotations.png)
-
-Analysis: Smaller rotations show decent learning while larger rotations significantly degrade performance.
-
-* Changing number of augmented samples: `--exp-id=nbr_1 --nbr-clones=1 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_2 --nbr-clones=2 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_10 --nbr-clones=10 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_100 --nbr-clones=100 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16`
-
-| Samples multiplier | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| ------------------ | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| 1                  | 27860        | 47                   | 1.91          | 32.38%            | 2.37     | 15.91%       | 11               | 68%            | 16%      |
-| 2                  | 27860        | 23                   | 1.89          | 34.32%            | 2.25     | 22.73%       | 70               | 66%            | 12%      |
-| 10                 | 27860        | 4.7                  | 1.83          | 36.39%            | 2.20     | 21.97%       | 14               | 64%            | 14%      |
-| 100                | 27860        | 0.47                 | 1.84          | 35.68%            | 2.24     | 22.73%       | 31               | 64%            | 13%      |
-
-![Number of samples comparison](docs/n_layers_numbers/hyper_parameters/dataset_samples.png)
+##### Regularization hyper parameters
 
 * Changing dropout: `--exp-id=drop_0 --dropout-rate=0 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_10 --dropout-rate=0.1 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_50 --dropout-rate=0.5 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_80 --dropout-rate=0.8 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
@@ -649,6 +689,8 @@ Analysis: Smaller rotations show decent learning while larger rotations signific
 | 80%          | 2.47          | 11%               | 2.55     | 13%          | 20               | 89%            | -2%      |
 
 ![Dropouts comparison](docs/n_layers_numbers/hyper_parameters/dropouts.png)
+
+Analysis: We see a clear regularization improvement when using 10% dropout, while not impacting accuracy too much. However more dropout rate prevents the model to learn properly. Less dropout rate does not prevent overfitting enough.
 
 * Changing weight decay: `--exp-id=wd_0 --weight-decay=0 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_0001 --weight-decay=0.0001 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_001 --weight-decay=0.001 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_01 --weight-decay=0.01 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_1 --weight-decay=0.1 --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
@@ -662,6 +704,8 @@ Analysis: Smaller rotations show decent learning while larger rotations signific
 
 ![Weights decay comparison](docs/n_layers_numbers/hyper_parameters/weights_decay.png)
 
+Analysis: Regularization effect of weights decay seems limited. Best value seems to be around 1e-2, but that is far from enough to prevent overfitting.
+
 #### Regularization
 
 * When trying various regularization techniques from [C] (`--nbr-clones=3 --rot-angle=30 --dropout-rate=0.02`), we observe that the model is always overfitting. This gives the intuition that the model is too complex for the problem at hand.
@@ -669,7 +713,10 @@ Analysis: Smaller rotations show decent learning while larger rotations signific
 * On experiment [J] we reduce the complexity of the model with 1 layer of 10 units and we downsample the images from 110 x 110 down to 32 x 32. We use data augmentation with 52 clones, still in 1 minibatch. This brings the ratio down to 1.0. Parameters used are `--nbr-epochs=100 --early-stopping-patience=10 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --rot-angle=10 --resize=32,32 --noise-intensity=0.02 --display-samples=4`. Resulting accuracies at epoch 100 are 44% for training and 24% for dev. We see that now more epochs are needed to train properly, and the dev accuracy is steadily decreasing. It looks like the warm-up phase of the training is visible: dev cost starts to decrease and dev accuracy starts to increase steadily only after epoch 25.
 
 ![J](docs/n_layers_numbers/j.png)
-* Experiment [K] adds a lot of data regularization with dropout and weight decay: `--nbr-epochs=100 --early-stopping-patience=10 --max-minibatch-size=50000 --layers=10 --nbr-clones=52 --rot-angle=10 --resize=32,32 --noise-intensity=0.02 --dropout-rate=0.5 --weight-decay=0.1`
+* As seen in various hyper parameters comparisons, data preparation and optimization seems to provide bigger impacts for accuracy and variance.
+* Experiment [K] adds a lot of data preparation and removes any regularization as the training accuracy starts being below the dev one (negative variance) when using regularization and data augmentation: `--dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=L0_Dense_W,8`. The bigger input size width and the bigger variance will get. With this experiment we reach nearly 100% of occuracy with nearly 0% variance.
+
+![K](docs/n_layers_numbers/j.png)
 
 ### N layer model using PyTorch
 
