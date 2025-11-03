@@ -150,12 +150,17 @@ This runs with default settings:
   - Reduces channel count from RGB to grayscale during preprocessing
   - When enabled, applies transformation before resizing for reduced memory usage
 
+- **`--adaptive-invert`**: Apply adaptive color inversion based on top left pixel intensity (boolean, default: false)
+  - Inverts image colors if the top left pixel has intensity in the lower half range (< 0.5)
+  - Applied after grayscale conversion if both options are enabled
+  - Helps improve model robustness to inverted color schemes
+
 - **`--trim`**: Trim images to remove borders and restore original aspect ratio by adding borders with the color of pixel 0,0 (boolean, default: false)
   - Applies trimming before resizing to maintain aspect ratio consistency
   - Useful for datasets with varying border sizes around content
 
 - **`--minmax-normalize`**: Scale image data to always be within the range 0 to 1 (boolean, default: false)
-  - Applies min-max normalization to pixel values before standard 0-1 scaling
+  - Applies min-max normalization to pixel values during preprocessing, after possible grayscale conversion
 
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
@@ -456,6 +461,54 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=Numo --accuracy=Class
 
 #### Effects of hyper parameters changes
 
+##### Data preparation hyper parameters
+
+* Applying grayscale: `--exp-id=color --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=gray --grayscale=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+
+| Color space | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ----------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Color       | 30860        | 52                   | 1.64          | 46%               | 2.39     | 17%          | 82               | 29%            | 28%      |
+| Grayscale   | 10380        | 17.5                 | 1.83          | 38%               | 2.21     | 26%          | 90               | 12%            | 12%      |
+
+![Grayscale comparison](docs/n_layers_numbers/hyper_parameters/grayscale.png)
+
+Analysis: There is a smaller variance when using grayscale. The model is focusing more on the number shapes rather than on the colors.
+
+* Applying min-max normalization: `--exp-id=no_norm --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=minmax_norm --minmax-normalize=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+
+| Min-max normalization | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| --------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Off                   | 1.64          | 46%               | 2.39     | 17%          | 82               | 29%            | 29%      |
+| On                    | 1.15          | 75%               | 2.19     | 30%          | 73               | 45%            | 45%      |
+
+![Min-max normalization comparison](docs/n_layers_numbers/hyper_parameters/minmax_normalization.png)
+
+Analysis: We see that the model is learning in a faster way using minmax normalization. However the learning slopes seem similar, indicating that the variance is not really affected by it.
+
+* Applying adaptive invert: `--exp-id=no_invert --minmax-normalize=true --grayscale=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=invert --adaptive-invert=true --minmax-normalize=true --grayscale=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+
+| Adaptive invert | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| --------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Off             | 1.25          | 70%               | 1.87     | 44%          |                  | 30%            | 26%      |
+| On              | 0.99          | 82%               | 1.53     | 56%          |                  | 18%            | 26%      |
+
+![Adaptive invert comparison](docs/n_layers_numbers/hyper_parameters/invert.png)
+
+Analysis: The model learns faster and with less noise when using adaptive invert. The variance is not affected.
+
+* Trimming images: `--exp-id=no_trim --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=trim --trim=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+
+| Trim | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ---- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Off  | 1.64          | 46%               | 2.39     | 17%          | 82               | 54%            | 29%      |
+| On   | 0.88          | 87%               | 1.68     | 52%          |                  | 13%            | 35%      |
+
+![Trimming comparison](docs/n_layers_numbers/hyper_parameters/trim.png)
+
+Analysis: We see that the model learns much faster, still keeping the variance.
+
+##### Model hyper parameters
+
 * Changing number of units in 1 layer: `--exp-id=5_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_units --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
 
 | # units | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
@@ -480,7 +533,7 @@ Analysis: Adding units increases accuracy of both training and dev, but also inc
 
 ![Layers comparison](docs/n_layers_numbers/hyper_parameters/layers.png)
 
-Analysis: We see a normal curve for the 0 layer model, where early stopping correctly detects when overfitting is starting. Having more than 1 layer is not performing: the dev accuracy is plateauing and the model does not learn correctly. The 1 layer model has a big warm-up phase but then seems to steadily learn without increasing variance a lot. the 0-layer or 1-layer models seem to be safe choices.
+Analysis: We see a normal curve for the 0 layer model, where early stopping correctly detects when overfitting is starting. Having more than 1 layer is not performing: the dev accuracy is plateauing and the model does not learn correctly. The 1 layer model has a big warm-up phase but then seems to steadily learn without increasing variance a lot. The 0-layer or 1-layer models seem to be safe choices.
 
 * Changing input image size: `--exp-id=size_8 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=8,8 --experiment --exp-id=size_16 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=16,16 --experiment --exp-id=size_32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=32,32 --experiment --exp-id=size_110 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=110,110`
 
@@ -525,6 +578,8 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 | 4 | 1.58          | 52%               | 2.49     | 15%          | 17               | 49%            | 37%      |
 
 ![Dataset random seeds comparison](docs/n_layers_numbers/hyper_parameters/dataset_randoms.png)
+
+Analysis: We see big differences in the accuracy (26%) and variance (24%) with different random seeds. This indicates that the model is very sensitive to random initial conditions.
 
 * Changing Adam learning rate: `--exp-id=lr_0001 --learning-rate=0.0001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_001 --learning-rate=0.001 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_002 --learning-rate=0.002 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_01 --learning-rate=0.01 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
@@ -606,39 +661,6 @@ Analysis: Smaller rotations show decent learning while larger rotations signific
 | 1e-1         | 5.08          | 68%               | 6.11     | 25%          | 19               | 32%            | 43%      |
 
 ![Weights decay comparison](docs/n_layers_numbers/hyper_parameters/weights_decay.png)
-
-* Applying grayscale: `--exp-id=color --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=gray --grayscale=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
-
-| Color space | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| ----------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| Color       | 30860        | 52                   | 1.64          | 46%               | 2.39     | 17%          | 82               | 29%            | 28%      |
-| Grayscale   | 10380        | 17.5                 | 1.83          | 38%               | 2.21     | 26%          | 90               | 12%            | 12%      |
-
-![Grayscale comparison](docs/n_layers_numbers/hyper_parameters/grayscale.png)
-
-Analysis: There is a smaller variance when using grayscale. The model is focusing more on the number shapes rather than on the colors.
-
-* Applying min-max normalization: `--exp-id=no_norm --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=minmax_norm --minmax-normalize=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
-
-| Min-max normalization | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| --------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| Off                   | 1.64          | 46%               | 2.39     | 17%          | 82               | 29%            | 29%      |
-| On                    | 1.15          | 75%               | 2.19     | 30%          | 73               | 45%            | 45%      |
-
-![Min-max normalization comparison](docs/n_layers_numbers/hyper_parameters/minmax_normalization.png)
-
-Analysis: We see that the model is learning in a faster way using minmax normalization. However the learning slopes seem similar, indicating that the variance is not really affected by it.
-
-* Trimming images: `--exp-id=no_trim --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=trim --trim=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
-
-| Trim | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
-| ---- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
-| Off  | 1.64          | 46%               | 2.39     | 17%          | 82               | 54%            | 29%      |
-| On   | 0.88          | 87%               | 1.68     | 52%          |                  | 13%            | 35%      |
-
-![Trimming comparison](docs/n_layers_numbers/hyper_parameters/trim.png)
-
-Analysis: We see that the model learns much faster, still keeping the variance.
 
 #### Regularization
 

@@ -4,8 +4,8 @@ module RubyNeuralNets
 
   module Datasets
 
-    # Dataset wrapper that converts images to pixel arrays
-    class ImageNormalize < Wrapper
+    # Dataset wrapper that applies min-max normalization to image pixel values
+    class ImageMinMaxNormalize < Wrapper
 
       # Access an element of the dataset
       #
@@ -16,7 +16,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), true), y]
+        [image.normalize_channel(Magick::AllChannels), y]
       end
 
     end

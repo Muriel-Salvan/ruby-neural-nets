@@ -3,6 +3,8 @@ require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
 require 'ruby_neural_nets/datasets/images_from_files'
 require 'ruby_neural_nets/datasets/image_grayscale'
+require 'ruby_neural_nets/datasets/image_adaptive_invert'
+require 'ruby_neural_nets/datasets/image_minmax_normalize'
 require 'ruby_neural_nets/datasets/image_trim'
 require 'ruby_neural_nets/datasets/image_normalize'
 require 'ruby_neural_nets/datasets/image_resize'
@@ -30,14 +32,16 @@ module RubyNeuralNets
       # * *nbr_clones* (Integer): Number of times each element should be cloned
       # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
       # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1
+      # * *adaptive_invert* (bool): Apply adaptive color inversion based on top left pixel intensity
       # * *trim* (bool): Trim images to remove borders and restore original aspect ratio
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
-      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, trim:, resize:, noise_intensity:, minmax_normalize:)
+      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
+        @adaptive_invert = adaptive_invert
         @trim = trim
         @resize = resize
         @noise_intensity = noise_intensity
@@ -71,7 +75,14 @@ module RubyNeuralNets
           Datasets::OneHotEncoder.new(dataset)
         )
         resized_dataset = Datasets::ImageResize.new(@trim ? Datasets::ImageTrim.new(base_dataset) : base_dataset, resize: @resize)
-        Datasets::CacheMemory.new(@grayscale ? Datasets::ImageGrayscale.new(resized_dataset) : resized_dataset)
+
+        # Apply preprocessing layers
+        processed_dataset = resized_dataset
+        processed_dataset = Datasets::ImageGrayscale.new(processed_dataset) if @grayscale
+        processed_dataset = Datasets::ImageMinMaxNormalize.new(processed_dataset) if @minmax_normalize
+        processed_dataset = Datasets::ImageAdaptiveInvert.new(processed_dataset) if @adaptive_invert
+
+        Datasets::CacheMemory.new(processed_dataset)
       end
 
       # Return an augmentation dataset for this data loader.
@@ -110,10 +121,7 @@ module RubyNeuralNets
       def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
-            Datasets::ImageNormalize.new(
-              augmented_dataset,
-              minmax_normalize: @minmax_normalize
-            ),
+            Datasets::ImageNormalize.new(augmented_dataset),
             rng:
           ),
           max_minibatch_size:
