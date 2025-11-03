@@ -34,15 +34,14 @@ module RubyNeuralNets
       #
       # Result::
       # * Hash: Image stats:
-      #   * *rows* (Integer): Number of rows
-      #   * *cols* (Integer): Number of columns
-      #   * *channels* (Integer): Number of channels
+      #   * *rows* (Integer or nil): Number of rows if it applies to all images, or nil otherwise
+      #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
+      #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
-        {
+        @dataset.image_stats.merge(
           rows: @target_height,
-          cols: @target_width,
-          channels: @dataset.image_stats[:channels]
-        }
+          cols: @target_width
+        )
       end
 
       private

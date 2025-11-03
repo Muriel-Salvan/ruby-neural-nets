@@ -179,6 +179,10 @@ module RubyNeuralNets
               desc: 'Convert images to grayscale, reducing the number of channels from 3 to 1.',
               value: false
             },
+            trim: {
+              desc: 'Trim images to remove borders and restore original aspect ratio by adding borders with the color of pixel 0,0.',
+              value: false
+            },
             resize: {
               desc: 'Resize dimensions [width, height] for image transformations.',
               value: [110, 110],

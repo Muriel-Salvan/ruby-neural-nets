@@ -150,6 +150,10 @@ This runs with default settings:
   - Reduces channel count from RGB to grayscale during preprocessing
   - When enabled, applies transformation before resizing for reduced memory usage
 
+- **`--trim`**: Trim images to remove borders and restore original aspect ratio by adding borders with the color of pixel 0,0 (boolean, default: false)
+  - Applies trimming before resizing to maintain aspect ratio consistency
+  - Useful for datasets with varying border sizes around content
+
 - **`--minmax-normalize`**: Scale image data to always be within the range 0 to 1 (boolean, default: false)
   - Applies min-max normalization to pixel values before standard 0-1 scaling
 
@@ -624,6 +628,17 @@ Analysis: There is a smaller variance when using grayscale. The model is focusin
 ![Min-max normalization comparison](docs/n_layers_numbers/hyper_parameters/minmax_normalization.png)
 
 Analysis: We see that the model is learning in a faster way using minmax normalization. However the learning slopes seem similar, indicating that the variance is not really affected by it.
+
+* Trimming images: `--exp-id=no_trim --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=trim --trim=true --resize=32,32 --dataset=numbers --data-loader=Numo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+
+| Trim | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
+| ---- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
+| Off  | 1.64          | 46%               | 2.39     | 17%          | 82               | 54%            | 29%      |
+| On   | 0.88          | 87%               | 1.68     | 52%          |                  | 13%            | 35%      |
+
+![Trimming comparison](docs/n_layers_numbers/hyper_parameters/trim.png)
+
+Analysis: We see that the model learns much faster, still keeping the variance.
 
 #### Regularization
 

@@ -3,6 +3,7 @@ require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
 require 'ruby_neural_nets/datasets/images_from_files'
 require 'ruby_neural_nets/datasets/image_grayscale'
+require 'ruby_neural_nets/datasets/image_trim'
 require 'ruby_neural_nets/datasets/image_normalize'
 require 'ruby_neural_nets/datasets/image_resize'
 require 'ruby_neural_nets/datasets/image_rotate'
@@ -29,13 +30,15 @@ module RubyNeuralNets
       # * *nbr_clones* (Integer): Number of times each element should be cloned
       # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
       # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1
+      # * *trim* (bool): Trim images to remove borders and restore original aspect ratio
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
-      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, resize:, noise_intensity:, minmax_normalize:)
+      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, trim:, resize:, noise_intensity:, minmax_normalize:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
+        @trim = trim
         @resize = resize
         @noise_intensity = noise_intensity
         @minmax_normalize = minmax_normalize
@@ -64,13 +67,11 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
-        inner_dataset = Datasets::ImageResize.new(
-          Datasets::ImagesFromFiles.new(
-            Datasets::OneHotEncoder.new(dataset)
-          ),
-          resize: @resize
+        base_dataset = Datasets::ImagesFromFiles.new(
+          Datasets::OneHotEncoder.new(dataset)
         )
-        Datasets::CacheMemory.new(@grayscale ? Datasets::ImageGrayscale.new(inner_dataset) : inner_dataset)
+        resized_dataset = Datasets::ImageResize.new(@trim ? Datasets::ImageTrim.new(base_dataset) : base_dataset, resize: @resize)
+        Datasets::CacheMemory.new(@grayscale ? Datasets::ImageGrayscale.new(resized_dataset) : resized_dataset)
       end
 
       # Return an augmentation dataset for this data loader.

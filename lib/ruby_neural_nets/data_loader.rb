@@ -183,10 +183,11 @@ module RubyNeuralNets
     #
     # Result::
     # * Hash: Image stats:
-    #   * *rows* (Integer): Number of rows
-    #   * *cols* (Integer): Number of columns
-    #   * *channels* (Integer): Number of channels
+    #   * *rows* (Integer or nil): Number of rows if it applies to all images, or nil otherwise
+    #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
+    #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
     def image_stats
+      # Assume all partitions have the same stats
       @partition_datasets.values.first.image_stats
     end
 

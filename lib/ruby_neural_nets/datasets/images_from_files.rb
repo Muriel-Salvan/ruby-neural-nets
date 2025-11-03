@@ -25,10 +25,11 @@ module RubyNeuralNets
       #
       # Result::
       # * Hash: Image stats:
-      #   * *rows* (Integer): Number of rows
-      #   * *cols* (Integer): Number of columns
-      #   * *channels* (Integer): Number of channels
+      #   * *rows* (Integer or nil): Number of rows if it applies to all images, or nil otherwise
+      #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
+      #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
+        # Assume all images have the same properties as the first one
         sample_image = Magick::ImageList.new(@dataset[0][0]).first
         {
           rows: sample_image.rows,
