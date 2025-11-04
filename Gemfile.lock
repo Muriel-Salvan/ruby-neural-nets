@@ -6,6 +6,7 @@ GEM
     data_uri (0.1.0)
     date (3.4.1)
     erb (5.1.1)
+    ffi (1.17.2-x64-mingw-ucrt)
     ffi (1.17.2-x86_64-linux-gnu)
     ffi-rzmq (2.0.7)
       ffi-rzmq-core (>= 1.0.7)
@@ -96,6 +97,7 @@ DEPENDENCIES
   reline
   rmagick
   ruby-prof
+  ruby-vips
   terminal-table
   torch-rb
   torchvision

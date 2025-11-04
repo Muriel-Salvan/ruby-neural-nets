@@ -1,7 +1,7 @@
 require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
-require 'ruby_neural_nets/datasets/images_from_files'
+require 'ruby_neural_nets/datasets/file_to_image_magick'
 require 'ruby_neural_nets/datasets/image_magick_grayscale'
 require 'ruby_neural_nets/datasets/image_magick_adaptive_invert'
 require 'ruby_neural_nets/datasets/image_magick_minmax_normalize'
@@ -71,7 +71,7 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
-        base_dataset = Datasets::ImagesFromFiles.new(
+        base_dataset = Datasets::FileToImageMagick.new(
           Datasets::OneHotEncoder.new(dataset)
         )
         resized_dataset = Datasets::ImageMagickResize.new(@trim ? Datasets::ImageMagickTrim.new(base_dataset) : base_dataset, resize: @resize)

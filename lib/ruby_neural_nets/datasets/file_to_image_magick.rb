@@ -5,8 +5,8 @@ module RubyNeuralNets
 
   module Datasets
 
-    # Dataset of images read from files
-    class ImagesFromFiles < Wrapper
+    # Dataset of images read from files using ImageMagick
+    class FileToImageMagick < Wrapper
 
       # Access an element of the dataset
       #
