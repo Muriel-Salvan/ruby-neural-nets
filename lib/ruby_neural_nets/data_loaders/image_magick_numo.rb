@@ -21,7 +21,7 @@ module RubyNeuralNets
   
   module DataLoaders
         
-    class Numo < DataLoader
+    class ImageMagickNumo < DataLoader
 
       # Constructor
       #
