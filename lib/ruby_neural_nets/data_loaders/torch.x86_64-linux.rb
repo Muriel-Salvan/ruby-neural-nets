@@ -5,6 +5,13 @@ require 'ruby_neural_nets/datasets/cache_memory'
 require 'ruby_neural_nets/datasets/epoch_shuffler'
 require 'ruby_neural_nets/datasets/labeled_torch_images'
 require 'ruby_neural_nets/datasets/minibatch_torch'
+require 'ruby_neural_nets/torchvision/transforms/vips_to_imagemagick'
+require 'ruby_neural_nets/torchvision/transforms/trim_imagemagick'
+require 'ruby_neural_nets/torchvision/transforms/resize_imagemagick'
+require 'ruby_neural_nets/torchvision/transforms/grayscale_imagemagick'
+require 'ruby_neural_nets/torchvision/transforms/minmax_normalize_imagemagick'
+require 'ruby_neural_nets/torchvision/transforms/adaptive_invert_imagemagick'
+require 'ruby_neural_nets/torchvision/transforms/imagemagick_to_tensor'
 require 'ruby_neural_nets/torchvision/transforms/remove_alpha'
 require 'ruby_neural_nets/torchvision/transforms/flatten'
 require 'ruby_neural_nets/torchvision/transforms/to_double'
@@ -110,14 +117,22 @@ module RubyNeuralNets
       # Result::
       # * Array: Array of TorchVision transforms for preprocessing
       def preprocessing_transforms
-        transforms = []
-
-        # Add resize transform
-        transforms << ::TorchVision::Transforms::Resize.new(@resize)
-
-        # Add base transforms that convert Vips images to tensors
+        transforms = [
+          RubyNeuralNets::TorchVision::Transforms::VipsToImagemagick.new
+        ]
+        # Apply trim if specified (works on ImageMagick images)
+        transforms << RubyNeuralNets::TorchVision::Transforms::TrimImagemagick.new if @trim
+        # Apply resize (works on ImageMagick images, after trim)
+        transforms << RubyNeuralNets::TorchVision::Transforms::ResizeImagemagick.new(@resize)
+        # Apply grayscale if specified (works on ImageMagick images)
+        transforms << RubyNeuralNets::TorchVision::Transforms::GrayscaleImagemagick.new if @grayscale
+        # Apply min-max normalization if specified (works on ImageMagick images)
+        transforms << RubyNeuralNets::TorchVision::Transforms::MinmaxNormalizeImagemagick.new if @minmax_normalize
+        # Apply adaptive invert if specified (works on ImageMagick images)
+        transforms << RubyNeuralNets::TorchVision::Transforms::AdaptiveInvertImagemagick.new if @adaptive_invert
+        # Apply tensor-level transforms
         transforms + [
-          ::TorchVision::Transforms::ToTensor.new,
+          RubyNeuralNets::TorchVision::Transforms::ImagemagickToTensor.new,
           RubyNeuralNets::TorchVision::Transforms::RemoveAlpha.new,
           RubyNeuralNets::TorchVision::Transforms::Flatten.new,
           RubyNeuralNets::TorchVision::Transforms::ToDouble.new,

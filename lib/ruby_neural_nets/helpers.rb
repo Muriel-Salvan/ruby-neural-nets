@@ -135,7 +135,7 @@ module RubyNeuralNets
       Dir.mktmpdir do |temp_dir|
         file_name = "#{temp_dir}/display.png"
         image.write(file_name)
-        system "start #{file_name}"
+        system "#{RUBY_PLATFORM == 'x86_64-linux' ? 'xdg-open' : 'start'} #{file_name}"
         puts 'Press enter to continue...'
         $stdin.gets
       end

@@ -143,5 +143,15 @@ module RubyNeuralNets
       end
     end
 
+    # Apply min-max normalization to the image
+    #
+    # Parameters::
+    # * *image* (Magick::Image): Input image to normalize
+    # Result::
+    # * Magick::Image: Image with normalized pixel values
+    def self.minmax_normalize(image)
+      image.normalize_channel(Magick::AllChannels)
+    end
+
   end
 end

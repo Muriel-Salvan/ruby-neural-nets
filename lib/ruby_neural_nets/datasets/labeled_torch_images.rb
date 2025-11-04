@@ -42,8 +42,13 @@ module RubyNeuralNets
       def image_stats
         stats = RubyNeuralNets::Datasets::ImagesFromFiles.new(@dataset).image_stats
         @transforms.each do |transform|
-          if transform.is_a?(::TorchVision::Transforms::Resize)
+          case transform
+          when ::TorchVision::Transforms::Resize
             stats[:cols], stats[:rows] = transform.instance_variable_get(:@size)
+          when TorchVision::Transforms::ResizeImagemagick
+            stats[:cols], stats[:rows] = transform.size
+          when TorchVision::Transforms::GrayscaleImagemagick
+            stats[:channels] = 1
           end
         end
         stats

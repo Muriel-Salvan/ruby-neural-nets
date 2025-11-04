@@ -381,7 +381,7 @@ For the noise example:
 - `lib/ruby_neural_nets/trainer.rb`: Training loop implementation with gradient checking
 - `lib/ruby_neural_nets/torch/`: PyTorch integration utilities
 - `lib/ruby_neural_nets/torchvision/`: TorchVision transforms for Ruby
-  - `lib/ruby_neural_nets/torchvision/transforms/`: Individual TorchVision transform implementations (RemoveAlpha, Flatten, ToDouble)
+  - `lib/ruby_neural_nets/torchvision/transforms/`: Individual TorchVision transform implementations
 - `lib/ruby_neural_nets/transform_helpers.rb`: Shared image transformation utilities used across dataset layers
 
 ## Contributing

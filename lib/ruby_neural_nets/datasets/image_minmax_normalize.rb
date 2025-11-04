@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/transform_helpers'
 
 module RubyNeuralNets
 
@@ -16,7 +17,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [image.normalize_channel(Magick::AllChannels), y]
+        [TransformHelpers.minmax_normalize(image), y]
       end
 
     end
