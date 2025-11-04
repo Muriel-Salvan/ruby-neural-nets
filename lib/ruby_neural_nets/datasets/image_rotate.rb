@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/transform_helpers'
 
 module RubyNeuralNets
 
@@ -28,24 +29,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [apply_rotate(image), y]
-      end
-
-      private
-
-      # Apply rotation transformation
-      #
-      # Parameters::
-      # * *image* (Magick::Image): Input image to rotate
-      # Result::
-      # * Magick::Image: Rotated image or original if no rotation needed
-      def apply_rotate(image)
-        if @rot_angle > 0
-          image.virtual_pixel_method = Magick::EdgeVirtualPixelMethod
-          image.distort(Magick::ScaleRotateTranslateDistortion, [@rng.rand(-@rot_angle..@rot_angle)])
-        else
-          image
-        end
+        [TransformHelpers.rotate(image, @rot_angle, @rng), y]
       end
 
     end

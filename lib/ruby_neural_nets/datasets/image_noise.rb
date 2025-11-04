@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/transform_helpers'
 require 'numo/narray'
 
 module RubyNeuralNets
@@ -30,34 +31,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [apply_gaussian_noise(image), y]
-      end
-
-      private
-
-      # Apply Gaussian noise transformation
-      #
-      # Parameters::
-      # * *image* (Magick::Image): Input image to add noise to
-      # Result::
-      # * Magick::Image: Image with Gaussian noise added or original if no noise needed
-      def apply_gaussian_noise(image)
-        if @noise_intensity > 0
-          pixels_map = Helpers.image_pixels_map(image)
-          original_pixels = Numo::DFloat[image.export_pixels(0, 0, image.columns, image.rows, pixels_map)]
-          new_image = Magick::Image.new(image.columns, image.rows)
-          new_image.import_pixels(
-            0,
-            0,
-            image.columns,
-            image.rows,
-            pixels_map,
-            (original_pixels + @numo_rng.normal(shape: original_pixels.shape, loc: 0.0, scale: @noise_intensity * 65535)).clip(0, 65535).flatten.to_a
-          )
-          new_image
-        else
-          image
-        end
+        [TransformHelpers.gaussian_noise(image, @noise_intensity, @numo_rng), y]
       end
 
     end

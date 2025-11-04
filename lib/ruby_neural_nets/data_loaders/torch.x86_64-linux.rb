@@ -5,12 +5,41 @@ require 'ruby_neural_nets/datasets/cache_memory'
 require 'ruby_neural_nets/datasets/epoch_shuffler'
 require 'ruby_neural_nets/datasets/labeled_torch_images'
 require 'ruby_neural_nets/datasets/minibatch_torch'
+require 'ruby_neural_nets/torchvision/transforms/remove_alpha'
+require 'ruby_neural_nets/torchvision/transforms/flatten'
+require 'ruby_neural_nets/torchvision/transforms/to_double'
 
 module RubyNeuralNets
 
   module DataLoaders
 
     class Torch < DataLoader
+
+      # Constructor
+      #
+      # Parameters::
+      # * *dataset* (String): The dataset name
+      # * *max_minibatch_size* (Integer): Max size each minibatch should have
+      # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
+      # * *nbr_clones* (Integer): Number of times each element should be cloned
+      # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
+      # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1
+      # * *adaptive_invert* (bool): Apply adaptive color inversion based on top left pixel intensity
+      # * *trim* (bool): Trim images to remove borders and restore original aspect ratio
+      # * *resize* (Array): Resize dimensions [width, height] for image transformations
+      # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
+      # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
+      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
+        @nbr_clones = nbr_clones
+        @rot_angle = rot_angle
+        @grayscale = grayscale
+        @adaptive_invert = adaptive_invert
+        @trim = trim
+        @resize = resize
+        @noise_intensity = noise_intensity
+        @minmax_normalize = minmax_normalize
+        super(dataset:, max_minibatch_size:, dataset_seed:)
+      end
 
       # Instantiate a partitioned dataset.
       #
@@ -35,7 +64,7 @@ module RubyNeuralNets
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
         Datasets::CacheMemory.new(
-          Datasets::LabeledTorchImages.new(dataset)
+          Datasets::LabeledTorchImages.new(dataset, preprocessing_transforms)
         )
       end
 
@@ -49,6 +78,9 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with augmentation applied
       def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
+        # For Torch, we need to apply augmentation transforms
+        # Since LabeledTorchImages already applies transforms, we need to modify it
+        # For now, return the preprocessed dataset - augmentation transforms need more work
         preprocessed_dataset
       end
 
@@ -71,7 +103,26 @@ module RubyNeuralNets
         )
       end
 
+      private
 
+      # Get the preprocessing transforms for TorchVision
+      #
+      # Result::
+      # * Array: Array of TorchVision transforms for preprocessing
+      def preprocessing_transforms
+        transforms = []
+
+        # Add resize transform
+        transforms << ::TorchVision::Transforms::Resize.new(@resize)
+
+        # Add base transforms that convert Vips images to tensors
+        transforms + [
+          ::TorchVision::Transforms::ToTensor.new,
+          RubyNeuralNets::TorchVision::Transforms::RemoveAlpha.new,
+          RubyNeuralNets::TorchVision::Transforms::Flatten.new,
+          RubyNeuralNets::TorchVision::Transforms::ToDouble.new,
+        ]
+      end
 
     end
 

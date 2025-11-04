@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/transform_helpers'
 
 module RubyNeuralNets
 
@@ -26,7 +27,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [apply_resize(image), y]
+        [TransformHelpers.resize(image, @target_width, @target_height), y]
       end
 
       # Get some images stats.
@@ -42,22 +43,6 @@ module RubyNeuralNets
           rows: @target_height,
           cols: @target_width
         )
-      end
-
-      private
-
-      # Apply resize transformation if dimensions differ
-      #
-      # Parameters::
-      # * *image* (Magick::Image): Input image to resize
-      # Result::
-      # * Magick::Image: Resized image or original if no resize needed
-      def apply_resize(image)
-        if image.columns != @target_width || image.rows != @target_height
-          image.resize(@target_width, @target_height)
-        else
-          image
-        end
       end
 
     end

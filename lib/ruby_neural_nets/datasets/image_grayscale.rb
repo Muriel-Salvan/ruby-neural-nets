@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/transform_helpers'
 
 module RubyNeuralNets
 
@@ -16,7 +17,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [apply_grayscale(image), y]
+        [TransformHelpers.grayscale(image), y]
       end
 
       # Get some images stats.
@@ -29,20 +30,6 @@ module RubyNeuralNets
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
         @dataset.image_stats.merge(channels: 1)
-      end
-
-      private
-
-      # Apply grayscale transformation to the image
-      #
-      # Parameters::
-      # * *image* (Magick::Image): Input image to convert to grayscale
-      # Result::
-      # * Magick::Image: Single-channel grayscale image
-      def apply_grayscale(image)
-        gray_image = image.copy
-        gray_image.colorspace = Magick::GRAYColorspace
-        gray_image
       end
 
     end

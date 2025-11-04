@@ -13,9 +13,11 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *dataset* (Dataset): Dataset giving underlying labeled data
-      def initialize(dataset)
-        super
-        @torch_dataset = RubyNeuralNets::Torch::SampleFolderDataset.new(@dataset)
+      # * *transforms* (Array): Array of TorchVision transforms to apply
+      def initialize(dataset, transforms = [])
+        super(dataset)
+        @transforms = transforms
+        @torch_dataset = RubyNeuralNets::Torch::SampleFolderDataset.new(@dataset, @transforms)
       end
 
       # Access an element of the dataset
@@ -38,7 +40,13 @@ module RubyNeuralNets
       #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
-        RubyNeuralNets::Datasets::ImagesFromFiles.new(@dataset).image_stats
+        stats = RubyNeuralNets::Datasets::ImagesFromFiles.new(@dataset).image_stats
+        @transforms.each do |transform|
+          if transform.is_a?(::TorchVision::Transforms::Resize)
+            stats[:cols], stats[:rows] = transform.instance_variable_get(:@size)
+          end
+        end
+        stats
       end
 
     end

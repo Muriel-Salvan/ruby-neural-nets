@@ -73,6 +73,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
    - Make sure to include DLL and C/C++ headers during installation
    - Use the Q16-x64-dll.exe version, not the HDRI or static version (details [https://github.com/rmagick/rmagick?tab=readme-ov-file#windows](here)).
 3. **Bundler**: Install Bundler if not already available: `gem install bundler`
+4. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.0+cu126/libtorch/`
 
 ### Setup
 
@@ -379,6 +380,9 @@ For the noise example:
 - `lib/ruby_neural_nets/progress_tracker.rb`: Training progress visualization and tracking
 - `lib/ruby_neural_nets/trainer.rb`: Training loop implementation with gradient checking
 - `lib/ruby_neural_nets/torch/`: PyTorch integration utilities
+- `lib/ruby_neural_nets/torchvision/`: TorchVision transforms for Ruby
+  - `lib/ruby_neural_nets/torchvision/transforms/`: Individual TorchVision transform implementations (RemoveAlpha, Flatten, ToDouble)
+- `lib/ruby_neural_nets/transform_helpers.rb`: Shared image transformation utilities used across dataset layers
 
 ## Contributing
 
