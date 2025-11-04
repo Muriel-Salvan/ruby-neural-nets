@@ -2,15 +2,15 @@ require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
 require 'ruby_neural_nets/datasets/images_from_files'
-require 'ruby_neural_nets/datasets/image_grayscale'
-require 'ruby_neural_nets/datasets/image_adaptive_invert'
-require 'ruby_neural_nets/datasets/image_minmax_normalize'
-require 'ruby_neural_nets/datasets/image_trim'
-require 'ruby_neural_nets/datasets/image_normalize'
-require 'ruby_neural_nets/datasets/image_resize'
-require 'ruby_neural_nets/datasets/image_rotate'
-require 'ruby_neural_nets/datasets/image_crop'
-require 'ruby_neural_nets/datasets/image_noise'
+require 'ruby_neural_nets/datasets/image_magick_grayscale'
+require 'ruby_neural_nets/datasets/image_magick_adaptive_invert'
+require 'ruby_neural_nets/datasets/image_magick_minmax_normalize'
+require 'ruby_neural_nets/datasets/image_magick_trim'
+require 'ruby_neural_nets/datasets/image_magick_normalize'
+require 'ruby_neural_nets/datasets/image_magick_resize'
+require 'ruby_neural_nets/datasets/image_magick_rotate'
+require 'ruby_neural_nets/datasets/image_magick_crop'
+require 'ruby_neural_nets/datasets/image_magick_noise'
 require 'ruby_neural_nets/datasets/clone'
 require 'ruby_neural_nets/datasets/one_hot_encoder'
 require 'ruby_neural_nets/datasets/cache_memory'
@@ -74,13 +74,13 @@ module RubyNeuralNets
         base_dataset = Datasets::ImagesFromFiles.new(
           Datasets::OneHotEncoder.new(dataset)
         )
-        resized_dataset = Datasets::ImageResize.new(@trim ? Datasets::ImageTrim.new(base_dataset) : base_dataset, resize: @resize)
+        resized_dataset = Datasets::ImageMagickResize.new(@trim ? Datasets::ImageMagickTrim.new(base_dataset) : base_dataset, resize: @resize)
 
         # Apply preprocessing layers
         processed_dataset = resized_dataset
-        processed_dataset = Datasets::ImageGrayscale.new(processed_dataset) if @grayscale
-        processed_dataset = Datasets::ImageMinMaxNormalize.new(processed_dataset) if @minmax_normalize
-        processed_dataset = Datasets::ImageAdaptiveInvert.new(processed_dataset) if @adaptive_invert
+        processed_dataset = Datasets::ImageMagickGrayscale.new(processed_dataset) if @grayscale
+        processed_dataset = Datasets::ImageMagickMinmaxNormalize.new(processed_dataset) if @minmax_normalize
+        processed_dataset = Datasets::ImageMagickAdaptiveInvert.new(processed_dataset) if @adaptive_invert
 
         Datasets::CacheMemory.new(processed_dataset)
       end
@@ -95,8 +95,8 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with augmentation applied
       def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
-        Datasets::ImageNoise.new(
-          Datasets::ImageRotate.new(
+        Datasets::ImageMagickNoise.new(
+          Datasets::ImageMagickRotate.new(
             Datasets::Clone.new(
               preprocessed_dataset,
               nbr_clones: @nbr_clones
@@ -121,7 +121,7 @@ module RubyNeuralNets
       def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
-            Datasets::ImageNormalize.new(augmented_dataset),
+            Datasets::ImageMagickNormalize.new(augmented_dataset),
             rng:
           ),
           max_minibatch_size:

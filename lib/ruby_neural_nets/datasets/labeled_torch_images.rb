@@ -45,9 +45,9 @@ module RubyNeuralNets
           case transform
           when ::TorchVision::Transforms::Resize
             stats[:cols], stats[:rows] = transform.instance_variable_get(:@size)
-          when TorchVision::Transforms::ResizeImagemagick
+          when TorchVision::Transforms::ImageMagickResize
             stats[:cols], stats[:rows] = transform.size
-          when TorchVision::Transforms::GrayscaleImagemagick
+          when TorchVision::Transforms::ImageMagickGrayscale
             stats[:channels] = 1
           end
         end

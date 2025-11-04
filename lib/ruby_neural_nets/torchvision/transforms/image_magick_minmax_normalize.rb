@@ -1,13 +1,13 @@
-require 'ruby_neural_nets/transform_helpers'
+require 'ruby_neural_nets/transform_helpers/image_magick'
 
 module RubyNeuralNets
   module TorchVision
     module Transforms
-      class MinmaxNormalizeImagemagick < ::Torch::NN::Module
+      class ImageMagickMinmaxNormalize < ::Torch::NN::Module
 
         def forward(image)
           # Apply min-max normalization to ImageMagick image
-          TransformHelpers.minmax_normalize(image)
+          TransformHelpers::ImageMagick.minmax_normalize(image)
         end
 
       end

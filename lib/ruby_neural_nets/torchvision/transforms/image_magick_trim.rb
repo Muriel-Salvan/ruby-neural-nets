@@ -1,13 +1,13 @@
-require 'ruby_neural_nets/transform_helpers'
+require 'ruby_neural_nets/transform_helpers/image_magick'
 
 module RubyNeuralNets
   module TorchVision
     module Transforms
-      class TrimImagemagick < ::Torch::NN::Module
+      class ImageMagickTrim < ::Torch::NN::Module
 
         def forward(image)
           # Apply trim transformation to ImageMagick image
-          TransformHelpers.trim(image)
+          TransformHelpers::ImageMagick.trim(image)
         end
 
       end

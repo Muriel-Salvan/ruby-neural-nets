@@ -1,12 +1,12 @@
 require 'ruby_neural_nets/datasets/wrapper'
-require 'ruby_neural_nets/transform_helpers'
+require 'ruby_neural_nets/transform_helpers/image_magick'
 
 module RubyNeuralNets
 
   module Datasets
 
     # Dataset wrapper that applies image resizing.
-    class ImageResize < Wrapper
+    class ImageMagickResize < Wrapper
 
       # Constructor
       #
@@ -27,7 +27,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [TransformHelpers.resize(image, @target_width, @target_height), y]
+        [TransformHelpers::ImageMagick.resize(image, @target_width, @target_height), y]
       end
 
       # Get some images stats.

@@ -3,7 +3,7 @@ require 'rmagick'
 module RubyNeuralNets
   module TorchVision
     module Transforms
-      class VipsToImagemagick < ::Torch::NN::Module
+      class VipsToImageMagick < ::Torch::NN::Module
 
         def forward(vips_image)
           # Convert Vips::Image to Magick::Image

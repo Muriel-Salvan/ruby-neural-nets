@@ -1,9 +1,9 @@
-require 'ruby_neural_nets/transform_helpers'
+require 'ruby_neural_nets/transform_helpers/image_magick'
 
 module RubyNeuralNets
   module TorchVision
     module Transforms
-      class ResizeImagemagick < ::Torch::NN::Module
+      class ImageMagickResize < ::Torch::NN::Module
 
         # Get the size for resize
         #   [width, height]
@@ -15,7 +15,7 @@ module RubyNeuralNets
 
         def forward(image)
           # Apply resize transformation to ImageMagick image
-          TransformHelpers.resize(image, *@size)
+          TransformHelpers::ImageMagick.resize(image, *@size)
         end
 
       end

@@ -1,12 +1,12 @@
 require 'ruby_neural_nets/datasets/wrapper'
-require 'ruby_neural_nets/transform_helpers'
+require 'ruby_neural_nets/transform_helpers/image_magick'
 
 module RubyNeuralNets
 
   module Datasets
 
     # Dataset wrapper that applies random image rotation.
-    class ImageRotate < Wrapper
+    class ImageMagickRotate < Wrapper
 
       # Constructor
       #
@@ -29,7 +29,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [TransformHelpers.rotate(image, @rot_angle, @rng), y]
+        [TransformHelpers::ImageMagick.rotate(image, @rot_angle, @rng), y]
       end
 
     end

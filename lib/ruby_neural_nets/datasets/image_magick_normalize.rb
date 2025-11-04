@@ -1,12 +1,11 @@
 require 'ruby_neural_nets/datasets/wrapper'
-require 'ruby_neural_nets/transform_helpers'
 
 module RubyNeuralNets
 
   module Datasets
 
-    # Dataset wrapper that applies min-max normalization to image pixel values
-    class ImageMinMaxNormalize < Wrapper
+    # Dataset wrapper that normalizes images to [0,1] range.
+    class ImageMagickNormalize < Wrapper
 
       # Access an element of the dataset
       #
@@ -17,7 +16,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [TransformHelpers.minmax_normalize(image), y]
+        [image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), true), y]
       end
 
     end

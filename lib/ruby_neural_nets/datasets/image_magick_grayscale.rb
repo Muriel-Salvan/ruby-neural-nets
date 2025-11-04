@@ -1,22 +1,12 @@
 require 'ruby_neural_nets/datasets/wrapper'
-require 'ruby_neural_nets/transform_helpers'
+require 'ruby_neural_nets/transform_helpers/image_magick'
 
 module RubyNeuralNets
 
   module Datasets
 
-    # Dataset wrapper that applies image cropping.
-    class ImageCrop < Wrapper
-
-      # Constructor
-      #
-      # Parameters::
-      # * *dataset* (Dataset): Dataset to be wrapped
-      # * *crop_size* (Array): Array of 2 integers [width, height] for cropping
-      def initialize(dataset, crop_size:)
-        super(dataset)
-        @target_width, @target_height = crop_size
-      end
+    # Dataset wrapper that applies image grayscale conversion.
+    class ImageMagickGrayscale < Wrapper
 
       # Access an element of the dataset
       #
@@ -27,7 +17,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [TransformHelpers.crop(image, @target_width, @target_height), y]
+        [TransformHelpers::ImageMagick.grayscale(image), y]
       end
 
       # Get some images stats.
@@ -39,10 +29,7 @@ module RubyNeuralNets
       #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
-        @dataset.image_stats.merge(
-          rows: @target_height,
-          cols: @target_width
-        )
+        @dataset.image_stats.merge(channels: 1)
       end
 
     end

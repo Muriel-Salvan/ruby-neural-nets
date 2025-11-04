@@ -3,7 +3,7 @@ require 'ruby_neural_nets/helpers'
 module RubyNeuralNets
   module TorchVision
     module Transforms
-      class ImagemagickToTensor < ::Torch::NN::Module
+      class ImageMagickToTensor < ::Torch::NN::Module
 
         def forward(image)
           # Convert ImageMagick image to Torch tensor

@@ -1,6 +1,6 @@
 require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/datasets/wrapper'
-require 'ruby_neural_nets/transform_helpers'
+require 'ruby_neural_nets/transform_helpers/image_magick'
 require 'numo/narray'
 
 module RubyNeuralNets
@@ -8,7 +8,7 @@ module RubyNeuralNets
   module Datasets
 
     # Dataset wrapper that applies Gaussian noise to images.
-    class ImageNoise < Wrapper
+    class ImageMagickNoise < Wrapper
 
       # Constructor
       #
@@ -31,7 +31,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [TransformHelpers.gaussian_noise(image, @noise_intensity, @numo_rng), y]
+        [TransformHelpers::ImageMagick.gaussian_noise(image, @noise_intensity, @numo_rng), y]
       end
 
     end
