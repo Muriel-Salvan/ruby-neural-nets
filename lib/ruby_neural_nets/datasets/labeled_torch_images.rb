@@ -11,6 +11,9 @@ module RubyNeuralNets
     # Dataset serving TorchVision images.
     class LabeledTorchImages < Wrapper
 
+      # Get the list of transforms
+      attr_reader :transforms
+
       # Constructor
       #
       # Parameters::
@@ -20,6 +23,14 @@ module RubyNeuralNets
         super(dataset)
         @transforms = transforms
         @torch_dataset = RubyNeuralNets::Torch::SampleFolderDataset.new(@dataset, @transforms)
+      end
+
+      # Give access to the underlying files dataset
+      #
+      # Result::
+      # * Dataset: Dataset serving files to Torch's folder dataset
+      def files_dataset
+        @dataset
       end
 
       # Access an element of the dataset

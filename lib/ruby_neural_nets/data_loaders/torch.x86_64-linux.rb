@@ -7,6 +7,8 @@ require 'ruby_neural_nets/datasets/labeled_torch_images'
 require 'ruby_neural_nets/datasets/minibatch_torch'
 require 'ruby_neural_nets/torchvision/transforms/vips_trim'
 require 'ruby_neural_nets/torchvision/transforms/vips_resize'
+require 'ruby_neural_nets/torchvision/transforms/vips_rotate'
+require 'ruby_neural_nets/torchvision/transforms/vips_noise'
 require 'ruby_neural_nets/torchvision/transforms/vips_grayscale'
 require 'ruby_neural_nets/torchvision/transforms/vips_minmax_normalize'
 require 'ruby_neural_nets/torchvision/transforms/vips_adaptive_invert'
@@ -83,10 +85,11 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with augmentation applied
       def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
-        # For Torch, we need to apply augmentation transforms
-        # Since LabeledTorchImages already applies transforms, we need to modify it
-        # For now, return the preprocessed dataset - augmentation transforms need more work
-        preprocessed_dataset
+        # Create augmentation transforms
+        augmentation_transforms = []
+        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsRotate.new(@rot_angle, rng) if @rot_angle > 0
+        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsNoise.new(@noise_intensity, numo_rng) if @noise_intensity > 0
+        Datasets::LabeledTorchImages.new(preprocessed_dataset.files_dataset, preprocessed_dataset.transforms + augmentation_transforms)
       end
 
       # Return a batching dataset for this data loader.
@@ -101,7 +104,14 @@ module RubyNeuralNets
       def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
         Datasets::MinibatchTorch.new(
           Datasets::EpochShuffler.new(
-            augmented_dataset,
+            Datasets::LabeledTorchImages.new(
+              augmented_dataset.files_dataset,
+              augmented_dataset.transforms + [
+                ::TorchVision::Transforms::ToTensor.new,
+                RubyNeuralNets::TorchVision::Transforms::Flatten.new,
+                RubyNeuralNets::TorchVision::Transforms::ToDouble.new
+              ]
+            ),
             rng:
           ),
           max_minibatch_size:
@@ -124,11 +134,7 @@ module RubyNeuralNets
         transforms << RubyNeuralNets::TorchVision::Transforms::VipsMinmaxNormalize.new if @minmax_normalize
         transforms << RubyNeuralNets::TorchVision::Transforms::VipsAdaptiveInvert.new if @adaptive_invert
         # Apply tensor-level transforms
-        transforms + [
-          ::TorchVision::Transforms::ToTensor.new,
-          RubyNeuralNets::TorchVision::Transforms::Flatten.new,
-          RubyNeuralNets::TorchVision::Transforms::ToDouble.new,
-        ]
+        transforms
       end
 
     end

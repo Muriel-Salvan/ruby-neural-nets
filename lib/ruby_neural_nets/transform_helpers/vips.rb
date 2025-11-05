@@ -93,7 +93,7 @@ module RubyNeuralNets
       # * Vips::Image: Image with Gaussian noise added or original if no noise needed
       def self.gaussian_noise(image, noise_intensity, numo_rng)
         if noise_intensity > 0
-          (image + ::Vips::Image.bandjoin(image.bands.times.map { |band_idx| ::Vips::Image.new_from_array(numo_rng.normal(shape: [image.height, image.width], loc: 0.0, scale: noise_intensity * 255).to_a) })).clamp(min: 0, max: 255)
+          (image + ::Vips::Image.bandjoin(image.bands.times.map { |band_idx| ::Vips::Image.new_from_array(numo_rng.normal(shape: [image.height, image.width], loc: 0.0, scale: noise_intensity * 255).to_a) })).clamp(min: 0, max: 255).scaleimage
         else
           image
         end
