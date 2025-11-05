@@ -17,7 +17,7 @@ module RubyNeuralNets
       def [](index)
         image, y = @dataset[index]
         # Convert Vips image to pixel array and normalize to [0,1]
-        [Numo::DFloat[image.to_a.flatten.map { |p| p / 255.0 }], y]
+        [image.to_a.flatten.map { |p| p / 255.0 }, y]
       end
 
     end

@@ -129,12 +129,19 @@ module RubyNeuralNets
     # Display an image
     #
     # Parameters::
-    # * *image* (Magick::Image): The image to be displayed
+    # * *image* (Magick::Image or Vips::Image): The image to be displayed
     def self.display_image(image)
       require 'tmpdir'
       Dir.mktmpdir do |temp_dir|
         file_name = "#{temp_dir}/display.png"
-        image.write(file_name)
+        case image
+        when Magick::Image
+          image.write(file_name)
+        when Vips::Image
+          image.write_to_file(file_name)
+        else
+          raise "Unsupported image format: #{image.class}"
+        end
         system "#{RUBY_PLATFORM == 'x86_64-linux' ? 'xdg-open' : 'start'} #{file_name}"
         puts 'Press enter to continue...'
         $stdin.gets

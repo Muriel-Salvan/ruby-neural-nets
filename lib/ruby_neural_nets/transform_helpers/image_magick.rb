@@ -49,13 +49,13 @@ module RubyNeuralNets
         desired_trimmed_height = (trimmed_width.to_f / original_aspect_ratio).round
         if desired_trimmed_height > trimmed_height
           # Add rows
-          bounding_box.y -= (desired_trimmed_height - trimmed_height) / 2
+          bounding_box.y = [bounding_box.y - (desired_trimmed_height - trimmed_height) / 2, 0].max
           bounding_box.height = desired_trimmed_height
         else
           # Add columns
           desired_trimmed_width = (trimmed_height.to_f * original_aspect_ratio).round
           if desired_trimmed_width > trimmed_width
-            bounding_box.x -= (desired_trimmed_width - trimmed_width) / 2
+            bounding_box.x = [bounding_box.x - (desired_trimmed_width - trimmed_width) / 2, 0].max
             bounding_box.width = desired_trimmed_width
           end
         end

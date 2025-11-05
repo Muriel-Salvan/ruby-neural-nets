@@ -37,10 +37,33 @@ module RubyNeuralNets
       def self.trim(image)
         # Store original aspect ratio
         original_aspect_ratio = image.width.to_f / image.height
-        # Find bounding box (non-background pixels)
-        # For simplicity, we'll use a basic trim that removes uniform borders
-        # This is a simplified version - a full implementation would need more complex logic
-        image
+        # Find bounding box of non-background pixels
+        left, top, width, height = image.find_trim(background: image.getpoint(0, 0))
+
+        # Calculate new dimensions to restore aspect ratio
+        trimmed_width = width
+        trimmed_height = height
+        # Compute the desired height we want for this trimmed width
+        desired_trimmed_height = (trimmed_width.to_f / original_aspect_ratio).round
+        if desired_trimmed_height > trimmed_height
+          # Add rows (expand vertically)
+          top = [top - (desired_trimmed_height - trimmed_height) / 2, 0].max
+          height = desired_trimmed_height
+        else
+          desired_trimmed_width = (trimmed_height.to_f * original_aspect_ratio).round
+          if desired_trimmed_width > trimmed_width
+            # Add columns (expand horizontally)
+            left = [left - (desired_trimmed_width - trimmed_width) / 2, 0].max
+            width = desired_trimmed_width
+          end
+        end
+
+        # Crop to the adjusted bounding box
+        if left != 0 || top != 0 || width != image.width || height != image.height
+          image.crop(left, top, width, height)
+        else
+          image
+        end
       end
 
       # Apply rotation transformation
@@ -53,8 +76,8 @@ module RubyNeuralNets
       # * Vips::Image: Rotated image or original if no rotation needed
       def self.rotate(image, rot_angle, rng)
         if rot_angle > 0
-          angle = rng.rand(-rot_angle..rot_angle)
-          image.rotate(angle)
+          rotated_image = image.rotate(rng.rand(-rot_angle..rot_angle), background: image.getpoint(0, 0))
+          (rotated_image.width != image.width || rotated_image.height != image.height) ? rotated_image.crop((rotated_image.width - image.width) / 2, (rotated_image.height - image.height) / 2, image.width, image.height) : rotated_image
         else
           image
         end
@@ -70,10 +93,7 @@ module RubyNeuralNets
       # * Vips::Image: Image with Gaussian noise added or original if no noise needed
       def self.gaussian_noise(image, noise_intensity, numo_rng)
         if noise_intensity > 0
-          # Generate noise with same dimensions as image
-          noise = numo_rng.normal(shape: [image.height, image.width, image.bands], loc: 0.0, scale: noise_intensity)
-          # Add noise to image
-          image + noise
+          (image + ::Vips::Image.bandjoin(image.bands.times.map { |band_idx| ::Vips::Image.new_from_array(numo_rng.normal(shape: [image.height, image.width], loc: 0.0, scale: noise_intensity * 255).to_a) })).clamp(min: 0, max: 255)
         else
           image
         end
@@ -106,14 +126,10 @@ module RubyNeuralNets
       # * Vips::Image: Image with colors inverted if top left pixel intensity is in lower half
       def self.adaptive_invert(image)
         # Get top left pixel value (assuming RGB, take average)
-        top_left = image[0, 0]
+        top_left = image.getpoint(0, 0)
         intensity = top_left.inject(:+).to_f / top_left.size
         # Invert if intensity is in lower half range (normalized 0-1)
-        if intensity < 0.5
-          1.0 - image
-        else
-          image
-        end
+        intensity < 128 ? -image + 255 : image
       end
 
       # Apply min-max normalization to the image
@@ -121,12 +137,18 @@ module RubyNeuralNets
       # Parameters::
       # * *image* (Vips::Image): Input image to normalize
       # Result::
-      # * Vips::Image: Image with normalized pixel values
+      # * Vips::Image: Image with each band normalized to 0-255 range
       def self.minmax_normalize(image)
-        # Normalize each band to 0-1 range
-        min_vals = image.min
-        max_vals = image.max
-        (image - min_vals) / (max_vals - min_vals)
+        ::Vips::Image.bandjoin(
+          # Normalize each band to 0-255 range and combine using bandjoin
+          image.bands.times.map do |i|
+            band = image[i]
+            min_val = band.min
+            max_val = band.max
+            # If all pixels are the same, set to 127.5 (midpoint)
+            max_val > min_val ? ((band - min_val) * 255) / (max_val - min_val) : band * 0 + 127
+          end
+        )
       end
 
     end

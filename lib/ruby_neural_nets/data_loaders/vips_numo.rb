@@ -2,6 +2,7 @@ require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
 require 'ruby_neural_nets/datasets/file_to_vips'
+require 'ruby_neural_nets/datasets/vips_remove_alpha'
 require 'ruby_neural_nets/datasets/vips_grayscale'
 require 'ruby_neural_nets/datasets/vips_adaptive_invert'
 require 'ruby_neural_nets/datasets/vips_minmax_normalize'
@@ -71,8 +72,10 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
-        base_dataset = Datasets::FileToVips.new(
-          Datasets::OneHotEncoder.new(dataset)
+        base_dataset = Datasets::VipsRemoveAlpha.new(
+          Datasets::FileToVips.new(
+            Datasets::OneHotEncoder.new(dataset)
+          )
         )
         resized_dataset = Datasets::VipsResize.new(@trim ? Datasets::VipsTrim.new(base_dataset) : base_dataset, resize: @resize)
 

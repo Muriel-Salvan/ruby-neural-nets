@@ -724,16 +724,38 @@ Analysis: Regularization effect of weights decay seems limited. Best value seems
 
 ### N layer model using PyTorch
 
+#### Experiment [A]: Same parameters as with Numo implementation
+
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ClassifiedImagesTorch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --track-layer l0_linear.weight,10 --track-layer l1_linear.weight,10
+bundle exec ruby ./bin/run -dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --instability-checks=off --gradient-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=l0_linear.weight,8
 ```
 
-* Accuracy is not as good after 100 epochs: around 62% instead of 73% using Ruby Numo.
-* We see that using different seeds produce very different accuracies with Torch.
-* After using 64 bit floats in Torch, the accuracy goes up from 62% to 87%.
-* Changing random seeds has a big impact on the final accuracy using Torch: from 60% to 90%. Looks like the framework is quite unstable with randomness. In comparison, the Numo implementation varies between 72% and 74% with different seeds.
+![A](docs/torch_numbers/a.png)
+
+* We see the same behaviour as with Numo implementation.
+* After using 64 bit floats in Torch, the accuracy goes up much faster.
 * We can check that using ::Torch::NN::LogSoftmax layer with ::Torch::NN::NLLLoss loss is equivalent (but slower) than not using this last layer with ::Torch::NN::CrossEntropyLoss.
 * We see that normalizing inputs between -1 and 1 with mean 0 instead of 0 and 1 with mean 0.5 does not change the preformance of the training.
+
+#### Experiment [B]: Measuring model randomness effect
+
+```bash
+bundle exec ruby bin/run --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --instability-checks=off --gradient-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --training-times=5
+```
+
+![B](docs/torch_numbers/b.png)
+
+* Different seeds produce a variance of around 3% on dev accuracy, and less than 1% on training accuracy.
+
+#### Experiment [C]: Measuring dataset randomness effect
+
+```bash
+bundle exec ruby bin/run --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --instability-checks=off --gradient-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --training-times=5
+```
+
+![C](docs/torch_numbers/c.png)
+
+* Different seeds produce a variance of around 3% on dev accuracy, and less than 1% on training accuracy.
 
 ### Performance benchmarks
 

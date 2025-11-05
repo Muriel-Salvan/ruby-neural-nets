@@ -1,4 +1,4 @@
-require 'ruby_neural_nets/datasets/images_from_files'
+require 'ruby_neural_nets/datasets/file_to_vips'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/torch/sample_folder_dataset'
 
@@ -40,7 +40,7 @@ module RubyNeuralNets
       #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
-        stats = RubyNeuralNets::Datasets::ImagesFromFiles.new(@dataset).image_stats
+        stats = RubyNeuralNets::Datasets::FileToVips.new(@dataset).image_stats
         @transforms.each do |transform|
           case transform
           when ::TorchVision::Transforms::Resize
