@@ -89,7 +89,14 @@ module RubyNeuralNets
         augmentation_transforms = []
         augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsRotate.new(@rot_angle, rng) if @rot_angle > 0
         augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsNoise.new(@noise_intensity, numo_rng) if @noise_intensity > 0
-        Datasets::LabeledTorchImages.new(preprocessed_dataset.files_dataset, preprocessed_dataset.transforms + augmentation_transforms)
+
+        Datasets::LabeledTorchImages.new(
+          Datasets::Clone.new(
+            preprocessed_dataset.files_dataset,
+            nbr_clones: @nbr_clones
+          ),
+          preprocessed_dataset.transforms + augmentation_transforms
+        )
       end
 
       # Return a batching dataset for this data loader.
