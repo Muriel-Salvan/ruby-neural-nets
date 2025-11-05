@@ -15,6 +15,8 @@ module RubyNeuralNets
       def initialize(dataset, transforms = [])
         @dataset = dataset
         super(@dataset.root, transform: ::TorchVision::Transforms::Compose.new(transforms))
+        # Do nothing in the loader, as the loader is part of the transforms layers
+        @loader = proc { |path| path }
       end
 
       private

@@ -12,7 +12,9 @@ require 'ruby_neural_nets/torchvision/transforms/vips_noise'
 require 'ruby_neural_nets/torchvision/transforms/vips_grayscale'
 require 'ruby_neural_nets/torchvision/transforms/vips_minmax_normalize'
 require 'ruby_neural_nets/torchvision/transforms/vips_adaptive_invert'
+require 'ruby_neural_nets/torchvision/transforms/file_to_vips'
 require 'ruby_neural_nets/torchvision/transforms/vips_remove_alpha'
+require 'ruby_neural_nets/torchvision/transforms/cache'
 require 'ruby_neural_nets/torchvision/transforms/flatten'
 require 'ruby_neural_nets/torchvision/transforms/to_double'
 
@@ -70,8 +72,21 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
+        transforms = [
+          RubyNeuralNets::TorchVision::Transforms::FileToVips.new,
+          RubyNeuralNets::TorchVision::Transforms::VipsRemoveAlpha.new
+        ]
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsTrim.new if @trim
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsResize.new(@resize)
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsGrayscale.new if @grayscale
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsMinmaxNormalize.new if @minmax_normalize
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsAdaptiveInvert.new if @adaptive_invert
+
         Datasets::CacheMemory.new(
-          Datasets::LabeledTorchImages.new(dataset, preprocessing_transforms)
+          Datasets::LabeledTorchImages.new(
+            dataset,
+            [RubyNeuralNets::TorchVision::Transforms::Cache.new(transforms)]
+          )
         )
       end
 
@@ -123,25 +138,6 @@ module RubyNeuralNets
           ),
           max_minibatch_size:
         )
-      end
-
-      private
-
-      # Get the preprocessing transforms for TorchVision
-      #
-      # Result::
-      # * Array: Array of TorchVision transforms for preprocessing
-      def preprocessing_transforms
-        transforms = [
-          RubyNeuralNets::TorchVision::Transforms::VipsRemoveAlpha.new
-        ]
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsTrim.new if @trim
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsResize.new(@resize)
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsGrayscale.new if @grayscale
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsMinmaxNormalize.new if @minmax_normalize
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsAdaptiveInvert.new if @adaptive_invert
-        # Apply tensor-level transforms
-        transforms
       end
 
     end

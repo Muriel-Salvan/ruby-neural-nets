@@ -53,20 +53,35 @@ module RubyNeuralNets
       #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
-        stats = RubyNeuralNets::Datasets::FileToVips.new(@dataset).image_stats
-        @transforms.each do |transform|
+        transformed_stats(RubyNeuralNets::Datasets::FileToVips.new(@dataset).image_stats, @transforms)
+      end
+
+      private
+
+      # Get image stats from a existing image stats processed through a list of transformers
+      #
+      # Parameters::
+      # * *stats* (Hash): Existing image stats
+      # * *transforms* (Array<::Torch::NN::Module): List of transforms
+      # Result::
+      # * Hash: Resulting stats
+      def transformed_stats(stats, transforms)
+        new_stats = stats.clone
+        transforms.each do |transform|
           case transform
+          when TorchVision::Transforms::Cache
+            new_stats = transformed_stats(new_stats, transform.transforms)
           when ::TorchVision::Transforms::Resize
-            stats[:cols], stats[:rows] = transform.instance_variable_get(:@size)
+            new_stats[:cols], new_stats[:rows] = transform.instance_variable_get(:@size)
           when TorchVision::Transforms::ImageMagickResize, TorchVision::Transforms::VipsResize
-            stats[:cols], stats[:rows] = transform.size
+            new_stats[:cols], new_stats[:rows] = transform.size
           when TorchVision::Transforms::ImageMagickGrayscale, TorchVision::Transforms::VipsGrayscale
-            stats[:channels] = 1
+            new_stats[:channels] = 1
           when TorchVision::Transforms::VipsRemoveAlpha
-            stats[:channels] -= 1
+            new_stats[:channels] -= 1
           end
         end
-        stats
+        new_stats
       end
 
     end
