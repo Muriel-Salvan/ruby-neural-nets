@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/transform_helpers/vips'
 
 module RubyNeuralNets
 
@@ -18,7 +19,7 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [image.bands == 4 ? image.extract_band(0, n: 3) : image, y]
+        [TransformHelpers::Vips.remove_alpha(image), y]
       end
 
       # Get some images stats.

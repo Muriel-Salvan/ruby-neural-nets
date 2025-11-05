@@ -1,6 +1,8 @@
 require 'ruby_neural_nets/datasets/file_to_vips'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/torch/sample_folder_dataset'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_grayscale'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_resize'
 
 module RubyNeuralNets
 
@@ -45,10 +47,12 @@ module RubyNeuralNets
           case transform
           when ::TorchVision::Transforms::Resize
             stats[:cols], stats[:rows] = transform.instance_variable_get(:@size)
-          when TorchVision::Transforms::ImageMagickResize
+          when TorchVision::Transforms::ImageMagickResize, TorchVision::Transforms::VipsResize
             stats[:cols], stats[:rows] = transform.size
-          when TorchVision::Transforms::ImageMagickGrayscale
+          when TorchVision::Transforms::ImageMagickGrayscale, TorchVision::Transforms::VipsGrayscale
             stats[:channels] = 1
+          when TorchVision::Transforms::VipsRemoveAlpha
+            stats[:channels] -= 1
           end
         end
         stats
