@@ -53,11 +53,11 @@ module RubyNeuralNets
       # Parameters::
       # * *da* (Object): The loss derivative from the model predicted output
       # * *a* (Object): The predicted output
-      # * *y* (Object): The real output
+      # * *minibatch* (RubyNeuralNets::Minibatch): The minibatch containing real output and size
       # * *loss* (Object): The computed loss
-      # * *minibatch_size* (Integer): Minibatch size
-      def gradient_descent(da, a, y, loss, minibatch_size)
-        m = y.shape[1]
+      def gradient_descent(da, a, minibatch, loss)
+        m = minibatch.size
+        y = minibatch.y
         # Backward propagate the minibatch
         # For softmax + cross-entropy, use the combined derivative
         # dJ/dz = a - y (mathematically equivalent to the full chain rule)

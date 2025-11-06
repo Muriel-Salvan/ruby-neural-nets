@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/datasets/minibatch'
 require 'ruby_neural_nets/torch/sample_folder_dataset'
+require 'ruby_neural_nets/minibatches/torch'
 
 module RubyNeuralNets
 
@@ -37,7 +38,7 @@ module RubyNeuralNets
       # * Code: Code called for each element iterated on
       def each
         @torch_data_loader.each do |(inputs, labels)|
-          yield inputs, [labels, inputs.shape[0]]
+          yield RubyNeuralNets::Minibatches::Torch.new(inputs, labels)
         end
       end
 

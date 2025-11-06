@@ -56,10 +56,9 @@ module RubyNeuralNets
     # Parameters::
     # * *da* (Object): The loss derivative from the model predicted output
     # * *a* (Object): The predicted output
-    # * *y* (Object): The real output
+    # * *minibatch* (RubyNeuralNets::Minibatch): The minibatch containing real output and size
     # * *loss* (Object): The computed loss
-    # * *minibatch_size* (Integer): Minibatch size
-    def gradient_descent(da, a, y, loss, minibatch_size)
+    def gradient_descent(da, a, minibatch, loss)
       raise 'Not implemented'
     end
 

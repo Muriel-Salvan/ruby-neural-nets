@@ -134,17 +134,29 @@ module RubyNeuralNets
       require 'tmpdir'
       Dir.mktmpdir do |temp_dir|
         file_name = "#{temp_dir}/display.png"
-        case image
-        when Magick::Image
-          image.write(file_name)
-        when Vips::Image
-          image.write_to_file(file_name)
-        else
-          raise "Unsupported image format: #{image.class}"
-        end
+        write_image(image, file_name)
         system "#{RUBY_PLATFORM == 'x86_64-linux' ? 'xdg-open' : 'start'} #{file_name}"
         puts 'Press enter to continue...'
         $stdin.gets
+      end
+    end
+
+    # Write an image to disk
+    #
+    # Parameters::
+    # * *image* (Magick::Image or Vips::Image): The image to be written
+    # * *file_path* (String): The file path to write to
+    def self.write_image(image, file_path)
+      # Create directory if it doesn't exist
+      FileUtils.mkdir_p(File.dirname(file_path))
+      
+      case image
+      when Magick::Image
+        image.write(file_path)
+      when Vips::Image
+        image.write_to_file(file_path)
+      else
+        raise "Unsupported image format: #{image.class}"
       end
     end
 

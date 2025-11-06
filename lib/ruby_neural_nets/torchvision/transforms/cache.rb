@@ -11,6 +11,7 @@ module RubyNeuralNets
         end
 
         def forward(input)
+          # Input is the file path, so treat it as a cache key in itself
           cache_key = input
           unless @cache.key?(cache_key)
             # Apply all transforms in sequence

@@ -34,11 +34,9 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *idx_epoch* (Integer): Index of the epoch for which we perform gradient checking
-    # * *minibatch_x* (Numo::DFloat): The input minibatch
-    # * *minibatch_y* (Numo::DFloat): The reference minibatch
-    # * *minibatch_size* (Integer): The size of the current minibatch
+    # * *minibatch* (RubyNeuralNets::Minibatch): The minibatch containing input and reference data
     # * Code: Code called to perform gradient descent on the model
-    def check_gradients_for(idx_epoch, minibatch_x, minibatch_y, minibatch_size)
+    def check_gradients_for(idx_epoch, minibatch)
       # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
       gradient_checking_epsilon = 1e-7
       d_theta_approx = nil
@@ -49,7 +47,7 @@ module RubyNeuralNets
         (!@loss.respond_to?(:weight_decay) || @loss.weight_decay == 0)
 
       if perform_gradient_checking
-        m = minibatch_x.shape[1]
+        m = minibatch.x.shape[1]
         parameters = @model.parameters
         d_theta_approx = Numo::DFloat[
           *parameters.map do |parameter|
@@ -59,9 +57,9 @@ module RubyNeuralNets
               value_original = parameter.values[idx_param]
               begin
                 parameter.values[idx_param] = value_original - gradient_checking_epsilon
-                cost_minus = @loss.compute_loss(@model.forward_propagate(minibatch_x), minibatch_y, @model).sum / m
+                cost_minus = @loss.compute_loss(@model.forward_propagate(minibatch.x), minibatch.y, @model).sum / m
                 parameter.values[idx_param] = value_original + gradient_checking_epsilon
-                cost_plus = @loss.compute_loss(@model.forward_propagate(minibatch_x), minibatch_y, @model).sum / m
+                cost_plus = @loss.compute_loss(@model.forward_propagate(minibatch.x), minibatch.y, @model).sum / m
                 (cost_plus - cost_minus) / (2 * gradient_checking_epsilon)
               ensure
                 parameter.values[idx_param] = value_original

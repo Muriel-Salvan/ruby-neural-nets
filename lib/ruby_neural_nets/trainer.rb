@@ -99,12 +99,12 @@ module RubyNeuralNets
           total_loss = 0.0
           total_accuracy = 0.0
           total_size = 0
-          experiment.dataset.each do |minibatch_x, (minibatch_y, minibatch_size)|
+          experiment.dataset.each do |minibatch|
             minibatch_log_prefix = "#{log_prefix} [Minibatch #{idx_minibatch}]"
-            log "#{minibatch_log_prefix} Retrieved minibatch of size #{minibatch_size}"
-            debug { "#{minibatch_log_prefix} Minibatch X input: #{data_to_str(minibatch_x)}" }
-            debug { "#{minibatch_log_prefix} Minibatch Y reference: #{data_to_str(minibatch_y)}" }
-            experiment.optimizer.start_minibatch(idx_minibatch, minibatch_size) if is_training
+            log "#{minibatch_log_prefix} Retrieved minibatch of size #{minibatch.size}"
+            debug { "#{minibatch_log_prefix} Minibatch X input: #{data_to_str(minibatch.x)}" }
+            debug { "#{minibatch_log_prefix} Minibatch Y reference: #{data_to_str(minibatch.y)}" }
+            experiment.optimizer.start_minibatch(idx_minibatch, minibatch.size) if is_training
 
             # Forward propagation
             experiment.model.initialize_back_propagation_cache
@@ -115,24 +115,24 @@ module RubyNeuralNets
                 "* #{p.name}: #{data_to_str(p.values)}"
               end.join("\n")}"
             end
-            a = experiment.model.forward_propagate(minibatch_x, train: is_training)
+            a = experiment.model.forward_propagate(minibatch.x, train: is_training)
             back_propagation_cache = is_training ? experiment.model.back_propagation_cache : nil
             # Make sure other processing like gradient checking won't modify the cache again
             experiment.model.initialize_back_propagation_cache
 
             # Compute the loss for the minibatch (including L2 regularization if applicable)
-            loss = experiment.loss.compute_loss(a, minibatch_y, experiment.model)
+            loss = experiment.loss.compute_loss(a, minibatch.y, experiment.model)
             debug { "#{minibatch_log_prefix} Loss computed: #{data_to_str(loss)}" }
 
             # Display progress
-            @progress_tracker.progress(experiment, idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
+            @progress_tracker.progress(experiment, idx_epoch, idx_minibatch, minibatch, a, loss)
 
             # Back propagation and gradient descent if training
             if is_training
-              experiment.gradient_checker.check_gradients_for(idx_epoch, minibatch_x, minibatch_y, minibatch_size) do
+              experiment.gradient_checker.check_gradients_for(idx_epoch, minibatch) do
                 # Make sure gradient descent uses caches computed by the normal forward propagation
                 experiment.model.back_propagation_cache = back_propagation_cache
-                experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch_y, experiment.model), a, minibatch_y, loss, minibatch_size)
+                experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch.y, experiment.model), a, minibatch, loss)
               end
               experiment.optimizer.step
               debug do
@@ -144,10 +144,10 @@ module RubyNeuralNets
             end
 
             # Accumulate loss and accuracy for evaluation
-            total_loss += loss.mean * minibatch_size
-            accuracy = experiment.accuracy.measure(a, minibatch_y, minibatch_size)
-            total_accuracy += accuracy * minibatch_size
-            total_size += minibatch_size
+            total_loss += loss.mean * minibatch.size
+            accuracy = experiment.accuracy.measure(a, minibatch)
+            total_accuracy += accuracy * minibatch.size
+            total_size += minibatch.size
             idx_minibatch += 1
           end
           average_loss = total_loss / total_size

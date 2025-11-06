@@ -135,14 +135,12 @@ module RubyNeuralNets
     # * *experiment* (Experiment): The experiment object to track progress for
     # * *idx_epoch* (Integer): Epoch's index
     # * *idx_minibatch* (Integer): Minibatch index
-    # * *minibatch_x* (Object): Minibatch input that has just be forward propagated
-    # * *minibatch_y* (Object): Minibatch reference
+    # * *minibatch* (RubyNeuralNets::Minibatch): Minibatch containing input and reference data
     # * *a* (Object): Minibatch prediction, result of the forward propagation
     # * *loss* (Object): Computed loss for the minibatch
-    # * *minibatch_size* (Integer): Minibatch size
-    def progress(experiment, idx_epoch, idx_minibatch, minibatch_x, minibatch_y, a, loss, minibatch_size)
+    def progress(experiment, idx_epoch, idx_minibatch, minibatch, a, loss)
       cost = loss.mean.to_f
-      accuracy = @experiments[experiment.exp_id][:experiment].accuracy.measure(a, minibatch_y, minibatch_size)
+      accuracy = @experiments[experiment.exp_id][:experiment].accuracy.measure(a, minibatch)
       log "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}] [Minibatch #{idx_minibatch}] - Cost #{cost}, Accuracy #{accuracy * 100}%"
 
       # Update graphs
@@ -152,7 +150,7 @@ module RubyNeuralNets
         @experiments[experiment.exp_id][:accuracies] << accuracy
         graph_lines(@graphs['Accuracy'], :accuracies)
         @graphs["Confusion Matrix #{experiment.exp_id}"].plot(
-          @experiments[experiment.exp_id][:experiment].accuracy.confusion_matrix(a, minibatch_y, minibatch_size),
+          @experiments[experiment.exp_id][:experiment].accuracy.confusion_matrix(a, minibatch),
           with: 'image',
           title: ''
         )
@@ -184,15 +182,16 @@ module RubyNeuralNets
           cols = image_stats[:cols]
           channels = image_stats[:channels]
           # Detect the sample dimension based on minibatch_size
-          sample_dim = minibatch_x.shape.index(minibatch_size)
-          raise "Unable to determine sample dimension for minibatch_x shape #{minibatch_x.shape} and minibatch_size #{minibatch_size}" if sample_dim.nil?
+          sample_dim = minibatch.x.shape.index(minibatch.size)
+          raise "Unable to determine sample dimension for minibatch.x shape #{minibatch.x.shape} and minibatch.size #{minibatch.size}" if sample_dim.nil?
 
-          slices = Array.new(minibatch_x.shape.size, nil)
+          slices = Array.new(minibatch.x.shape.size, nil)
           plot_bitmaps(
             @graphs["Samples #{experiment.exp_id}"],
-            [experiment.display_samples, minibatch_size].min.times.map do |idx_sample|
+            [experiment.display_samples, minibatch.size].min.times.map do |idx_sample|
               slices[sample_dim] = idx_sample
-              Numo::UInt8[*((minibatch_x[*slices].flatten * 255).round)].reshape(rows, cols, channels)
+              # TODO: Add a method in Minibatch that will return the slice without guessing the dimension by comparing batch size.
+              Numo::UInt8[*((minibatch.x[*slices].flatten * 255).round)].reshape(rows, cols, channels)
             end
           )
         end

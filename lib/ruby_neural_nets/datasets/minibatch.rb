@@ -1,11 +1,12 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/minibatches/numo'
 
 module RubyNeuralNets
 
   module Datasets
 
     # Dataset returning data in minibatches.
-    # The y label is an array of the label and the minibatch size.
+    # Each element is a Minibatch object containing both X and Y data.
     class Minibatch < Wrapper
 
       # Get the individual elements dataset
@@ -36,17 +37,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * RubyNeuralNets::Minibatch: The minibatch containing X and Y data
       def [](index)
         minibatch = fetch_minibatch(index)
-        [
+        RubyNeuralNets::Minibatches::Numo.new(
           Numo::DFloat[*minibatch.map { |(x, _y)| x }].transpose,
-          [
-            Numo::DFloat[*minibatch.map { |(_x, y)| y }].transpose,
-            minibatch.size
-          ]
-        ]
+          Numo::DFloat[*minibatch.map { |(_x, y)| y }].transpose
+        )
       end
 
       private

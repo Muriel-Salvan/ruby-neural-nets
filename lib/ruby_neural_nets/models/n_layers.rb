@@ -90,12 +90,11 @@ module RubyNeuralNets
       # Parameters::
       # * *da* (Object): The loss derivative from the model predicted output
       # * *a* (Object): The predicted output
-      # * *y* (Object): The real output
+      # * *minibatch* (RubyNeuralNets::Minibatch): The minibatch containing real output and size
       # * *loss* (Object): The computed loss
-      # * *minibatch_size* (Integer): Minibatch size
-      def gradient_descent(da, a, y, loss, minibatch_size)
+      def gradient_descent(da, a, minibatch, loss)
         # Backward propagate the minibatch
-        da = da / minibatch_size
+        da = da / minibatch.size
         @layers.reverse.each do |layer|
           Helpers.check_instability(da)
           n_x = da.shape[0]
