@@ -1,3 +1,7 @@
+* Provide a clean minibatch interface.
+* Make a minibatch dump to disk method to ensure datasets are as expected.
+* Investigate VipsNumo technical performance that is bad.
+* Implement Torch with ImageMagick for benchmarks.
 * Understand why PyTorch still differs from Numo implementation.
 * Use GPU to speed-up.
 * Glorot is supposed to be not great with ReLU. Try randn*sqrt(2/n[l-1])

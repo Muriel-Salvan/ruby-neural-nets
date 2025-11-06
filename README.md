@@ -41,6 +41,9 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
       - [Regularization hyper parameters](#regularization-hyper-parameters)
     - [Regularization](#regularization)
   - [N layer model using PyTorch](#n-layer-model-using-pytorch)
+    - [Experiment [A]: Same parameters as with Numo implementation](#experiment-a-same-parameters-as-with-numo-implementation)
+    - [Experiment [B]: Measuring model randomness effect](#experiment-b-measuring-model-randomness-effect)
+    - [Experiment [C]: Measuring dataset randomness effect](#experiment-c-measuring-dataset-randomness-effect)
   - [Performance benchmarks](#performance-benchmarks)
     - [Ruby Numo](#ruby-numo)
     - [Torch.rb](#torchrb)
@@ -51,6 +54,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **Experiment Management**: Run multiple experiments with different configurations in a single command, each with unique IDs and separate progress tracking
 - **Layered Datasets**: Modular dataset processing framework with composable layers (partitioning, shuffling, caching, encoding, minibatching) enabling reusable features between Numo and PyTorch implementations
 - **Data Augmentation**: Built-in data augmentation capabilities with Clone and modular image transformation layers for expanding datasets through duplication and various random transformations
+- **TorchVision Integration**: TorchVision transforms for Ruby providing image preprocessing pipelines compatible with PyTorch workflows
 - **Dataset Management**: Load and preprocess image datasets with support for training, development, and test splits using extensible data loader architecture
 - **Neural Network Models**: Implement various neural network architectures (one-layer, multi-layer) with modular layers including Dense, Batch Normalization, Dropout, and activations (ReLU, Leaky ReLU, Sigmoid, Softmax, Tanh)
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
@@ -356,9 +360,9 @@ For the noise example:
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
 - `lib/ruby_neural_nets/accuracies/`: Accuracy metric implementations (ClassesNumo, ClassesTorch)
 - `lib/ruby_neural_nets/data_loader.rb`: Base data loader framework
-- `lib/ruby_neural_nets/data_loaders/`: Data loader implementations (Numo, Torch) configuring layered dataset processing
+- `lib/ruby_neural_nets/data_loaders/`: Data loader implementations (ImageMagickNumo, VipsNumo, Torch) configuring layered dataset processing
 - `lib/ruby_neural_nets/dataset.rb`: Base dataset class
-- `lib/ruby_neural_nets/datasets/`: Dataset processing layers (Wrapper, Partitioning, Shuffling, Caching, Encoding, Minibatching)
+- `lib/ruby_neural_nets/datasets/`: Dataset processing layers (Wrapper, Partitioning, Shuffling, Caching, Encoding, Minibatching, Image transformations, Data augmentation)
 - `lib/ruby_neural_nets/experiment.rb`: Experiment management system for running multiple configurations
 - `lib/ruby_neural_nets/gradient_checker.rb`: Gradient checking for validation
 - `lib/ruby_neural_nets/helpers.rb`: Utility functions and numerical stability checks
@@ -382,7 +386,7 @@ For the noise example:
 - `lib/ruby_neural_nets/torch/`: PyTorch integration utilities
 - `lib/ruby_neural_nets/torchvision/`: TorchVision transforms for Ruby
 - `lib/ruby_neural_nets/torchvision/transforms/`: Individual TorchVision transform implementations
-- `lib/ruby_neural_nets/transform_helpers.rb`: Shared image transformation utilities used across dataset layers
+- `lib/ruby_neural_nets/transform_helpers/`: Shared image transformation utilities used across dataset layers
 
 ## Contributing
 
@@ -762,21 +766,22 @@ bundle exec ruby bin/run --instability-checks=off --dataset=numbers --accuracy=C
 The benchmarks are made on CPU, under VirtualBox kubuntu, using 100 epochs on training on numbers dataset (caching all data preparation in memory), with 1 layer of 100 units, without minibatches.
 Absolute values are meaningless as this setup is far from being optimal. However relative values give some comparison ideas between frameworks and algorithms, on the training part.
 
-#### Ruby Numo
+Here are the command lines used:
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off
+# Numo using Vips
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=VipsNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+# Numo using ImageMagick
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+# Torch using Vips
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=Torch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
 ```
-* 100 epochs reach 95% accuracy in 93 seconds.
-* Memory consumption is around 3GB max.
 
-#### Torch.rb
-
-```bash
-bundle exec ruby -w bin/run --dataset=numbers --data-loader=Torch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off
-```
-* 100 epochs reach 79% accuracy in 37 seconds.
-* Memory consumption is around 9GB max.
+| Experiment             | Elapsed time | Memory consumption (GB) | Final dev accuracy |
+| ---------------------- | ------------ | ----------------------- | ------------------ |
+| Numo using Vips        | 15m 12s      | 0.9                     | 90%                |
+| Numo using ImageMagick | 2m 24s       | 0.9                     | 96%                |
+| Torch using Vips       | 3m 28s       | 1.0                     | 93%                |
 
 ## License
 
