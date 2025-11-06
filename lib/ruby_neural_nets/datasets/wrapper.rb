@@ -43,6 +43,17 @@ module RubyNeuralNets
         @dataset[index]
       end
 
+      # Return the underlying dataset's label for a given output label of this dataset layer
+      #
+      # Parameters::
+      # * *y* (Object): Label, as returned by the [] method
+      # Result::
+      # * Object: Corresponding underlying label
+      def underlying_label(y)
+        # By default we look for the label of the underlying dataset
+        @dataset.underlying_label(y)
+      end
+
       # Forward missing method calls to the wrapped dataset.
       #
       # Parameters::

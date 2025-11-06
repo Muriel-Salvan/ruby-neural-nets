@@ -10,3 +10,6 @@
 
 # Don't include byebug history
 /.byebug_history
+
+# Don't include the generated minibatches
+/minibatches

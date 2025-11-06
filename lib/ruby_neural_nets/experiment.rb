@@ -22,6 +22,7 @@ module RubyNeuralNets
       display_samples
       dev_experiment
       early_stopping_patience
+      dump_minibatches
     ],
     keyword_init: true
   )

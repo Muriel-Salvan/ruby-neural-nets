@@ -46,6 +46,16 @@ module RubyNeuralNets
         )
       end
 
+      # Return the underlying dataset's label for a given output label of this dataset layer
+      #
+      # Parameters::
+      # * *y* (Object): Label, as returned by the [] method
+      # Result::
+      # * Object: Corresponding underlying label
+      def underlying_label(y)
+        @dataset.underlying_label(y.to_a)
+      end
+
       private
 
       # Fetch the minibatch of (x, y) data points for a given minibatch index

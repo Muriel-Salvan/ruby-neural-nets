@@ -5,6 +5,7 @@ require 'ruby_neural_nets/losses/cross_entropy'
 require 'ruby_neural_nets/profiler'
 require 'ruby_neural_nets/progress_tracker'
 require 'ruby_neural_nets/datasets/minibatch'
+require 'ruby_neural_nets/helpers'
 
 module RubyNeuralNets
 
@@ -95,15 +96,26 @@ module RubyNeuralNets
           log "#{log_prefix} Start epoch #{is_training ? 'training' : 'evaluation'} on #{experiment.model.parameters.map(&:size).sum} parameters..."
           experiment.optimizer.start_epoch(idx_epoch) if is_training
           experiment.dataset.prepare_for_epoch
-          idx_minibatch = 0
           total_loss = 0.0
           total_accuracy = 0.0
           total_size = 0
-          experiment.dataset.each do |minibatch|
+          experiment.dataset.each.with_index do |minibatch, idx_minibatch|
             minibatch_log_prefix = "#{log_prefix} [Minibatch #{idx_minibatch}]"
             log "#{minibatch_log_prefix} Retrieved minibatch of size #{minibatch.size}"
             debug { "#{minibatch_log_prefix} Minibatch X input: #{data_to_str(minibatch.x)}" }
             debug { "#{minibatch_log_prefix} Minibatch Y reference: #{data_to_str(minibatch.y)}" }
+            # Add code to dump minibatches if the experiment option is enabled
+            if experiment.dump_minibatches
+              # For each element in the minibatch
+              # Assuming the minibatch has an each_element method
+              minibatch.each_element.with_index do |(element, y), idx_element|
+                # Write the image using Helpers
+                Helpers.write_image(
+                  experiment.dataset.to_image(element),
+                  "./minibatches/#{experiment.exp_id}/#{idx_epoch}/#{idx_minibatch}/#{idx_element}_#{experiment.dataset.underlying_label(y)}.png"
+                )
+              end
+            end
             experiment.optimizer.start_minibatch(idx_minibatch, minibatch.size) if is_training
 
             # Forward propagation
@@ -148,7 +160,6 @@ module RubyNeuralNets
             accuracy = experiment.accuracy.measure(a, minibatch)
             total_accuracy += accuracy * minibatch.size
             total_size += minibatch.size
-            idx_minibatch += 1
           end
           average_loss = total_loss / total_size
           average_accuracy = total_accuracy / total_size

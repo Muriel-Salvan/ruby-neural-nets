@@ -266,6 +266,10 @@ module RubyNeuralNets
         early_stopping_patience: {
           desc: 'Number of epochs to wait for dev accuracy improvement before stopping training.',
           value: 10
+        },
+        dump_minibatches: {
+          desc: 'Dump minibatches to disk as images.',
+          value: false
         }
       }
     end

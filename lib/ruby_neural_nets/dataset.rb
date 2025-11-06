@@ -31,11 +31,24 @@ module RubyNeuralNets
       raise 'Not implemented'
     end
 
+    # Return the underlying dataset's label for a given output label of this dataset layer
+    #
+    # Parameters::
+    # * *y* (Object): Label, as returned by the [] method
+    # Result::
+    # * Object: Corresponding underlying label
+    def underlying_label(y)
+      # By default there is no translation of the label
+      y
+    end
+
     # Iterate over all elements
     #
     # Parameters::
     # * Code: Code called for each element iterated on
     def each
+      return to_enum(:each) unless block_given?
+      
       size.times.each { |index| yield self[index] }
     end
 

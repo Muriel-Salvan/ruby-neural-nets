@@ -7,6 +7,10 @@ module RubyNeuralNets
     # Dataset that uses an underlying Dataset for a given dataset type
     class SampleFolderDataset < TorchVision::Datasets::DatasetFolder
 
+      # Return the mapping between the class and index
+      #   Hash< Object, Integer >
+      attr_reader :class_to_idx
+
       # Constructor
       #
       # Parameters::

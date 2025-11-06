@@ -42,6 +42,17 @@ module RubyNeuralNets
         [x, @one_hot_labels[label]]
       end
 
+      # Return the underlying dataset's label for a given output label of this dataset layer
+      #
+      # Parameters::
+      # * *y* (Object): Label, as returned by the [] method
+      # Result::
+      # * Object: Corresponding underlying label
+      def underlying_label(y)
+        found_label, _found_index = @one_hot_labels.find { |_select_label, select_vector| select_vector == y }
+        @dataset.underlying_label(found_label)
+      end
+
     end
 
   end

@@ -44,6 +44,17 @@ module RubyNeuralNets
         @torch_dataset[index]
       end
 
+      # Return the underlying dataset's label for a given output label of this dataset layer
+      #
+      # Parameters::
+      # * *y* (Object): Label, as returned by the [] method
+      # Result::
+      # * Object: Corresponding underlying label
+      def underlying_label(y)
+        found_label, _found_index = @torch_dataset.class_to_idx.find { |_select_label, select_index| select_index == y }
+        found_label
+      end
+
       # Get some images stats.
       # Those are supposed to be the same for all samples from the dataset and can be used to compute the model's architecture.
       #
@@ -54,6 +65,21 @@ module RubyNeuralNets
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
       def image_stats
         transformed_stats(RubyNeuralNets::Datasets::FileToVips.new(@dataset).image_stats, @transforms)
+      end
+
+      # Convert an element to an image
+      #
+      # Parameters:
+      # * *element* (Object): The X element returned by [] method
+      # Result:
+      # * Object: The Vips image representation
+      def to_image(element)
+        # Ensure proper format based on image_stats
+        Vips::Image.new_from_array(
+          # Assume Torch tensor is [channels, rows, cols]
+          # Permute to [rows, cols, channels]
+          (element.permute(1, 2, 0).numpy() * 255).round().astype('uint8')
+        ).colourspace(image_stats[:channels] == 1 ? 'b-w' : 'srgb')
       end
 
       private

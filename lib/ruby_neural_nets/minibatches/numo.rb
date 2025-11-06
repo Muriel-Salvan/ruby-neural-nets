@@ -48,9 +48,11 @@ module RubyNeuralNets
       #   * Parameters::
       #     * *x* (Object): The element X being iterated on
       #     * *y* (Object): The element Y being iterated on
-      def each_element(&block)
+      def each_element
+        return to_enum(:each_element) unless block_given?
+        
         size.times do |i|
-          block.call(@x[true, i], @y[i, true])
+          yield @x[true, i], @y[true, i]
         end
       end
 

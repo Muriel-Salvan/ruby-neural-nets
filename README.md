@@ -207,6 +207,29 @@ This runs with default settings:
   - Use values between 0.0 (no dropout) and 1.0 (drop all units)
   - Example: `--dropout-rate 0.5` drops 50% of units randomly during training
 
+- **`--experiment`**: Start a new experiment configuration (can be used multiple times)
+  - Allows running multiple experiments with different configurations in a single command
+  - Each experiment can have its own unique ID and configuration
+  - Example: `--experiment --exp-id=exp1 --dataset=colors --experiment --exp-id=exp2 --dataset=numbers`
+  - This will run two separate experiments: exp1 (colors dataset) and exp2 (numbers dataset)
+
+- **`--exp-id`**: Set experiment ID for identification (string, default: 'main')
+  - Provides a unique identifier for each experiment when running multiple experiments
+  - Useful for distinguishing between different experiment runs in output and visualizations
+  - Example: `--exp-id=baseline` sets the experiment ID to 'baseline'
+
+- **`--training-times`**: Number of times to repeat training with the same configuration (integer, default: 1)
+  - Runs the same experiment multiple times to measure variance and consistency
+  - Useful for statistical analysis of model performance across multiple runs
+
+- **`--eval-dev`**: Evaluate model on development set during training (boolean, default: true)
+  - Controls whether to evaluate the model on the development set after each epoch
+  - Required for early stopping and development set accuracy tracking
+
+- **`--dump-minibatches`**: Save minibatches as image files to disk (boolean, default: false)
+  - Outputs each minibatch as individual image files for debugging and visualization
+  - Useful for inspecting data preprocessing and augmentation effects
+
 The run will:
 - Load the specified dataset and display statistics
 - Train the neural network with selected configuration
@@ -766,6 +789,26 @@ bundle exec ruby bin/run --instability-checks=off --dataset=numbers --accuracy=C
 The benchmarks are made on CPU, under VirtualBox kubuntu, using 100 epochs on training on numbers dataset (caching all data preparation in memory), with 1 layer of 100 units, without minibatches.
 Absolute values are meaningless as this setup is far from being optimal. However relative values give some comparison ideas between frameworks and algorithms, on the training part.
 
+Here are the command lines used:
+
+```bash
+# Numo using Vips
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=VipsNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+# Numo using ImageMagick
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+# Torch using Vips
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=Torch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+```
+
+| Experiment             | Elapsed time | Memory consumption (GB) | Final dev accuracy |
+| ---------------------- | ------------ | ----------------------- | ------------------ |
+| Numo using Vips        | 15m 12s      | 0.9                     | 90%                |
+| Numo using ImageMagick | 2m 24s       | 0.9                     | 96%                |
+| Torch using Vips       | 3m 28s       | 1.0                     | 93%                |
+
+## License
+
+See LICENSE file.
 Here are the command lines used:
 
 ```bash
