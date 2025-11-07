@@ -160,7 +160,7 @@ module RubyNeuralNets
         data_loader: {
           from: RubyNeuralNets::DataLoaders,
           ancestor: RubyNeuralNets::DataLoader,
-          name: 'Numo',
+          name: 'NumoImageMagick',
           options: {
             max_minibatch_size: 5000,
             dataset: {
