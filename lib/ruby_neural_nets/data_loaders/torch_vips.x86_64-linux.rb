@@ -1,27 +1,28 @@
 require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
-require 'ruby_neural_nets/datasets/file_to_image_magick'
-require 'ruby_neural_nets/datasets/image_magick_grayscale'
-require 'ruby_neural_nets/datasets/image_magick_adaptive_invert'
-require 'ruby_neural_nets/datasets/image_magick_minmax_normalize'
-require 'ruby_neural_nets/datasets/image_magick_trim'
-require 'ruby_neural_nets/datasets/image_magick_normalize'
-require 'ruby_neural_nets/datasets/image_magick_resize'
-require 'ruby_neural_nets/datasets/image_magick_rotate'
-require 'ruby_neural_nets/datasets/image_magick_crop'
-require 'ruby_neural_nets/datasets/image_magick_noise'
-require 'ruby_neural_nets/datasets/clone'
-require 'ruby_neural_nets/datasets/one_hot_encoder'
 require 'ruby_neural_nets/datasets/cache_memory'
 require 'ruby_neural_nets/datasets/epoch_shuffler'
-require 'ruby_neural_nets/datasets/minibatch'
+require 'ruby_neural_nets/datasets/labeled_torch_images'
+require 'ruby_neural_nets/datasets/minibatch_torch'
+require 'ruby_neural_nets/torchvision/transforms/vips_trim'
+require 'ruby_neural_nets/torchvision/transforms/vips_resize'
+require 'ruby_neural_nets/torchvision/transforms/vips_rotate'
+require 'ruby_neural_nets/torchvision/transforms/vips_noise'
+require 'ruby_neural_nets/torchvision/transforms/vips_grayscale'
+require 'ruby_neural_nets/torchvision/transforms/vips_minmax_normalize'
+require 'ruby_neural_nets/torchvision/transforms/vips_adaptive_invert'
+require 'ruby_neural_nets/torchvision/transforms/file_to_vips'
+require 'ruby_neural_nets/torchvision/transforms/vips_remove_alpha'
+require 'ruby_neural_nets/torchvision/transforms/cache'
+require 'ruby_neural_nets/torchvision/transforms/flatten'
+require 'ruby_neural_nets/torchvision/transforms/to_double'
 
 module RubyNeuralNets
-  
+
   module DataLoaders
-        
-    class ImageMagickNumo < DataLoader
+
+    class TorchVips < DataLoader
 
       # Constructor
       #
@@ -71,18 +72,22 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
-        base_dataset = Datasets::FileToImageMagick.new(
-          Datasets::OneHotEncoder.new(dataset)
+        transforms = [
+          RubyNeuralNets::TorchVision::Transforms::FileToVips.new,
+          RubyNeuralNets::TorchVision::Transforms::VipsRemoveAlpha.new
+        ]
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsTrim.new if @trim
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsResize.new(@resize)
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsGrayscale.new if @grayscale
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsMinmaxNormalize.new if @minmax_normalize
+        transforms << RubyNeuralNets::TorchVision::Transforms::VipsAdaptiveInvert.new if @adaptive_invert
+
+        Datasets::CacheMemory.new(
+          Datasets::LabeledTorchImages.new(
+            dataset,
+            [RubyNeuralNets::TorchVision::Transforms::Cache.new(transforms)]
+          )
         )
-        resized_dataset = Datasets::ImageMagickResize.new(@trim ? Datasets::ImageMagickTrim.new(base_dataset) : base_dataset, resize: @resize)
-
-        # Apply preprocessing layers
-        processed_dataset = resized_dataset
-        processed_dataset = Datasets::ImageMagickGrayscale.new(processed_dataset) if @grayscale
-        processed_dataset = Datasets::ImageMagickMinmaxNormalize.new(processed_dataset) if @minmax_normalize
-        processed_dataset = Datasets::ImageMagickAdaptiveInvert.new(processed_dataset) if @adaptive_invert
-
-        Datasets::CacheMemory.new(processed_dataset)
       end
 
       # Return an augmentation dataset for this data loader.
@@ -95,17 +100,17 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with augmentation applied
       def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
-        Datasets::ImageMagickNoise.new(
-          Datasets::ImageMagickRotate.new(
-            Datasets::Clone.new(
-              preprocessed_dataset,
-              nbr_clones: @nbr_clones
-            ),
-            rot_angle: @rot_angle,
-            rng:
+        # Create augmentation transforms
+        augmentation_transforms = []
+        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsRotate.new(@rot_angle, rng) if @rot_angle > 0
+        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsNoise.new(@noise_intensity, numo_rng) if @noise_intensity > 0
+
+        Datasets::LabeledTorchImages.new(
+          Datasets::Clone.new(
+            preprocessed_dataset.files_dataset,
+            nbr_clones: @nbr_clones
           ),
-          numo_rng:,
-          noise_intensity: @noise_intensity
+          preprocessed_dataset.transforms + augmentation_transforms
         )
       end
 
@@ -119,56 +124,20 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with batching applied
       def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
-        Datasets::Minibatch.new(
+        Datasets::MinibatchTorch.new(
           Datasets::EpochShuffler.new(
-            Datasets::ImageMagickNormalize.new(augmented_dataset),
+            Datasets::LabeledTorchImages.new(
+              augmented_dataset.files_dataset,
+              augmented_dataset.transforms + [
+                ::TorchVision::Transforms::ToTensor.new,
+                RubyNeuralNets::TorchVision::Transforms::Flatten.new,
+                RubyNeuralNets::TorchVision::Transforms::ToDouble.new
+              ]
+            ),
             rng:
           ),
           max_minibatch_size:
         )
-      end
-
-      # Display a sample image from a dataset
-      #
-      # Parameters::
-      # * *dataset_type* (Symbol): Dataset type from which the sample should be taken
-      # * *label* (String): Label from which the sample should be taken
-      def display_sample(dataset_type, label)
-        # Get the minibatch dataset for the specified type
-        elements_dataset = @partition_datasets[dataset_type].elements_dataset
-
-        # Get the one-hot vector for the requested label
-        target_one_hot = elements_dataset.one_hot_labels[label]
-
-        # Find a sample with the matching one-hot vector
-        found_x, _found_y = elements_dataset.find { |_select_x, select_y| select_y == target_one_hot }
-        # Get image stats for dimensions
-        stats = image_stats
-        rows = stats[:rows]
-        cols = stats[:cols]
-
-        # Create ImageMagick image from pixel data using appropriate format
-        image = Magick::Image.new(cols, rows)
-        image.import_pixels(
-          0,
-          0,
-          cols,
-          rows,
-          case image_stats[:channels]
-          when 1
-            'I'
-          when 3
-            'RGB'
-          else
-            raise "Unsupported number of channels for display: #{image_stats[:channels]}"
-          end,
-          # Convert normalized pixel data back to ImageMagick format
-          # The data is in 0-1 range, need to convert back to 0-65535 range
-          found_x.flatten.map { |pixel_value| (pixel_value * 65535).round }
-        )
-
-        log "Display sample image of label #{label} from #{dataset_type} dataset"
-        Helpers.display_image(image)
       end
 
     end

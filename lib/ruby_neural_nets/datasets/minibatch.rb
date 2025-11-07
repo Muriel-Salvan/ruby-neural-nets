@@ -41,7 +41,7 @@ module RubyNeuralNets
       def [](index)
         minibatch = fetch_minibatch(index)
         RubyNeuralNets::Minibatches::Numo.new(
-          Numo::DFloat[*minibatch.map { |(x, _y)| x }].transpose,
+          Numo::DFloat.vstack(minibatch.map { |(x, _y)| x }).transpose,
           Numo::DFloat[*minibatch.map { |(_x, y)| y }].transpose
         )
       end

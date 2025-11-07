@@ -4,8 +4,18 @@ module RubyNeuralNets
 
   module Datasets
 
-    # Dataset wrapper that normalizes images to [0,1] range.
-    class ImageMagickNormalize < Wrapper
+    # Dataset wrapper that converts ImageMagick images to flattened Numo DFloat objects.
+    class ImageMagickToNumo < Wrapper
+
+      # Constructor
+      #
+      # Parameters::
+      # * *dataset* (Dataset): Dataset to be wrapped
+      # * *normalize* (Boolean): Should we normalize the data between 0 and 1?
+      def initialize(dataset, normalize:)
+        super(dataset)
+        @normalize = normalize
+      end
 
       # Access an element of the dataset
       #
@@ -16,7 +26,8 @@ module RubyNeuralNets
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        [image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), true), y]
+        # Convert ImageMagick image to pixel array and flatten to Numo DFloat
+        [Numo::DFloat[*image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), @normalize)], y]
       end
 
       # Convert an element to an image
@@ -30,8 +41,8 @@ module RubyNeuralNets
         rows = stats[:rows]
         cols = stats[:cols]
         channels = stats[:channels]
-        # Convert Numo array to Ruby array and scale to 0-65535
-        scaled_flat = ((element * 65535).round).to_a.flatten.map(&:to_i)
+        # Convert Numo array to Ruby array
+        scaled_flat = element.to_a.flatten.map(&:to_i)
         # Create image and import pixels
         img = Magick::Image.new(cols, rows)
         img.import_pixels(

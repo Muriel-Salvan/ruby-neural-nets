@@ -154,6 +154,22 @@ module RubyNeuralNets
         image.normalize_channel(Magick::AllChannels)
       end
 
+      # Remove alpha channel from ImageMagick image
+      #
+      # Parameters::
+      # * *image* (Magick::Image): Input image that may have alpha channel
+      # Result::
+      # * Magick::Image: Image with alpha channel removed if present
+      def self.remove_alpha(image)
+        if image.alpha?
+          plain_image = image.copy
+          plain_image.alpha(Magick::DeactivateAlphaChannel)
+          plain_image
+        else
+          image
+        end
+      end
+
     end
   end
 end

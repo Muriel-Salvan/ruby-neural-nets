@@ -1,6 +1,4 @@
-* Implement Torch with ImageMagick for benchmarks.
-* Investigate VipsNumo technical performance that is bad.
-* Understand why PyTorch still differs from Numo implementation.
+* Add simple unit tests to check big issues in main frameworks.
 * Use GPU to speed-up.
 * Glorot is supposed to be not great with ReLU. Try randn*sqrt(2/n[l-1])
 * Use Keras or Torch and continue next steps in recognition using convolutional layers, transfer & multitask learning (C3W2), data augmentation, skip connections, RNNs...

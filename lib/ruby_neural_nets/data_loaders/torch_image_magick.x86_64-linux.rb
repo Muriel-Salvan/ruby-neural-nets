@@ -5,24 +5,25 @@ require 'ruby_neural_nets/datasets/cache_memory'
 require 'ruby_neural_nets/datasets/epoch_shuffler'
 require 'ruby_neural_nets/datasets/labeled_torch_images'
 require 'ruby_neural_nets/datasets/minibatch_torch'
-require 'ruby_neural_nets/torchvision/transforms/vips_trim'
-require 'ruby_neural_nets/torchvision/transforms/vips_resize'
-require 'ruby_neural_nets/torchvision/transforms/vips_rotate'
-require 'ruby_neural_nets/torchvision/transforms/vips_noise'
-require 'ruby_neural_nets/torchvision/transforms/vips_grayscale'
-require 'ruby_neural_nets/torchvision/transforms/vips_minmax_normalize'
-require 'ruby_neural_nets/torchvision/transforms/vips_adaptive_invert'
-require 'ruby_neural_nets/torchvision/transforms/file_to_vips'
-require 'ruby_neural_nets/torchvision/transforms/vips_remove_alpha'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_trim'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_resize'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_rotate'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_noise'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_grayscale'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_minmax_normalize'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_adaptive_invert'
+require 'ruby_neural_nets/torchvision/transforms/file_to_image_magick'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_remove_alpha'
 require 'ruby_neural_nets/torchvision/transforms/cache'
 require 'ruby_neural_nets/torchvision/transforms/flatten'
 require 'ruby_neural_nets/torchvision/transforms/to_double'
+require 'ruby_neural_nets/torchvision/transforms/image_magick_to_tensor'
 
 module RubyNeuralNets
 
   module DataLoaders
 
-    class Torch < DataLoader
+    class TorchImageMagick < DataLoader
 
       # Constructor
       #
@@ -73,14 +74,14 @@ module RubyNeuralNets
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
         transforms = [
-          RubyNeuralNets::TorchVision::Transforms::FileToVips.new,
-          RubyNeuralNets::TorchVision::Transforms::VipsRemoveAlpha.new
+          RubyNeuralNets::TorchVision::Transforms::FileToImageMagick.new,
+          RubyNeuralNets::TorchVision::Transforms::ImageMagickRemoveAlpha.new
         ]
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsTrim.new if @trim
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsResize.new(@resize)
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsGrayscale.new if @grayscale
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsMinmaxNormalize.new if @minmax_normalize
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsAdaptiveInvert.new if @adaptive_invert
+        transforms << RubyNeuralNets::TorchVision::Transforms::ImageMagickTrim.new if @trim
+        transforms << RubyNeuralNets::TorchVision::Transforms::ImageMagickResize.new(@resize)
+        transforms << RubyNeuralNets::TorchVision::Transforms::ImageMagickGrayscale.new if @grayscale
+        transforms << RubyNeuralNets::TorchVision::Transforms::ImageMagickMinmaxNormalize.new if @minmax_normalize
+        transforms << RubyNeuralNets::TorchVision::Transforms::ImageMagickAdaptiveInvert.new if @adaptive_invert
 
         Datasets::CacheMemory.new(
           Datasets::LabeledTorchImages.new(
@@ -102,8 +103,8 @@ module RubyNeuralNets
       def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
         # Create augmentation transforms
         augmentation_transforms = []
-        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsRotate.new(@rot_angle, rng) if @rot_angle > 0
-        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsNoise.new(@noise_intensity, numo_rng) if @noise_intensity > 0
+        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::ImageMagickRotate.new(@rot_angle, rng) if @rot_angle > 0
+        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::ImageMagickNoise.new(@noise_intensity, numo_rng) if @noise_intensity > 0
 
         Datasets::LabeledTorchImages.new(
           Datasets::Clone.new(
@@ -129,7 +130,7 @@ module RubyNeuralNets
             Datasets::LabeledTorchImages.new(
               augmented_dataset.files_dataset,
               augmented_dataset.transforms + [
-                ::TorchVision::Transforms::ToTensor.new,
+                RubyNeuralNets::TorchVision::Transforms::ImageMagickToTensor.new,
                 RubyNeuralNets::TorchVision::Transforms::Flatten.new,
                 RubyNeuralNets::TorchVision::Transforms::ToDouble.new
               ]

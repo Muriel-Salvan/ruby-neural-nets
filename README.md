@@ -122,7 +122,7 @@ This runs with default settings:
   - Controls how model parameters are updated during training
   - Use `--learning-rate` to set learning rate, `--decay` for decay-based optimizers, `--weight-decay` for L2 regularization (default: 0.0)
 
-- **`--data-loader`**: Select data loading method (ImageMagickNumo, VipsNumo, Torch)
+- **`--data-loader`**: Select data loading method (NumoImageMagick, NumoVips, TorchVips, TorchImageMagick)
   - Controls the dataset processing pipeline (partitioning, shuffling, caching, encoding, minibatching)
 
 - **`--loss`**: Choose loss function (CrossEntropy, CrossEntropyTorch)
@@ -350,9 +350,10 @@ Applied only during training, these are random transformations that increase dat
 
 ##### Batching Phase
 Applied to prepare final training batches, these handle shuffling and data grouping:
-1. **ImageNormalize**: Convert to pixel arrays and normalize to [0,1] range
-2. **EpochShuffler**: Shuffle data between epochs
-3. **Minibatch**: Group data into minibatches
+1. **ImageToNumo**: Convert images to flattened Numo DFloat arrays (raw pixel values)
+2. **NumoNormalize**: Normalize Numo arrays to [0,1] range by dividing by a factor (255 for Vips, 65535 for ImageMagick)
+3. **EpochShuffler**: Shuffle data between epochs
+4. **Minibatch**: Group data into minibatches
 
 #### Example Usage
 
@@ -383,7 +384,7 @@ For the noise example:
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
 - `lib/ruby_neural_nets/accuracies/`: Accuracy metric implementations (ClassesNumo, ClassesTorch)
 - `lib/ruby_neural_nets/data_loader.rb`: Base data loader framework
-- `lib/ruby_neural_nets/data_loaders/`: Data loader implementations (ImageMagickNumo, VipsNumo, Torch) configuring layered dataset processing
+- `lib/ruby_neural_nets/data_loaders/`: Data loader implementations (NumoImageMagick, NumoVips, Torch) configuring layered dataset processing
 - `lib/ruby_neural_nets/dataset.rb`: Base dataset class
 - `lib/ruby_neural_nets/datasets/`: Dataset processing layers (Wrapper, Partitioning, Shuffling, Caching, Encoding, Minibatching, Image transformations, Data augmentation)
 - `lib/ruby_neural_nets/experiment.rb`: Experiment management system for running multiple configurations
@@ -424,7 +425,7 @@ This is a playground project for experimenting with neural networks in Ruby. Fee
 ### One layer model on colors dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=colors --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+bundle exec ruby ./bin/run --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
 ```
 
 The one-layer model provides:
@@ -448,7 +449,7 @@ Performance:
 ### One layer model on numbers dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
 ```
 
 Using the one-layer model on the numbers model validates the following:
@@ -464,7 +465,7 @@ Performance:
 ### N layer model on colors dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=colors --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+bundle exec ruby ./bin/run --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
 Observations:
@@ -476,7 +477,7 @@ Performance:
 ### N layer model on numbers dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
 #### Observations without regularization
@@ -516,7 +517,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --acc
 
 ##### Data preparation hyper parameters
 
-* Applying grayscale: `--exp-id=color --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=gray --grayscale=true --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+* Applying grayscale: `--exp-id=color --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=gray --grayscale=true --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
 
 | Color space | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ----------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -527,7 +528,7 @@ bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --acc
 
 Analysis: There is a smaller variance when using grayscale. The model is focusing more on the number shapes rather than on the colors.
 
-* Applying min-max normalization: `--exp-id=no_norm --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=minmax_norm --minmax-normalize=true --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+* Applying min-max normalization: `--exp-id=no_norm --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=minmax_norm --minmax-normalize=true --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
 
 | Min-max normalization | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | --------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -538,7 +539,7 @@ Analysis: There is a smaller variance when using grayscale. The model is focusin
 
 Analysis: We see that the model is learning in a faster way using minmax normalization. However the learning slopes seem similar, indicating that the variance is not really affected by it.
 
-* Applying adaptive invert: `--exp-id=no_invert --minmax-normalize=true --grayscale=true --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=invert --adaptive-invert=true --minmax-normalize=true --grayscale=true --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+* Applying adaptive invert: `--exp-id=no_invert --minmax-normalize=true --grayscale=true --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=invert --adaptive-invert=true --minmax-normalize=true --grayscale=true --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
 
 | Adaptive invert | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | --------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -549,7 +550,7 @@ Analysis: We see that the model is learning in a faster way using minmax normali
 
 Analysis: The model learns faster and with less noise when using adaptive invert. The variance is not affected.
 
-* Trimming images: `--exp-id=no_trim --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=trim --trim=true --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
+* Trimming images: `--exp-id=no_trim --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4 --experiment --exp-id=trim --trim=true --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --display-samples=4`
 
 | Trim | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ---- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -560,7 +561,7 @@ Analysis: The model learns faster and with less noise when using adaptive invert
 
 Analysis: We see that the model learns much faster, still keeping the variance.
 
-* Changing input image size: `--exp-id=size_8 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=8,8 --experiment --exp-id=size_16 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=16,16 --experiment --exp-id=size_32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=32,32 --experiment --exp-id=size_110 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=110,110`
+* Changing input image size: `--exp-id=size_8 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=8,8 --experiment --exp-id=size_16 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=16,16 --experiment --exp-id=size_32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=32,32 --experiment --exp-id=size_110 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=32 --resize=110,110`
 
 | Size | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ---- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -575,7 +576,7 @@ Analysis: Using a size between 16 and 32 seems to be a good balance between the 
 
 ##### Data stochastic augmentation hyper parameters
 
-* Changing dataset Gaussian noise: `--exp-id=noise_0 --noise-intensity=0 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_01 --noise-intensity=0.01 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_1 --noise-intensity=0.1 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_5 --noise-intensity=0.5 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_9 --noise-intensity=0.9 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing dataset Gaussian noise: `--exp-id=noise_0 --noise-intensity=0 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_01 --noise-intensity=0.01 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_1 --noise-intensity=0.1 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_5 --noise-intensity=0.5 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=noise_9 --noise-intensity=0.9 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | Noise intensity | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | --------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -589,7 +590,7 @@ Analysis: Using a size between 16 and 32 seems to be a good balance between the 
 
 Analysis: Adding between 10% and 50% noise gives good results: accuracy is good (around 50%) while keeping variance under control (around 30%). More noise prevents the model from learning, as well as less noise.
 
-* Changing dataset rotations: `--exp-id=rot_0 --rot-angle=0 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_5 --rot-angle=5 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_30 --rot-angle=30 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_90 --rot-angle=90 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_180 --rot-angle=180 --display-samples=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing dataset rotations: `--exp-id=rot_0 --rot-angle=0 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_5 --rot-angle=5 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_30 --rot-angle=30 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_90 --rot-angle=90 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=rot_180 --rot-angle=180 --display-samples=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | Rotation | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | -------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -603,7 +604,7 @@ Analysis: Adding between 10% and 50% noise gives good results: accuracy is good 
 
 Analysis: Smaller rotations show decent learning while larger rotations significantly degrade performance.
 
-* Changing number of augmented samples: `--exp-id=nbr_1 --nbr-clones=1 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_2 --nbr-clones=2 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_10 --nbr-clones=10 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_100 --nbr-clones=100 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16`
+* Changing number of augmented samples: `--exp-id=nbr_1 --nbr-clones=1 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_2 --nbr-clones=2 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_10 --nbr-clones=10 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16 --experiment --exp-id=nbr_100 --nbr-clones=100 --resize=24,24 --rot-angle=20 --noise-intensity=0.1 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100000 --layers=16`
 
 | Samples multiplier | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------------------ | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -618,7 +619,7 @@ Analysis: We see a good regularization effect by using data augmentationwith mor
 
 ##### Model hyper parameters
 
-* Changing number of units in 1 layer: `--exp-id=5_units --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_units --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_units --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_units --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
+* Changing number of units in 1 layer: `--exp-id=5_units --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=5 --experiment --exp-id=10_units --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=50_units --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=50 --experiment --exp-id=100_units --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=100`
 
 | # units | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -631,7 +632,7 @@ Analysis: We see a good regularization effect by using data augmentationwith mor
 
 Analysis: Adding units increases accuracy of both training and dev, but also increases variance.
 
-* Changing number of layers: `--exp-id=0_layers --resize=16,16 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers= --experiment --exp-id=1_layers --resize=16,16 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=2_layers --resize=16,16 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10 --experiment --exp-id=5_layers --resize=16,16 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10,10,10,10`
+* Changing number of layers: `--exp-id=0_layers --resize=16,16 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers= --experiment --exp-id=1_layers --resize=16,16 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10 --experiment --exp-id=2_layers --resize=16,16 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10 --experiment --exp-id=5_layers --resize=16,16 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=10,10,10,10,10`
 
 | # layers | # parameters | Params/samples ratio | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | -------- | ------------ | -------------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -644,7 +645,7 @@ Analysis: Adding units increases accuracy of both training and dev, but also inc
 
 Analysis: We see a normal curve for the 0 layer model, where early stopping correctly detects when overfitting is starting. Having more than 1 layer is not performing: the dev accuracy is plateauing and the model does not learn correctly. The 1 layer model has a big warm-up phase but then seems to steadily learn without increasing variance a lot. The 0-layer or 1-layer models seem to be safe choices.
 
-* Changing minibatch size: `--exp-id=size_50 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50 --layers=16 --experiment --exp-id=size_100 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100 --layers=16 --experiment --exp-id=size_300 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=300 --layers=16 --experiment --exp-id=size_1000 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=1000 --layers=16`
+* Changing minibatch size: `--exp-id=size_50 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50 --layers=16 --experiment --exp-id=size_100 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=100 --layers=16 --experiment --exp-id=size_300 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=300 --layers=16 --experiment --exp-id=size_1000 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=1000 --layers=16`
 
 | Size | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ---- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -657,7 +658,7 @@ Analysis: We see a normal curve for the 0 layer model, where early stopping corr
 
 Analysis: Using minibatches clearly helps in making the model learn faster, however the regularization effect is still limited as the variance grows.
 
-* Changing random seed (by executing the same model several times on the same dataset): `--training-times=4 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing random seed (by executing the same model several times on the same dataset): `--training-times=4 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | # | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | - | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -670,7 +671,7 @@ Analysis: Using minibatches clearly helps in making the model learn faster, howe
 
 Analysis: A few differences can be seen in accuracy (8% range) and variance (5% range). This indicates some sensitivity to the initial random conditions of the model.
 
-* Changing datasets random seed: `--exp-id=exp_1 --dataset-seed=0 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_2 --dataset-seed=10 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_3 --dataset-seed=20 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_4 --dataset-seed=30 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing datasets random seed: `--exp-id=exp_1 --dataset-seed=0 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_2 --dataset-seed=10 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_3 --dataset-seed=20 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_4 --dataset-seed=30 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | # | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | - | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -683,7 +684,7 @@ Analysis: A few differences can be seen in accuracy (8% range) and variance (5% 
 
 Analysis: We see big differences in the accuracy (26% range) and variance (24% range) with different random seeds. This indicates that the model is very sensitive to random initial conditions of the data. This is also giving the intuition that data preparation needs to be improved to reduce this randomness from the data itself.
 
-* Changing Adam learning rate: `--exp-id=lr_0001 --learning-rate=0.0001 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_001 --learning-rate=0.001 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_002 --learning-rate=0.002 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_01 --learning-rate=0.01 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing Adam learning rate: `--exp-id=lr_0001 --learning-rate=0.0001 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_001 --learning-rate=0.001 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_002 --learning-rate=0.002 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=lr_01 --learning-rate=0.01 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | Learning rate | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -696,7 +697,7 @@ Analysis: We see big differences in the accuracy (26% range) and variance (24% r
 
 Analysis: The smaller learning rate is, the more overfitting we get and the faster learning is happening. If we use a small learning rate, we have to also work on regularaization at the same time.
 
-* Changing optimizers: `--exp-id=adam --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=constant --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Constant --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_decay --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=ExponentialDecay --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing optimizers: `--exp-id=adam --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=constant --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Constant --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=exp_decay --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=ExponentialDecay --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | Optimizer         | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ----------------- | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -710,7 +711,7 @@ Analysis: Exponential decay is a bad choice, as it plateaus very quickly. Consta
 
 ##### Regularization hyper parameters
 
-* Changing dropout: `--exp-id=drop_0 --dropout-rate=0 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_10 --dropout-rate=0.1 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_50 --dropout-rate=0.5 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_80 --dropout-rate=0.8 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing dropout: `--exp-id=drop_0 --dropout-rate=0 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_10 --dropout-rate=0.1 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_50 --dropout-rate=0.5 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=drop_80 --dropout-rate=0.8 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | Dropout rate | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------------ | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -723,7 +724,7 @@ Analysis: Exponential decay is a bad choice, as it plateaus very quickly. Consta
 
 Analysis: We see a clear regularization improvement when using 10% dropout, while not impacting accuracy too much. However more dropout rate prevents the model to learn properly. Less dropout rate does not prevent overfitting enough.
 
-* Changing weight decay: `--exp-id=wd_0 --weight-decay=0 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_0001 --weight-decay=0.0001 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_001 --weight-decay=0.001 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_01 --weight-decay=0.01 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_1 --weight-decay=0.1 --resize=32,32 --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
+* Changing weight decay: `--exp-id=wd_0 --weight-decay=0 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_0001 --weight-decay=0.0001 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_001 --weight-decay=0.001 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_01 --weight-decay=0.01 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16 --experiment --exp-id=wd_1 --weight-decay=0.1 --resize=32,32 --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --nbr-epochs=100 --max-minibatch-size=50000 --layers=16`
 
 | Weight decay | Training cost | Training accuracy | Dev cost | Dev accuracy | Early stop epoch | Avoidable bias | Variance |
 | ------------ | ------------- | ----------------- | -------- | ------------ | ---------------- | -------------- | -------- |
@@ -745,7 +746,7 @@ Analysis: Regularization effect of weights decay seems limited. Best value seems
 
 ![J](docs/n_layers_numbers/j.png)
 * As seen in various hyper parameters comparisons, data preparation and optimization seems to provide bigger impacts for accuracy and variance.
-* Experiment [K] adds a lot of data preparation and removes any regularization as the training accuracy starts being below the dev one (negative variance) when using regularization and data augmentation: `--dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=L0_Dense_W,8`. The bigger input size width and the bigger variance will get. With this experiment we reach nearly 100% of occuracy with nearly 0% variance.
+* Experiment [K] adds a lot of data preparation and removes any regularization as the training accuracy starts being below the dev one (negative variance) when using regularization and data augmentation: `--dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=L0_Dense_W,8`. The bigger input size width and the bigger variance will get. With this experiment we reach nearly 100% of occuracy with nearly 0% variance.
 
 ![K](docs/n_layers_numbers/j.png)
 
@@ -754,7 +755,7 @@ Analysis: Regularization effect of weights decay seems limited. Best value seems
 #### Experiment [A]: Same parameters as with Numo implementation
 
 ```bash
-bundle exec ruby ./bin/run -dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=l0_linear.weight,8
+bundle exec ruby ./bin/run -dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=l0_linear.weight,8
 ```
 
 ![A](docs/torch_numbers/a.png)
@@ -767,7 +768,7 @@ bundle exec ruby ./bin/run -dataset=numbers --accuracy=ClassesTorch --model=NLay
 #### Experiment [B]: Measuring model randomness effect
 
 ```bash
-bundle exec ruby bin/run --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --training-times=5
+bundle exec ruby bin/run --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --training-times=5
 ```
 
 ![B](docs/torch_numbers/b.png)
@@ -777,7 +778,7 @@ bundle exec ruby bin/run --dataset=numbers --accuracy=ClassesTorch --model=NLaye
 #### Experiment [C]: Measuring dataset randomness effect
 
 ```bash
-bundle exec ruby bin/run --instability-checks=off --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=Torch --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2
+bundle exec ruby bin/run --instability-checks=off --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2
 ```
 
 ![C](docs/torch_numbers/c.png)
@@ -793,18 +794,25 @@ Here are the command lines used:
 
 ```bash
 # Numo using Vips
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=VipsNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=NumoVips --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy
 # Numo using ImageMagick
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy
 # Torch using Vips
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=Torch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=TorchVips --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch
+# Torch using ImageMagick
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch
 ```
 
-| Experiment             | Elapsed time | Memory consumption (GB) | Final dev accuracy |
-| ---------------------- | ------------ | ----------------------- | ------------------ |
-| Numo using Vips        | 15m 12s      | 0.9                     | 90%                |
-| Numo using ImageMagick | 2m 24s       | 0.9                     | 96%                |
-| Torch using Vips       | 3m 28s       | 1.0                     | 93%                |
+| Experiment              | Elapsed time | Memory consumption (GB) | Final dev accuracy |
+| ----------------------- | ------------ | ----------------------- | ------------------ |
+| Torch using ImageMagick | 3m 31s       | 850                     | 95%                |
+| Numo using ImageMagick  | 3m 47s       | 750                     | 96%                |
+| Numo using Vips         | 5m 16s       | 750                     | 90%                |
+| Torch using Vips        | 5m 23s       | 850                     | 93%                |
+
+Analysis: Overall performance is consistent between experiments:
+* ImageMagick processing is more efficient than Vips (big factor), and results in better accuracy.
+* Torch is slightly performing better than Numo Ruby implementation (small factor).
 
 ## License
 
@@ -813,11 +821,11 @@ Here are the command lines used:
 
 ```bash
 # Numo using Vips
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=VipsNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoVips --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
 # Numo using ImageMagick
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=ImageMagickNumo --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
 # Torch using Vips
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=Torch --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
+bundle exec ruby ./bin/run --dataset=numbers --data-loader=TorchVips --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
 ```
 
 | Experiment             | Elapsed time | Memory consumption (GB) | Final dev accuracy |

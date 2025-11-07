@@ -7,7 +7,8 @@ require 'ruby_neural_nets/datasets/vips_grayscale'
 require 'ruby_neural_nets/datasets/vips_adaptive_invert'
 require 'ruby_neural_nets/datasets/vips_minmax_normalize'
 require 'ruby_neural_nets/datasets/vips_trim'
-require 'ruby_neural_nets/datasets/vips_normalize'
+require 'ruby_neural_nets/datasets/vips_to_numo'
+require 'ruby_neural_nets/datasets/numo_normalize'
 require 'ruby_neural_nets/datasets/vips_resize'
 require 'ruby_neural_nets/datasets/vips_rotate'
 require 'ruby_neural_nets/datasets/vips_crop'
@@ -22,7 +23,7 @@ module RubyNeuralNets
 
   module DataLoaders
 
-    class VipsNumo < DataLoader
+    class NumoVips < DataLoader
 
       # Constructor
       #
@@ -124,7 +125,10 @@ module RubyNeuralNets
       def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
-            Datasets::VipsNormalize.new(augmented_dataset),
+            Datasets::NumoNormalize.new(
+              Datasets::VipsToNumo.new(augmented_dataset),
+              factor: 255
+            ),
             rng:
           ),
           max_minibatch_size:

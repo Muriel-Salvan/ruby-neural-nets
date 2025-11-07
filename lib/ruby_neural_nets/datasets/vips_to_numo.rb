@@ -1,23 +1,24 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'fiddle'
 
 module RubyNeuralNets
 
   module Datasets
 
-    # Dataset wrapper that normalizes images to [0,1] range.
-    class VipsNormalize < Wrapper
+    # Dataset wrapper that converts Vips images to flattened Numo DFloat objects.
+    class VipsToNumo < Wrapper
 
       # Access an element of the dataset
       #
-      # Parameters::
+      # Parameters:::
       # * *index* (Integer): Index of the dataset element to access
-      # Result::
+      # Result:::
       # * Object: The element X of the dataset
       # * Object: The element Y of the dataset
       def [](index)
         image, y = @dataset[index]
-        # Convert Vips image to pixel array and normalize to [0,1]
-        [image.to_a.flatten.map { |p| p / 255.0 }, y]
+        # Convert Vips image to Numo DFloat without intermediate Ruby arrays
+        [Numo::UInt8.from_binary(image.write_to_memory).cast_to(Numo::DFloat), y]
       end
 
       # Convert an element to an image
@@ -31,8 +32,8 @@ module RubyNeuralNets
         rows = stats[:rows]
         cols = stats[:cols]
         channels = stats[:channels]
-        # Convert Numo array to Ruby array and scale to 0-255
-        scaled_flat = ((element * 255).round).to_a.flatten.map(&:to_i)
+        # Convert Numo array to Ruby array
+        scaled_flat = element.to_a.flatten.map(&:to_i)
         # Create Vips image from memory
         if channels == 1
           # Grayscale
