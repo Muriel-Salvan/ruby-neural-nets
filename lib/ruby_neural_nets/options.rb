@@ -47,6 +47,10 @@ module RubyNeuralNets
         model_seed: {
           desc: 'Random number generator seed for model initialization and parameters.',
           value: 0
+        },
+        display_graphs: {
+          desc: 'Display GnuPlot graphs during training.',
+          value: true
         }
       }
       prepare_options_for_new_experiment

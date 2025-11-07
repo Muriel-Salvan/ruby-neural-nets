@@ -30,7 +30,7 @@ RubyNeuralNets::Helpers.init(
 
 # Create the progress tracker for all experiments
 require 'ruby_neural_nets/progress_tracker'
-progress_tracker = RubyNeuralNets::ProgressTracker.new(display_graphs: true)
+progress_tracker = RubyNeuralNets::ProgressTracker.new(display_graphs: options[:display_graphs])
 
 # Return a unique experiment id, taking into account previously instantiated experiments
 #

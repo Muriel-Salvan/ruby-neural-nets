@@ -139,7 +139,11 @@ This runs with default settings:
 - **`--debug`**: Enable debug mode for verbose logging output (boolean, default: false)
   - When enabled, shows detailed debug messages from model forward/backward propagation and other internal operations
   - Debug messages use lazy evaluation to avoid performance overhead when disabled
-- **`--early-stopping-patience`**: Number of epochs to wait for development set loss improvement before notifying early stopping (integer, default: 10)
+- **`--display-graphs`**: Display GnuPlot graphs during training (boolean, default: true)
+  - Controls whether to show real-time visualization of training progress, cost, accuracy, and parameter evolution
+  - When disabled, training runs faster without graphical output
+  - Useful for headless environments or when visualization is not needed
+- **`--early-stopping-patience`**: Number of epochs to wait for development set loss improvement before stopping training (integer, default: 10)
   - Monitors development set loss (including L2 regularization) and notifies when no improvement occurs for the specified number of epochs
   - Training continues, but a red circle marker is placed on the graphs at the early stopping epoch
   - Use `--eval-dev` to enable development set evaluation (required for early stopping)
