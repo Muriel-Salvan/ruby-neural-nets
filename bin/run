@@ -19,8 +19,7 @@ require 'numo/gnuplot'
 require 'numo/linalg/linalg'
 require 'numo/narray'
 # Load a C extension for efficient computations
-# Comment out the following line if no backend is to be used
-Numo::Linalg::Loader.load_openblas(RUBY_PLATFORM == 'x86_64-linux' ? '/usr/lib/x86_64-linux-gnu/' : "#{ENV['XAEON_ROOT']}/Env/Windows/Libraries/OpenBLAS-0.3.30-x64/bin")
+Numo::Linalg::Loader.load_openblas(ENV['OPEN_BLAS_PATH']) unless ENV['OPEN_BLAS_PATH'].nil?
 
 require 'ruby_neural_nets/helpers'
 RubyNeuralNets::Helpers.init(
