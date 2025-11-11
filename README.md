@@ -439,23 +439,30 @@ This will execute all tests in the `spec/` directory.
 - **`spec/trainer_spec.rb`**: Tests the Trainer class functionality
   - Verifies training progress tracking and reporting
   - Tests cost and accuracy recording across epochs and minibatches
-  - Uses mocked file access and synthetic datasets for reliable testing
+  - Uses fakefs gem for mocked file system operations and synthetic datasets for reliable testing
 
 ### Test Features
 
-- **Mocked File System**: Tests use mocked file system operations to avoid dependencies on actual dataset files
-- **Synthetic Data**: Generates deterministic test data for consistent test results
+- **Mocked File System**: Tests use the fakefs gem to mock file system operations, avoiding dependencies on actual dataset files
+- **Synthetic Data**: Generates deterministic PNG image files with pixel data based on class labels for consistent test results
 - **Progress Validation**: Ensures training progress is properly tracked and reported
 - **Component Integration**: Tests the integration between Trainer, ProgressTracker, and Experiment classes
+
+### Test Helper Methods
+
+- **`setup_test_filesystem(files_hash)`**: A helper method that takes a hash of file paths to file content and creates the corresponding files in the fake filesystem
+  - Used to define the mocked filesystem structure directly in unit tests
+  - Supports any file type by accepting content as strings (e.g., PNG binary data for images)
 
 ### Writing Tests
 
 When adding new tests:
 1. Place test files in the `spec/` directory with `_spec.rb` suffix
 2. Use descriptive test names and contexts
-3. Mock external dependencies (file system, random data) for reliable execution
-4. Test both success and failure scenarios
-5. Verify numerical outputs are within expected ranges
+3. Use fakefs for file system mocking and the `setup_test_filesystem` helper for defining test file structures
+4. Mock external dependencies (random data, external APIs) for reliable execution
+5. Test both success and failure scenarios
+6. Verify numerical outputs are within expected ranges
 
 ## Findings and experiments
 

@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'fakefs', '~> 3.0'
 gem 'fiddle'
 gem 'irb'
 gem 'numo-gnuplot'
