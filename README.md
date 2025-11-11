@@ -56,6 +56,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **Profiling**: Optional epoch profiling with HTML reports generated using ruby-prof to analyze performance bottlenecks
 - **OpenBLAS Linear Algebra**: Fast matrix operations powered by OpenBLAS through numo-linalg for improved computational performance
 - **Visualization**: Confusion matrix plotting using Gnuplot, with real-time parameter visualization in progress tracker graphs
+- **Progress tracking**: Automatic timing and summary reporting
 - **Named Parameters**: Parameters include names for better identification and visualization
 - **Logger Mixin**: Unified logging system with ISO8601 UTC timestamps and class name prefixes, supporting both regular and debug (lazy-evaluated) logging across all major components
 - **Extensible Architecture**: Modular design for easy addition of new models, optimizers, and loss functions

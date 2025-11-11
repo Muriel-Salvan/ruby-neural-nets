@@ -32,44 +32,44 @@ module RubyNeuralNets
       training_experiments = experiments.select(&:training_mode)
       dev_experiments = experiments.reject(&:training_mode)
 
-      # Track dev losses per epoch
-      dev_losses = {}
+      @progress_tracker.session do
+        # Track dev losses per epoch
+        dev_losses = {}
+        # Track early stopping state per training experiment
+        early_stopping_state = {}
+        max_epochs.times do |idx_epoch|
+          # Evaluate on dev experiments first
+          dev_experiments.each do |dev_exp|
+            result = process_experiment(dev_exp, idx_epoch, false)
+            dev_losses[dev_exp.exp_id] = result[:loss] if result
+          end
 
-      # Track early stopping state per training experiment
-      early_stopping_state = {}
+          # Train on training experiments
+          training_experiments.each do |training_exp|
+            process_experiment(training_exp, idx_epoch, true)
 
-      max_epochs.times do |idx_epoch|
-        # Evaluate on dev experiments first
-        dev_experiments.each do |dev_exp|
-          result = process_experiment(dev_exp, idx_epoch, false)
-          dev_losses[dev_exp.exp_id] = result[:loss] if result
-        end
+            # Check early stopping for this training experiment
+            if training_exp.dev_experiment
+              dev_loss = dev_losses[training_exp.dev_experiment.exp_id]
+              if dev_loss
+                state = early_stopping_state[training_exp.exp_id] ||= { best_loss: Float::INFINITY, epochs_without_improvement: 0, early_stopping_reached: false }
+                unless state[:early_stopping_reached]
+                  if dev_loss < state[:best_loss]
+                    state[:best_loss] = dev_loss
+                    state[:epochs_without_improvement] = 0
+                    debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] New best dev loss: #{dev_loss}" }
+                  else
+                    state[:epochs_without_improvement] += 1
+                    debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] No improvement in dev loss for #{state[:epochs_without_improvement]} epochs" }
+                  end
 
-        # Train on training experiments
-        training_experiments.each do |training_exp|
-          process_experiment(training_exp, idx_epoch, true)
-
-          # Check early stopping for this training experiment
-          if training_exp.dev_experiment
-            dev_loss = dev_losses[training_exp.dev_experiment.exp_id]
-            if dev_loss
-              state = early_stopping_state[training_exp.exp_id] ||= { best_loss: Float::INFINITY, epochs_without_improvement: 0, early_stopping_reached: false }
-              unless state[:early_stopping_reached]
-                if dev_loss < state[:best_loss]
-                  state[:best_loss] = dev_loss
-                  state[:epochs_without_improvement] = 0
-                  debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] New best dev loss: #{dev_loss}" }
-                else
-                  state[:epochs_without_improvement] += 1
-                  debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] No improvement in dev loss for #{state[:epochs_without_improvement]} epochs" }
-                end
-
-                if state[:epochs_without_improvement] >= training_exp.early_stopping_patience
-                  debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] Early stopping reached at epoch #{idx_epoch}" }
-                  @progress_tracker.notify_early_stopping(training_exp, idx_epoch)
-                  @progress_tracker.notify_early_stopping(training_exp.dev_experiment, idx_epoch)
-                  # Stop tracking early stopping for this experiment
-                  state[:early_stopping_reached] = true
+                  if state[:epochs_without_improvement] >= training_exp.early_stopping_patience
+                    debug { "[Epoch #{idx_epoch}] [Exp #{training_exp.exp_id}] Early stopping reached at epoch #{idx_epoch}" }
+                    @progress_tracker.notify_early_stopping(training_exp, idx_epoch)
+                    @progress_tracker.notify_early_stopping(training_exp.dev_experiment, idx_epoch)
+                    # Stop tracking early stopping for this experiment
+                    state[:early_stopping_reached] = true
+                  end
                 end
               end
             end

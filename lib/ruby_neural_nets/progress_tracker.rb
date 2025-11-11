@@ -58,15 +58,13 @@ module RubyNeuralNets
     def track(experiment)
       @experiments[experiment.exp_id] = {
         experiment: experiment,
-        early_stopping_epoch: nil
+        early_stopping_epoch: nil,
+        # Store progress data for each epoch and minibatch
+        epochs: {}
       }
       # Initialize graphs
       if @display_graphs
-        @experiments[experiment.exp_id].merge!(
-          costs: [],
-          accuracies: [],
-          colors: GNUPLOT_COLORS[@experiments.select { |exp_id, exp_data| exp_id != experiment.exp_id && exp_data[:experiment].dev_experiment.nil? }.size % GNUPLOT_COLORS.size]
-        )
+        @experiments[experiment.exp_id][:colors] = GNUPLOT_COLORS[@experiments.select { |exp_id, exp_data| exp_id != experiment.exp_id && exp_data[:experiment].dev_experiment.nil? }.size % GNUPLOT_COLORS.size]
         # Create shared Cost and Accuracy graphs (reused across experiments)
         create_graph('Cost', key: ['below', font: ',7']) if @graphs['Cost'].nil?
         create_graph('Accuracy', key: ['below', font: ',7']) if @graphs['Accuracy'].nil?
@@ -143,12 +141,17 @@ module RubyNeuralNets
       accuracy = @experiments[experiment.exp_id][:experiment].accuracy.measure(a, minibatch)
       log "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}] [Minibatch #{idx_minibatch}] - Cost #{cost}, Accuracy #{accuracy * 100}%"
 
+      # Always store progress data regardless of display_graphs setting
+      @experiments[experiment.exp_id][:epochs][idx_epoch] ||= {}
+      @experiments[experiment.exp_id][:epochs][idx_epoch][idx_minibatch] = {
+        cost: cost,
+        accuracy: accuracy
+      }
+
       # Update graphs
       if @display_graphs
-        @experiments[experiment.exp_id][:costs] << cost
-        graph_lines(@graphs['Cost'], :costs)
-        @experiments[experiment.exp_id][:accuracies] << accuracy
-        graph_lines(@graphs['Accuracy'], :accuracies)
+        graph_lines(@graphs['Cost'], :cost)
+        graph_lines(@graphs['Accuracy'], :accuracy)
         @graphs["Confusion Matrix #{experiment.exp_id}"].plot(
           @experiments[experiment.exp_id][:experiment].accuracy.confusion_matrix(a, minibatch),
           with: 'image',
@@ -194,6 +197,36 @@ module RubyNeuralNets
               Numo::UInt8[*((minibatch.x[*slices].flatten * 255).round)].reshape(rows, cols, channels)
             end
           )
+        end
+      end
+    end
+
+    # Start a tracking session with a code block that will be executed
+    #
+    # Parameters::
+    # * Proc: Code block to execute when the session is ready
+    def session
+      session_start_time = Time.now
+      yield
+      session_end_time = Time.now
+      
+      # Display session summary
+      log "Session timings: #{session_start_time.utc.strftime('%F %T')} - #{session_end_time.utc.strftime('%F %T')} (#{session_end_time - session_start_time.round(2)} seconds)"
+      
+      # Display final results for each experiment
+      @experiments.each do |exp_id, exp_data|
+        last_progress = experiment_last_progress(exp_id)
+        if last_progress.nil?
+          log "[Exp #{exp_id}] No progress data available"
+        else
+          accuracy_display = "#{(last_progress[:accuracy] * 100).round(2)}%"
+          
+          # Add variance display for experiments with dev experiments
+          if exp_data[:experiment].dev_experiment
+            variance = last_progress[:accuracy] - experiment_last_progress(exp_data[:experiment].dev_experiment.exp_id)[:accuracy]
+            accuracy_display += " (variance: #{variance >= 0 ? '+' : ''}#{(variance * 100).round(2)}%)"
+          end
+          log "[Exp #{exp_id}] Final Cost: #{last_progress[:cost].round(6)}, Final Accuracy: #{accuracy_display}"
         end
       end
     end
@@ -318,15 +351,30 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *gnuplot_graph* (Numo::Gnuplot): The GnuPlot graph to draw on
-    # * *measure* (Symbol): The measure to be graphed
+    # * *measure* (Symbol): The measure to be graphed (:cost or :accuracy)
     def graph_lines(gnuplot_graph, measure)
       plot_data = []
-      @experiments.select { |exp_id, exp_data| !exp_data[measure].empty? }.each do |exp_id, exp_data|
+      @experiments.each do |exp_id, exp_data|
+        # Skip experiments that have no epochs data
+        next if exp_data[:epochs].empty?
+        
         experiment = exp_data[:experiment]
         nbr_minibatches = experiment.dataset.size
-        x_values = (0...exp_data[measure].size).map { |i| i.to_f / nbr_minibatches }
-        y_values = exp_data[measure]
-
+        
+        # Extract data from epochs structure
+        x_values = []
+        y_values = []
+        # Sort epochs and minibatches to ensure chronological order
+        exp_data[:epochs].keys.sort.each do |epoch_idx|
+          epoch_data = exp_data[:epochs][epoch_idx]
+          epoch_data.keys.sort.each do |minibatch_idx|
+            # Calculate x position (epoch + minibatch fraction)
+            x_values << epoch_idx + (minibatch_idx.to_f / nbr_minibatches)            
+            # Get the measure value directly
+            y_values << epoch_data[minibatch_idx][measure]
+          end
+        end
+        
         # Add line plot
         plot_data << [
           x_values,
@@ -344,6 +392,26 @@ module RubyNeuralNets
         end
       end
       gnuplot_graph.plot(*plot_data)
+    end
+
+    # Get the last progress data for an experiment
+    #
+    # Parameters::
+    # * *exp_id* (String): The experiment ID to get progress for
+    # Returns::
+    # * Hash or nil: Hash containing measures, or nil if no data available
+    def experiment_last_progress(exp_id)
+      exp_data = @experiments[exp_id]
+      return nil if exp_data.nil? || exp_data[:epochs].empty?
+      
+      epochs_data = exp_data[:epochs]
+      last_epoch_data = epochs_data[epochs_data.keys.max]
+      last_progress = last_epoch_data[last_epoch_data.keys.max]
+      
+      {
+        cost: last_progress[:cost],
+        accuracy: last_progress[:accuracy]
+      }
     end
 
   end
