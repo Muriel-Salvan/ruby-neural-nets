@@ -21,14 +21,7 @@ require 'ruby_neural_nets/accuracies/classes_numo'
 require 'ruby_neural_nets/profiler'
 require 'ruby_neural_nets/gradient_checker'
 
-# Helper method to setup mocked filesystem using fakefs
-def setup_test_filesystem(files_hash)
-  files_hash.each do |path, content|
-    dir = File.dirname(path)
-    FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
-    File.write(path, content)
-  end
-end
+require_relative 'ruby_neural_nets_test/helpers'
 
 describe RubyNeuralNets::Trainer do
 
@@ -79,25 +72,7 @@ describe RubyNeuralNets::Trainer do
           end
         end
 
-        setup_test_filesystem(files)
-
-        # Mock Magick::ImageList.new to return images from the fakefs files
-        Magick::ImageList.define_singleton_method(:new) do |*args|
-          if args.first && (args.first.include?('test_rspec_dataset'))
-            # Read the PNG data from fakefs
-            png_data = File.read(args.first)
-            # Create image from blob
-            image = Magick::Image.from_blob(png_data).first
-            # Create ImageList and add the image
-            image_list = Magick::ImageList.allocate
-            image_list.send(:initialize)
-            image_list << image
-            image_list
-          else
-            # For other cases, create a new ImageList normally
-            Magick::ImageList.allocate.send(:initialize, *args)
-          end
-        end
+        RubyNeuralNetsTest::Helpers.setup_test_filesystem(files)
 
         # Create data loader inside fakefs
         data_loader = RubyNeuralNets::DataLoaders::NumoImageMagick.new(
