@@ -201,6 +201,16 @@ module RubyNeuralNets
       end
     end
 
+    # Get the epochs data for a given experiment
+    #
+    # Parameters::
+    # * *experiment* (Experiment): The experiment object to get epochs data for
+    # Result::
+    # * Hash: Hash containing epochs data with structure {epoch_idx => {minibatch_idx => {cost: Float, accuracy: Float}}}
+    def epochs_data(experiment)
+      @experiments[experiment.exp_id][:epochs]
+    end
+
     # Start a tracking session with a code block that will be executed
     #
     # Parameters::

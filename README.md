@@ -28,6 +28,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
     - [Example Usage](#example-usage)
 - [Code Structure](#code-structure)
 - [Contributing](#contributing)
+- [Testing](#testing)
 - [Findings and experiments](#findings-and-experiments)
   - [One layer model on colors dataset](#one-layer-model-on-colors-dataset)
   - [One layer model on numbers dataset](#one-layer-model-on-numbers-dataset)
@@ -418,6 +419,43 @@ This is a playground project for experimenting with neural networks in Ruby. Fee
 - Implement additional optimizers or loss functions
 - Experiment with different datasets
 - Improve performance or add features
+
+## Testing
+
+The project uses RSpec for unit testing to ensure the correctness of neural network implementations and training components.
+
+### Running Tests
+
+To run the test suite:
+
+```bash
+bundle exec rspec
+```
+
+This will execute all tests in the `spec/` directory.
+
+### Test Structure
+
+- **`spec/trainer_spec.rb`**: Tests the Trainer class functionality
+  - Verifies training progress tracking and reporting
+  - Tests cost and accuracy recording across epochs and minibatches
+  - Uses mocked file access and synthetic datasets for reliable testing
+
+### Test Features
+
+- **Mocked File System**: Tests use mocked file system operations to avoid dependencies on actual dataset files
+- **Synthetic Data**: Generates deterministic test data for consistent test results
+- **Progress Validation**: Ensures training progress is properly tracked and reported
+- **Component Integration**: Tests the integration between Trainer, ProgressTracker, and Experiment classes
+
+### Writing Tests
+
+When adding new tests:
+1. Place test files in the `spec/` directory with `_spec.rb` suffix
+2. Use descriptive test names and contexts
+3. Mock external dependencies (file system, random data) for reliable execution
+4. Test both success and failure scenarios
+5. Verify numerical outputs are within expected ranges
 
 ## Findings and experiments
 

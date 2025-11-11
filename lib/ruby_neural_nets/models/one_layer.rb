@@ -1,6 +1,6 @@
 require 'numo/narray'
 require 'ruby_neural_nets/helpers'
-require 'ruby_neural_nets/initializers/glorot_uniform'
+require 'ruby_neural_nets/initializers/glorot_normal'
 require 'ruby_neural_nets/initializers/zero'
 require 'ruby_neural_nets/model'
 
