@@ -32,7 +32,7 @@ describe RubyNeuralNets::Trainer do
           files["datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"] = png(
             28,
             28,
-            [
+            { color: [
               case class_idx
               when 0
                 0
@@ -43,7 +43,7 @@ describe RubyNeuralNets::Trainer do
               else
                 50
               end
-            ]
+            ] }
           )
         end
       end

@@ -8,16 +8,6 @@ module RubyNeuralNets
     # Dataset wrapper that applies image trimming while preserving aspect ratio.
     class ImageMagickTrim < Wrapper
 
-      # Constructor
-      #
-      # Parameters::
-      # * *dataset* (Dataset): Dataset to be wrapped
-      def initialize(dataset)
-        super(dataset)
-        # Store original image stats for aspect ratio calculation
-        @original_stats = dataset.image_stats
-      end
-
       # Access an element of the dataset
       #
       # Parameters::

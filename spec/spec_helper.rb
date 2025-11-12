@@ -1,8 +1,10 @@
 # All common behaviour of the test framework should be part of this file.
 # It is automatically required by rspec.
 
-# Needed for FakeFS to work correctly with RSpec
+# Needed for FakeFS to work correctly with RSpec and byebug
 require 'pp'
+require 'byebug/core'
+
 require 'byebug'
 
 require 'ruby_neural_nets_test/helpers'
