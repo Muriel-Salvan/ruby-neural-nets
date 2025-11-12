@@ -46,54 +46,6 @@ module RubyNeuralNets
       end
     end
 
-    # Instantiate a partitioned dataset.
-    #
-    # Parameters::
-    # * *name* (String): Dataset name containing real data
-    # * *rng* (Random): The random number generator to be used
-    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
-    # Result::
-    # * LabeledDataPartitioner: The partitioned dataset.
-    def new_partitioned_dataset(name:, rng:, numo_rng:)
-      raise 'Not implemented'
-    end
-
-    # Return a preprocessing dataset for this data loader.
-    #
-    # Parameters::
-    # * *dataset* (Dataset): The partitioned dataset
-    # Result::
-    # * Dataset: The dataset with preprocessing applied
-    def new_preprocessing_dataset(dataset)
-      raise 'Not implemented'
-    end
-
-    # Return an augmentation dataset for this data loader.
-    # This is only used for the training dataset.
-    #
-    # Parameters::
-    # * *preprocessed_dataset* (Dataset): The preprocessed dataset
-    # * *rng* (Random): The random number generator to be used
-    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
-    # Result::
-    # * Dataset: The dataset with augmentation applied
-    def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
-      raise 'Not implemented'
-    end
-
-    # Return a batching dataset for this data loader.
-    #
-    # Parameters::
-    # * *augmented_dataset* (Dataset): The augmented dataset
-    # * *rng* (Random): The random number generator to be used
-    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
-    # * *max_minibatch_size* (Integer): The required minibatch size
-    # Result::
-    # * Dataset: The dataset with batching applied
-    def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
-      raise 'Not implemented'
-    end
-
     # Return the labels of the dataset.
     #
     # Result::
@@ -189,6 +141,56 @@ module RubyNeuralNets
     def image_stats
       # Assume all partitions have the same stats
       @partition_datasets.values.first.image_stats
+    end
+
+    private
+
+    # Instantiate a partitioned dataset.
+    #
+    # Parameters::
+    # * *name* (String): Dataset name containing real data
+    # * *rng* (Random): The random number generator to be used
+    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
+    # Result::
+    # * LabeledDataPartitioner: The partitioned dataset.
+    def new_partitioned_dataset(name:, rng:, numo_rng:)
+      raise 'Not implemented'
+    end
+
+    # Return a preprocessing dataset for this data loader.
+    #
+    # Parameters::
+    # * *dataset* (Dataset): The partitioned dataset
+    # Result::
+    # * Dataset: The dataset with preprocessing applied
+    def new_preprocessing_dataset(dataset)
+      raise 'Not implemented'
+    end
+
+    # Return an augmentation dataset for this data loader.
+    # This is only used for the training dataset.
+    #
+    # Parameters::
+    # * *preprocessed_dataset* (Dataset): The preprocessed dataset
+    # * *rng* (Random): The random number generator to be used
+    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
+    # Result::
+    # * Dataset: The dataset with augmentation applied
+    def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
+      raise 'Not implemented'
+    end
+
+    # Return a batching dataset for this data loader.
+    #
+    # Parameters::
+    # * *augmented_dataset* (Dataset): The augmented dataset
+    # * *rng* (Random): The random number generator to be used
+    # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
+    # * *max_minibatch_size* (Integer): The required minibatch size
+    # Result::
+    # * Dataset: The dataset with batching applied
+    def new_batching_dataset(augmented_dataset, rng:, numo_rng:, max_minibatch_size:)
+      raise 'Not implemented'
     end
 
   end

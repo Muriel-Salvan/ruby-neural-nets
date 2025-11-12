@@ -51,6 +51,8 @@ module RubyNeuralNets
         super(dataset:, max_minibatch_size:, dataset_seed:)
       end
 
+      private
+
       # Instantiate a partitioned dataset.
       #
       # Parameters::

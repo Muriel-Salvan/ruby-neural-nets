@@ -1,12 +1,3 @@
-require 'rspec'
-require 'tempfile'
-require 'stringio'
-require 'numo/narray'
-require 'rmagick'
-require 'fakefs/spec_helpers'
-require 'fileutils'
-
-# Require the necessary modules
 require 'ruby_neural_nets/trainer'
 require 'ruby_neural_nets/models/one_layer'
 require 'ruby_neural_nets/data_loaders/numo_image_magick'
@@ -35,42 +26,40 @@ describe RubyNeuralNets::Trainer do
   
   describe '#train' do
     it 'tracks progress and reports correct cost and accuracy using real data loader with mocked file access' do
-      FakeFS do
-        # Define the mocked filesystem
-        files = {}
-        (0..2).each do |class_idx|
-          (0..9).each do |img_idx|
-            file_path = "datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"
+      # Define the mocked filesystem
+      files = {}
+      (0..2).each do |class_idx|
+        (0..9).each do |img_idx|
+          file_path = "datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"
 
-            # Create a real Magick::Image with test data
-            mock_image = Magick::Image.new(28, 28) do |img|
-              img.format = 'PNG'
-            end
-
-            # Generate deterministic pixel data based on the class
-            pixel_data = Array.new(28 * 28) do |j|
-              case class_idx
-              when 0
-                (j % 256)
-              when 1
-                ((j + 100) % 256)
-              when 2
-                ((j + 200) % 256)
-              else
-                ((j + 50) % 256)
-              end
-            end
-
-            # Import the pixel data into the image
-            mock_image.import_pixels(0, 0, 28, 28, 'I', pixel_data)
-
-            # Store the PNG data
-            files[file_path] = mock_image.to_blob
+          # Create a real Magick::Image with test data
+          mock_image = Magick::Image.new(28, 28) do |img|
+            img.format = 'PNG'
           end
+
+          # Generate deterministic pixel data based on the class
+          pixel_data = Array.new(28 * 28) do |j|
+            case class_idx
+            when 0
+              (j % 256)
+            when 1
+              ((j + 100) % 256)
+            when 2
+              ((j + 200) % 256)
+            else
+              ((j + 50) % 256)
+            end
+          end
+
+          # Import the pixel data into the image
+          mock_image.import_pixels(0, 0, 28, 28, 'I', pixel_data)
+
+          # Store the PNG data
+          files[file_path] = mock_image.to_blob
         end
+      end
 
-        RubyNeuralNetsTest::Helpers.setup_test_filesystem(files)
-
+      RubyNeuralNetsTest::Helpers.with_test_fs(files) do
         # Create data loader inside fakefs
         data_loader = RubyNeuralNets::DataLoaders::NumoImageMagick.new(
           dataset: 'test_rspec_dataset',

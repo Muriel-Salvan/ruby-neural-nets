@@ -439,10 +439,8 @@ This will execute all tests in the `spec/` directory.
 The test suite follows a structured organization:
 
 - **`spec/scenarios/`**: Unit test scenarios grouped by interface kind being tested
-  - `spec/scenarios/trainers/trainer_spec.rb`: Tests the Trainer class functionality
-    - Verifies training progress tracking and reporting
-    - Tests cost and accuracy recording across epochs and minibatches
-    - Uses fakefs gem for mocked file system operations and synthetic datasets for reliable testing
+  - `spec/scenarios/trainers/`: Tests for trainer functionality
+  - `spec/scenarios/data_loaders/`: Tests for data loader functionality
 - **`spec/ruby_neural_nets_test/`**: Unit test framework and helpers
   - `spec/ruby_neural_nets_test/helpers.rb`: Test helper methods and utilities
 - **`spec/spec_helper.rb`**: RSpec configuration and load path setup
@@ -457,16 +455,18 @@ The test suite follows a structured organization:
 
 ### Test Helper Methods
 
-- **`setup_test_filesystem(files_hash)`**: A helper method that takes a hash of file paths to file content and creates the corresponding files in the fake filesystem
-  - Used to define the mocked filesystem structure directly in unit tests
+- **`with_test_fs(files_hash)`**: A helper method that encapsulates FakeFS usage for setting up mocked filesystem structures in unit tests
+  - Takes a hash of file paths to file content and creates the corresponding files in the fake filesystem
+  - Executes the provided block within the fake filesystem context
   - Supports any file type by accepting content as strings (e.g., PNG binary data for images)
+  - Eliminates the need for explicit FakeFS blocks in test scenarios
 
 ### Writing Tests
 
 When adding new tests:
 1. Place test files in the appropriate `spec/scenarios/<interface_kind>/` directory with `_spec.rb` suffix
 2. Use descriptive test names and contexts
-3. Use fakefs for file system mocking and the `setup_test_filesystem` helper for defining test file structures
+3. Use fakefs for file system mocking and the `with_test_fs` helper for defining test file structures
 4. Mock external dependencies (random data, external APIs) for reliable execution
 5. Test both success and failure scenarios
 6. Verify numerical outputs are within expected ranges

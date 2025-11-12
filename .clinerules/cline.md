@@ -1,13 +1,15 @@
 # General rules, applicable to the whole code base
 
 1. Every class should be defined in a single file that follows the module and class name in its path, using snake_case for files and paths.
-2. Avoid defining local variables that are used only once. Try to use the variable value directly where it is needed.
-3. Avoid catching cases of missing or unknown data explicitely: if the data is not in the expected format then a normal exception should be raised, without having to add extra code to support it. For example when accessing a hash's value that is supposed to exist, don't test for its presence (no need for "next if hash[key].nil?").
-4. Any code or test modification should be validated by running tests using `bundle exec rspec`. It is expected that it runs without any error, with 100% of success rate.
+2. Classes always define their public methods first, followed by their private ones below. The keyword private is separating both parts.
+3. Avoid defining local variables that are used only once. Try to use the variable value directly where it is needed.
+4. Avoid catching cases of missing or unknown data explicitely: if the data is not in the expected format then a normal exception should be raised, without having to add extra code to support it. For example when accessing a hash's value that is supposed to exist, don't test for its presence (no need for "next if hash[key].nil?").
+5. Any code or test modification should be validated by running all the tests (not only the modified ones) using `bundle exec rspec`. It is expected that it runs without any error, with 100% of success rate.
+6. Any code or test modification should trigger a verification of the README.md file content, and make sure that all sections still have up-to-date content regarding the change.
 
 # Documentation rules
 
-1. README.md file should be always kept up-to-date with the new options or architecture changes that are made.
+1. README.md file should always be kept up-to-date with the new options or architecture changes that are made. Any section of the README should be checked if the content needs to be adapted with any code or test change.
 2. Each method should have a header documenting its parameters and result, using the following template (example given for a method accepting 2 parameters and returning 2 result values):
   # Main method purpose and behaviour description.
   #

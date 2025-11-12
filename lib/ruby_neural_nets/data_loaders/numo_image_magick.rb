@@ -50,6 +50,51 @@ module RubyNeuralNets
         super(dataset:, max_minibatch_size:, dataset_seed:)
       end
 
+      # Display a sample image from a dataset
+      #
+      # Parameters::
+      # * *dataset_type* (Symbol): Dataset type from which the sample should be taken
+      # * *label* (String): Label from which the sample should be taken
+      def display_sample(dataset_type, label)
+        # Get the minibatch dataset for the specified type
+        elements_dataset = @partition_datasets[dataset_type].elements_dataset
+
+        # Get the one-hot vector for the requested label
+        target_one_hot = elements_dataset.one_hot_labels[label]
+
+        # Find a sample with the matching one-hot vector
+        found_x, _found_y = elements_dataset.find { |_select_x, select_y| select_y == target_one_hot }
+        # Get image stats for dimensions
+        stats = image_stats
+        rows = stats[:rows]
+        cols = stats[:cols]
+
+        # Create ImageMagick image from pixel data using appropriate format
+        image = Magick::Image.new(cols, rows)
+        image.import_pixels(
+          0,
+          0,
+          cols,
+          rows,
+          case image_stats[:channels]
+          when 1
+            'I'
+          when 3
+            'RGB'
+          else
+            raise "Unsupported number of channels for display: #{image_stats[:channels]}"
+          end,
+          # Convert normalized pixel data back to ImageMagick format
+          # The data is in 0-1 range, need to convert back to 0-65535 range
+          found_x.flatten.map { |pixel_value| (pixel_value * 65535).round }
+        )
+
+        log "Display sample image of label #{label} from #{dataset_type} dataset"
+        Helpers.display_image(image)
+      end
+
+      private
+
       # Instantiate a partitioned dataset.
       #
       # Parameters::
@@ -130,49 +175,6 @@ module RubyNeuralNets
           ),
           max_minibatch_size:
         )
-      end
-
-      # Display a sample image from a dataset
-      #
-      # Parameters::
-      # * *dataset_type* (Symbol): Dataset type from which the sample should be taken
-      # * *label* (String): Label from which the sample should be taken
-      def display_sample(dataset_type, label)
-        # Get the minibatch dataset for the specified type
-        elements_dataset = @partition_datasets[dataset_type].elements_dataset
-
-        # Get the one-hot vector for the requested label
-        target_one_hot = elements_dataset.one_hot_labels[label]
-
-        # Find a sample with the matching one-hot vector
-        found_x, _found_y = elements_dataset.find { |_select_x, select_y| select_y == target_one_hot }
-        # Get image stats for dimensions
-        stats = image_stats
-        rows = stats[:rows]
-        cols = stats[:cols]
-
-        # Create ImageMagick image from pixel data using appropriate format
-        image = Magick::Image.new(cols, rows)
-        image.import_pixels(
-          0,
-          0,
-          cols,
-          rows,
-          case image_stats[:channels]
-          when 1
-            'I'
-          when 3
-            'RGB'
-          else
-            raise "Unsupported number of channels for display: #{image_stats[:channels]}"
-          end,
-          # Convert normalized pixel data back to ImageMagick format
-          # The data is in 0-1 range, need to convert back to 0-65535 range
-          found_x.flatten.map { |pixel_value| (pixel_value * 65535).round }
-        )
-
-        log "Display sample image of label #{label} from #{dataset_type} dataset"
-        Helpers.display_image(image)
       end
 
     end

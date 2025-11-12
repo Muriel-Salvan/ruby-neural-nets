@@ -1,2 +1,2 @@
-$LOAD_PATH.unshift(File.join(__dir__, 'ruby_neural_nets_test'))
-$LOAD_PATH.unshift(File.join(__dir__, '..', 'lib'))
+# All common behaviour of the test framework should be part of this file.
+# It is automatically required by rspec.
