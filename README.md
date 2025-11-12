@@ -436,10 +436,17 @@ This will execute all tests in the `spec/` directory.
 
 ### Test Structure
 
-- **`spec/trainer_spec.rb`**: Tests the Trainer class functionality
-  - Verifies training progress tracking and reporting
-  - Tests cost and accuracy recording across epochs and minibatches
-  - Uses fakefs gem for mocked file system operations and synthetic datasets for reliable testing
+The test suite follows a structured organization:
+
+- **`spec/scenarios/`**: Unit test scenarios grouped by interface kind being tested
+  - `spec/scenarios/trainers/trainer_spec.rb`: Tests the Trainer class functionality
+    - Verifies training progress tracking and reporting
+    - Tests cost and accuracy recording across epochs and minibatches
+    - Uses fakefs gem for mocked file system operations and synthetic datasets for reliable testing
+- **`spec/ruby_neural_nets_test/`**: Unit test framework and helpers
+  - `spec/ruby_neural_nets_test/helpers.rb`: Test helper methods and utilities
+- **`spec/spec_helper.rb`**: RSpec configuration and load path setup
+- **`.rspec`**: RSpec options file that automatically requires spec_helper.rb
 
 ### Test Features
 
@@ -457,7 +464,7 @@ This will execute all tests in the `spec/` directory.
 ### Writing Tests
 
 When adding new tests:
-1. Place test files in the `spec/` directory with `_spec.rb` suffix
+1. Place test files in the appropriate `spec/scenarios/<interface_kind>/` directory with `_spec.rb` suffix
 2. Use descriptive test names and contexts
 3. Use fakefs for file system mocking and the `setup_test_filesystem` helper for defining test file structures
 4. Mock external dependencies (random data, external APIs) for reliable execution

@@ -6,9 +6,6 @@ require 'rmagick'
 require 'fakefs/spec_helpers'
 require 'fileutils'
 
-# Add the lib directory to the load path
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-
 # Require the necessary modules
 require 'ruby_neural_nets/trainer'
 require 'ruby_neural_nets/models/one_layer'
@@ -21,7 +18,7 @@ require 'ruby_neural_nets/accuracies/classes_numo'
 require 'ruby_neural_nets/profiler'
 require 'ruby_neural_nets/gradient_checker'
 
-require_relative 'ruby_neural_nets_test/helpers'
+require 'ruby_neural_nets_test/helpers'
 
 describe RubyNeuralNets::Trainer do
 
