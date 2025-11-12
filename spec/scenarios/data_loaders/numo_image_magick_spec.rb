@@ -1,9 +1,7 @@
 require 'ruby_neural_nets/data_loaders/numo_image_magick'
 
-require 'ruby_neural_nets_test/helpers'
-
 describe RubyNeuralNets::DataLoaders::NumoImageMagick do
-  
+
   # Creates a new NumoImageMagick data loader with default values for test scenarios.
   # Allows overriding specific default values through keyword arguments.
   #
@@ -30,8 +28,58 @@ describe RubyNeuralNets::DataLoaders::NumoImageMagick do
     )
   end
 
+  it 'returns the right image stats for grayscale images' do
+    with_test_fs('datasets/test_dataset/class_0/test_image_0.png' => png(10, 20, [128])) do
+      expect(new_data_loader(resize: [10, 20]).image_stats).to eq({ rows: 20, cols: 10, channels: 1 })
+    end
+  end
+
+  it 'returns the right image stats for color images' do
+    with_test_fs('datasets/test_dataset/class_0/test_image_0.png' => png(10, 20, [255, 128, 64])) do
+      expect(new_data_loader(resize: [10, 20]).image_stats).to eq({ rows: 20, cols: 10, channels: 3 })
+    end
+  end
+
+  it 'returns the right labels' do
+    with_test_fs(
+      'datasets/test_dataset/class_a/test_image_0.png' => png(1, 1, [0]),
+      'datasets/test_dataset/class_b/test_image_0.png' => png(1, 1, [128]),
+      'datasets/test_dataset/class_c/test_image_0.png' => png(1, 1, [255])
+    ) do
+      expect(new_data_loader.labels.sort).to eq(['class_a', 'class_b', 'class_c'])
+    end
+  end
+
+  it 'returns the right labels statistics' do
+    with_test_fs(
+      'datasets/test_dataset/class_a/test_image_0.png' => png(1, 1, [0]),
+      'datasets/test_dataset/class_a/test_image_1.png' => png(1, 1, [0]),
+      'datasets/test_dataset/class_b/test_image_0.png' => png(1, 1, [128]),
+      'datasets/test_dataset/class_c/test_image_0.png' => png(1, 1, [255]),
+      'datasets/test_dataset/class_c/test_image_1.png' => png(1, 1, [255]),
+      'datasets/test_dataset/class_c/test_image_2.png' => png(1, 1, [255])
+    ) do
+      data_loader = new_data_loader(partitions: { training: 0.5, dev: 0.3, test: 0.2 })
+      expect(data_loader.label_stats(:training)).to eq({
+        'class_a' => { nbr_elements: 1 },
+        'class_b' => { nbr_elements: 1 },
+        'class_c' => { nbr_elements: 2 }
+      })
+      expect(data_loader.label_stats(:dev)).to eq({
+        'class_a' => { nbr_elements: 1 },
+        'class_b' => { nbr_elements: 0 },
+        'class_c' => { nbr_elements: 1 }
+      })
+      expect(data_loader.label_stats(:test)).to eq({
+        'class_a' => { nbr_elements: 0 },
+        'class_b' => { nbr_elements: 0 },
+        'class_c' => { nbr_elements: 0 }
+      })
+    end
+  end
+
   it 'partitions correctly the dataset' do
-    RubyNeuralNetsTest::Helpers.with_test_fs(
+    with_test_fs(
       # 3 classes, having the following number of files:
       # 0: 3 + 2 + 1 = 6
       # 1: 6 + 4 + 2 = 12
@@ -40,7 +88,7 @@ describe RubyNeuralNets::DataLoaders::NumoImageMagick do
         ((class_idx + 1) * 6).times.map do |img_idx|
           [
             "datasets/test_dataset/class_#{class_idx}/test_image_#{img_idx}.png",
-            RubyNeuralNetsTest::Helpers.generate_png(1, 1, [class_idx * 18 + img_idx])
+            png(1, 1, [class_idx * 18 + img_idx])
           ]
         end
       end.flatten(1).to_h

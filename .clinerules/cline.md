@@ -35,3 +35,4 @@
   1. Setup test data and mocks.
   2. Call only the public interface of the class to be tested.
   3. Write simple assertions on results of the public interface of the class to be tested.
+7. Each unit test scenario should run in an isolated way: running scenarios in whatever order or group should never change the result of the test. If side effects are found while running test scenarios that are impacting other test scenarios, those side effects should be removed to make sure each test scenario runs in isolation.

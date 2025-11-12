@@ -15,7 +15,7 @@ module RubyNeuralNetsTest
     # * *color* (Array<Integer>): An array of channel values (e.g., [gray_value] for grayscale, [r,g,b] for RGB)
     # Result::
     # * String: The PNG file content as a binary string
-    def self.generate_png(width, height, color)
+    def png(width, height, color)
       # Create a new image
       image = Magick::Image.new(width, height) do |img|
         img.format = 'PNG'
@@ -48,10 +48,12 @@ module RubyNeuralNetsTest
     # The method creates directories as needed and writes the files to the fakefs.
     # It also mocks Magick::ImageList.new to read image data from the virtual filesystem
     # for any file path passed to it, allowing image loading in tests without real files.
-    def self.with_test_fs(files_hash)
+    def with_test_fs(files_hash)
       require 'fakefs/spec_helpers'
 
       FakeFS do
+        # TODO: Understand why this step is needed. Normally FakeFS block should clear the file system and ensure isolation
+        FakeFS::FileSystem.clear
         files_hash.each do |path, content|
           dir = File.dirname(path)
           FileUtils.mkdir_p(dir) unless Dir.exist?(dir)

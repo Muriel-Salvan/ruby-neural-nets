@@ -9,8 +9,6 @@ require 'ruby_neural_nets/accuracies/classes_numo'
 require 'ruby_neural_nets/profiler'
 require 'ruby_neural_nets/gradient_checker'
 
-require 'ruby_neural_nets_test/helpers'
-
 describe RubyNeuralNets::Trainer do
 
   let(:progress_tracker) { RubyNeuralNets::ProgressTracker.new(display_graphs: false) }
@@ -23,7 +21,7 @@ describe RubyNeuralNets::Trainer do
 
   let(:profiler) { RubyNeuralNets::Profiler.new(profiling: false) }
   let(:gradient_checker) { RubyNeuralNets::GradientChecker.new(gradient_checks: :off) }
-  
+
   describe '#train' do
     it 'tracks progress and reports correct cost and accuracy using real data loader with mocked file access' do
       # Define the mocked filesystem
@@ -31,7 +29,7 @@ describe RubyNeuralNets::Trainer do
       (0..2).each do |class_idx|
         (0..9).each do |img_idx|
           # Store the PNG data
-          files["datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"] = RubyNeuralNetsTest::Helpers.generate_png(
+          files["datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"] = png(
             28,
             28,
             [
@@ -50,7 +48,7 @@ describe RubyNeuralNets::Trainer do
         end
       end
 
-      RubyNeuralNetsTest::Helpers.with_test_fs(files) do
+      with_test_fs(files) do
         # Create data loader inside fakefs
         data_loader = RubyNeuralNets::DataLoaders::NumoImageMagick.new(
           dataset: 'test_rspec_dataset',
