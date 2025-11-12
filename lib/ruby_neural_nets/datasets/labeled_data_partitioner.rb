@@ -38,8 +38,8 @@ module RubyNeuralNets
             label,
             partitions.to_h do |partition, partition_percentage|
               first_index = next_index
-              next_index = next_index + (indexes.size * partition_percentage).to_i + 1
-              [partition, shuffled_indexes[first_index..next_index - 1]]
+              next_index = next_index + (indexes.size * partition_percentage).round
+              [partition, shuffled_indexes[first_index..next_index - 1] || []]
             end
           ]
         end

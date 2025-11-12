@@ -4,6 +4,38 @@ require 'rmagick'
 module RubyNeuralNetsTest
   module Helpers
 
+    # Helper method to generate PNG file content as a string.
+    #
+    # This method creates a PNG image with the specified dimensions and fills it with a uniform color.
+    # The color parameter is an array representing the channel values (e.g., [gray] for grayscale, [r,g,b] for RGB).
+    #
+    # Parameters::
+    # * *width* (Integer): The width of the image in pixels
+    # * *height* (Integer): The height of the image in pixels
+    # * *color* (Array<Integer>): An array of channel values (e.g., [gray_value] for grayscale, [r,g,b] for RGB)
+    # Result::
+    # * String: The PNG file content as a binary string
+    def self.generate_png(width, height, color)
+      # Create a new image
+      image = Magick::Image.new(width, height) do |img|
+        img.format = 'PNG'
+      end
+
+      # Determine pixel format based on color array length
+      case color.size
+      when 1
+        # Grayscale
+        image.import_pixels(0, 0, width, height, 'I', Array.new(width * height, color[0]))
+      when 3
+        # RGB
+        image.import_pixels(0, 0, width, height, 'RGB', color * (width * height))
+      else
+        raise ArgumentError, "Unsupported color array length: #{color.size}"
+      end
+
+      image.to_blob
+    end
+
     # Helper method to setup mocked filesystem using fakefs
     #
     # This method sets up a virtual filesystem using fakefs with the provided files,

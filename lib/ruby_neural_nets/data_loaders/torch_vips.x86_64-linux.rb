@@ -30,6 +30,7 @@ module RubyNeuralNets
       # * *dataset* (String): The dataset name
       # * *max_minibatch_size* (Integer): Max size each minibatch should have
       # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
+      # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage [default: { training: 0.7, dev: 0.15, test: 0.15 }]
       # * *nbr_clones* (Integer): Number of times each element should be cloned
       # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
       # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1
@@ -38,7 +39,7 @@ module RubyNeuralNets
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
-      def initialize(dataset:, max_minibatch_size:, dataset_seed:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
+      def initialize(dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
@@ -47,7 +48,7 @@ module RubyNeuralNets
         @resize = resize
         @noise_intensity = noise_intensity
         @minmax_normalize = minmax_normalize
-        super(dataset:, max_minibatch_size:, dataset_seed:)
+        super(dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       end
 
       private
@@ -58,11 +59,13 @@ module RubyNeuralNets
       # * *name* (String): Dataset name containing real data
       # * *rng* (Random): The random number generator to be used
       # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
+      # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage
       # Result::
       # * LabeledDataPartitioner: The partitioned dataset.
-      def new_partitioned_dataset(name:, rng:, numo_rng:)
+      def new_partitioned_dataset(name:, rng:, numo_rng:, partitions:)
         Datasets::LabeledDataPartitioner.new(
           Datasets::LabeledFiles.new(name:),
+          partitions:,
           rng:
         )
       end

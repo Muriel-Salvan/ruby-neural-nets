@@ -121,6 +121,10 @@ This runs with default settings:
 - **`--data-loader`**: Select data loading method (NumoImageMagick, NumoVips, TorchVips, TorchImageMagick)
   - Controls the dataset processing pipeline (partitioning, shuffling, caching, encoding, minibatching)
 
+- **`--partitions`**: Hash of partition names and their proportion percentages [default: { training: 0.7, dev: 0.15, test: 0.15 }]
+  - Controls how the dataset is split into training, development, and test partitions
+  - Example: `--partitions '{"training": 0.8, "dev": 0.1, "test": 0.1}'` sets 80% training, 10% dev, 10% test
+
 - **`--loss`**: Choose loss function (CrossEntropy, CrossEntropyTorch)
   - Defines the training objective function
 

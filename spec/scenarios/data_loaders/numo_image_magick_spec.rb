@@ -3,87 +3,86 @@ require 'ruby_neural_nets/data_loaders/numo_image_magick'
 require 'ruby_neural_nets_test/helpers'
 
 describe RubyNeuralNets::DataLoaders::NumoImageMagick do
+  
+  # Creates a new NumoImageMagick data loader with default values for test scenarios.
+  # Allows overriding specific default values through keyword arguments.
+  #
+  # Parameters::
+  # * *overrides* (Hash): Keyword arguments to override default values
+  # Result::
+  # * RubyNeuralNets::DataLoaders::NumoImageMagick: The instantiated data loader
+  def new_data_loader(**overrides)
+    RubyNeuralNets::DataLoaders::NumoImageMagick.new(
+      **{
+        dataset: 'test_dataset',
+        max_minibatch_size: 10,
+        dataset_seed: 42,
+        partitions: { training: 0.7, dev: 0.15, test: 0.15 },
+        nbr_clones: 1,
+        rot_angle: 0.0,
+        grayscale: false,
+        adaptive_invert: false,
+        trim: false,
+        resize: [1, 1],
+        noise_intensity: 0.0,
+        minmax_normalize: false
+      }.merge(overrides)
+    )
+  end
 
-  describe 'minibatch data validation' do
-    it 'serves correct minibatch X and Y for various datasets with simple dataset' do
-      # Define the mocked filesystem with 10 files per class
-      files = {}
-      (0..2).each do |class_idx|
-        (0..9).each do |img_idx|
-          file_path = "datasets/test_simple_dataset/#{class_idx}/test_image_#{img_idx}.png"
-
-          # Create a real Magick::Image with test data
-          mock_image = Magick::Image.new(28, 28) do |img|
-            img.format = 'PNG'
-          end
-
-          # Generate deterministic pixel data based on the class
-          pixel_data = Array.new(28 * 28) do |j|
-            case class_idx
-            when 0
-              0
-            when 1
-              100
-            when 2
-              200
-            end
-          end
-
-          # Import the pixel data into the image
-          mock_image.import_pixels(0, 0, 28, 28, 'I', pixel_data)
-
-          # Store the PNG data
-          files[file_path] = mock_image.to_blob
+  it 'partitions correctly the dataset' do
+    RubyNeuralNetsTest::Helpers.with_test_fs(
+      # 3 classes, having the following number of files:
+      # 0: 3 + 2 + 1 = 6
+      # 1: 6 + 4 + 2 = 12
+      # 2: 9 + 6 + 3 = 18
+      (0..2).map do |class_idx|
+        ((class_idx + 1) * 6).times.map do |img_idx|
+          [
+            "datasets/test_dataset/class_#{class_idx}/test_image_#{img_idx}.png",
+            RubyNeuralNetsTest::Helpers.generate_png(1, 1, [class_idx * 18 + img_idx])
+          ]
         end
-      end
-
-      RubyNeuralNetsTest::Helpers.with_test_fs(files) do
-        # Create data loader inside fakefs
-        data_loader = RubyNeuralNets::DataLoaders::NumoImageMagick.new(
-          dataset: 'test_simple_dataset',
-          max_minibatch_size: 1,
-          dataset_seed: 42,
-          nbr_clones: 1,
-          rot_angle: 0.0,
-          grayscale: true,
-          adaptive_invert: false,
-          trim: false,
-          resize: [28, 28],
-          noise_intensity: 0.0,
-          minmax_normalize: false
-        )
-
-        # For each dataset type, validate the minibatches
-        [:training, :dev, :test].each do |dataset_type|
-          dataset = data_loader.dataset(dataset_type)
-
-          # Iterate through all minibatches
-          dataset.each do |minibatch|
-            # minibatch is Minibatches::Numo
-            # x shape [784, 1], y shape [3, 1]
-
-            # Since max_minibatch_size=1, only 1 sample
-            x = minibatch.x[true, 0]  # shape [784]
-            y = minibatch.y[true, 0]  # shape [3]
-
-            # Find the class from one-hot y
-            predicted_class = y.max_index
-
-            # Check that the pixel values match the expected for the class
-            expected_pixel = case predicted_class
-                             when 0
-                               0.0 / 65535.0
-                             when 1
-                               100.0 / 65535.0
-                             when 2
-                               200.0 / 65535.0
-                             end
-
-            # All pixels should be the expected value (approximately, due to normalization)
-            expect((x - expected_pixel).abs.max < 0.01).to be true
-          end
+      end.flatten(1).to_h
+    ) do
+      data_loader = new_data_loader(partitions: { training: 0.5, dev: 0.33, test: 0.17 })
+      # For each dataset type, validate the minibatches by checking number of unique pixel colors for each class
+      expect(
+        [:training, :dev, :test].to_h do |dataset_type|
+          [
+            dataset_type,
+            data_loader.dataset(dataset_type).
+              map { |minibatch| minibatch.each_element.map { |x, y| [x[0], y.max_index] } }.
+              flatten(1).
+              group_by { |(_color, class_idx)| class_idx }.
+              to_h do |class_idx, elements|
+                [
+                  class_idx,
+                  elements.map { |(color, _class_idx)| color }.uniq.size
+                ]
+              end
+          ]
         end
-      end
+      ).to eq(
+        {
+          training: {
+            0 => 3,
+            1 => 6,
+            2 => 9
+          },
+          dev: {
+            0 => 2,
+            1 => 4,
+            2 => 6
+          },
+          test: {
+            0 => 1,
+            1 => 2,
+            2 => 3
+          }
+        }
+      )
     end
   end
+
 end

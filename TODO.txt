@@ -1,4 +1,6 @@
 * Add simple unit tests to check big issues in main frameworks.
+* Add test case of the --help CLI.
+* Add a way to not dump logs to stdout unless TEST_DEBUG=1 in environment.
 * Use GPU to speed-up.
 * Glorot is supposed to be not great with ReLU. Try randn*sqrt(2/n[l-1])
 * Use Keras or Torch and continue next steps in recognition using convolutional layers, transfer & multitask learning (C3W2), data augmentation, skip connections, RNNs...

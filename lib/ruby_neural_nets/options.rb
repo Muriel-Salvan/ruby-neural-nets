@@ -204,6 +204,10 @@ module RubyNeuralNets
             minmax_normalize: {
               desc: 'Scale image data to always be within the range 0 to 1.',
               value: false
+            },
+            partitions: {
+              desc: 'Hash of partition names and their proportion percentages.',
+              value: { training: 0.7, dev: 0.15, test: 0.15 }
             }
           }
         },
@@ -393,19 +397,22 @@ module RubyNeuralNets
         option_info[:from].const_get(str.to_sym)
       else
         value = option_info[:value]
-        if value.is_a?(Array)
+        case value
+        when Array
           elem_option_info = { value: value.first }
           str.split(',').map { |elem_str| parse_option_str(elem_str, elem_option_info) }
-        elsif value.is_a?(Integer)
+        when Integer
           Integer(str)
-        elsif value.is_a?(Float)
+        when Float
           str.to_f
-        elsif value.is_a?(Symbol)
+        when Symbol
           str.to_sym
-        elsif value.is_a?(String)
+        when String
           str
-        elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
+        when TrueClass, FalseClass
           str == 'true'
+        when Hash
+          JSON.parse(str).to_h { |k, v| [k.to_sym, v] }
         else
           raise "Can't parse value \"#{str}\" of type #{value.class}"
         end
@@ -434,6 +441,8 @@ module RubyNeuralNets
           'string'
         when TrueClass, FalseClass
           'boolean'
+        when Hash
+          'json'
         else
           raise "Can't parse option value \"#{value}\" of type #{value.class}"
         end

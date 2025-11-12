@@ -30,32 +30,23 @@ describe RubyNeuralNets::Trainer do
       files = {}
       (0..2).each do |class_idx|
         (0..9).each do |img_idx|
-          file_path = "datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"
-
-          # Create a real Magick::Image with test data
-          mock_image = Magick::Image.new(28, 28) do |img|
-            img.format = 'PNG'
-          end
-
-          # Generate deterministic pixel data based on the class
-          pixel_data = Array.new(28 * 28) do |j|
-            case class_idx
-            when 0
-              (j % 256)
-            when 1
-              ((j + 100) % 256)
-            when 2
-              ((j + 200) % 256)
-            else
-              ((j + 50) % 256)
-            end
-          end
-
-          # Import the pixel data into the image
-          mock_image.import_pixels(0, 0, 28, 28, 'I', pixel_data)
-
           # Store the PNG data
-          files[file_path] = mock_image.to_blob
+          files["datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"] = RubyNeuralNetsTest::Helpers.generate_png(
+            28,
+            28,
+            [
+              case class_idx
+              when 0
+                0
+              when 1
+                100
+              when 2
+                200
+              else
+                50
+              end
+            ]
+          )
         end
       end
 
@@ -65,6 +56,7 @@ describe RubyNeuralNets::Trainer do
           dataset: 'test_rspec_dataset',
           max_minibatch_size: 2,
           dataset_seed: 42,
+          partitions: { training: 0.7, dev: 0.15, test: 0.15 },
           nbr_clones: 1,
           rot_angle: 0.0,
           grayscale: true,
