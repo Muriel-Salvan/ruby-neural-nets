@@ -28,6 +28,7 @@ module RubyNeuralNets
       #   * *rows* (Integer or nil): Number of rows if it applies to all images, or nil otherwise
       #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
+      #   * *depth* (Integer or nil): Depth (number of bits) used to encode pixel channel's values if it applies to all images, or nil otherwise
       def image_stats
         @dataset.image_stats.merge(channels: 1)
       end

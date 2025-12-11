@@ -8,6 +8,7 @@ module RubyNeuralNetsTest
     #
     # This method creates a PNG image with the specified dimensions and fills it with pixel values.
     # The pixels parameter can be an array of pixel values or a hash with color key for uniform color.
+    # The bit depth of the pixels is always 16 bits (between 0 and 65535).
     #
     # Parameters::
     # * *width* (Integer): The width of the image in pixels
@@ -71,8 +72,6 @@ module RubyNeuralNetsTest
       require 'fakefs/spec_helpers'
 
       FakeFS.with_fresh do
-        # TODO: Understand why this step is needed. Normally FakeFS block should clear the file system and ensure isolation
-        # FakeFS::FileSystem.clear
         files_hash.each do |path, content|
           dir = File.dirname(path)
           FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
@@ -81,15 +80,17 @@ module RubyNeuralNetsTest
 
         # Mock Magick::ImageList.new to return images from the fakefs files
         Magick::ImageList.define_singleton_method(:new) do |*args|
-          # Read the PNG data from fakefs
           png_data = File.read(args.first)
-          # Create image from blob
           image = Magick::Image.from_blob(png_data).first
-          # Create ImageList and add the image
           image_list = Magick::ImageList.allocate
           image_list.send(:initialize)
           image_list << image
           image_list
+        end
+
+        # Mock Vips::Image.new_from_file for NumoVips tests
+        Vips::Image.define_singleton_method(:new_from_file) do |file_name|
+          Vips::Image.new_from_buffer(File.read(file_name), 'png')
         end
 
         yield
@@ -107,14 +108,22 @@ module RubyNeuralNetsTest
       array_1.to_a.zip(array_2.to_a).map { |(e_1, e_2)| (e_1 - e_2).abs }
     end
 
-    # Expect a given array to have all its elements within the range of anothr array
+    # Expect a given array to have all its elements within the range of another array.
+    # Handle recursively nested arrays.
     #
     # Parameters::
     # * *array_1* (Array or Numo::DFloat): First array
     # * *array_2* (Array or Numo::DFloat): Second array
     # * *threshold* (Float): Threshold range [default: 0.01]
     def expect_array_within(array_1, array_2, threshold = 0.01)
-      expect(array_distance(array_1, array_2).max).to be_within(threshold).of(0)
+      if array_1.is_a?(Array) && array_1.first.is_a?(Array)
+        array_1.zip(array_2).each do |(sub_array_1, sub_array_2)|
+          expect_array_within(sub_array_1, sub_array_2, threshold = threshold)
+        end
+      else
+        max_distance = array_distance(array_1, array_2).max
+        expect(max_distance).to be_within(threshold).of(0), "expected distance #{max_distance} to be smaller than #{threshold} between #{array_1.to_a} and expected #{array_2.to_a}"
+      end
     end
 
     # Expect a given array not to have all its elements within the range of anothr array
@@ -134,7 +143,7 @@ module RubyNeuralNetsTest
       FakeFS::FileSystem.clone("#{__dir__}/../../vendor")
       byebug
     end
-    
+
     # Get a byebug session with fakefs
     def fakefs_byebug
       RubyNeuralNetsTest::Helpers.fakefs_byebug

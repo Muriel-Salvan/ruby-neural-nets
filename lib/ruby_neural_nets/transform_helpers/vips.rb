@@ -93,7 +93,8 @@ module RubyNeuralNets
       # * Vips::Image: Image with Gaussian noise added or original if no noise needed
       def self.gaussian_noise(image, noise_intensity, numo_rng)
         if noise_intensity > 0
-          (image + ::Vips::Image.bandjoin(image.bands.times.map { |band_idx| ::Vips::Image.new_from_array(numo_rng.normal(shape: [image.height, image.width], loc: 0.0, scale: noise_intensity * 255).to_a) })).clamp(min: 0, max: 255).scaleimage
+          max_value = max_channel_value(image)
+          (image + ::Vips::Image.bandjoin(image.bands.times.map { |band_idx| ::Vips::Image.new_from_array(numo_rng.normal(shape: [image.height, image.width], loc: 0.0, scale: noise_intensity * max_value).to_a) })).clamp(min: 0, max: max_value).cast(image.format)
         else
           image
         end
@@ -127,8 +128,9 @@ module RubyNeuralNets
       def self.adaptive_invert(image)
         # Get top left pixel value (assuming RGB, take average)
         top_left = image.getpoint(0, 0)
+        max_value = max_channel_value(image)
         # Invert if intensity is in lower half range (normalized 0-1)
-        top_left.inject(:+).to_f / top_left.size < 128 ? (-image + 255).scaleimage : image
+        top_left.inject(:+).to_f / top_left.size <= max_value / 2 ? (-image + max_value).cast(image.format) : image
       end
 
       # Apply min-max normalization to the image
@@ -136,18 +138,19 @@ module RubyNeuralNets
       # Parameters::
       # * *image* (Vips::Image): Input image to normalize
       # Result::
-      # * Vips::Image: Image with each band normalized to 0-255 range
+      # * Vips::Image: Image with each band normalized to 0-max_value range
       def self.minmax_normalize(image)
+        max_value = max_channel_value(image)
         ::Vips::Image.bandjoin(
-          # Normalize each band to 0-255 range and combine using bandjoin
+          # Normalize each band to 0-max_value range and combine using bandjoin
           image.bands.times.map do |i|
             band = image[i]
             min_val = band.min
             max_val = band.max
-            # If all pixels are the same, set to 127.5 (midpoint)
-            max_val > min_val ? ((band - min_val) * 255) / (max_val - min_val) : band * 0 + 127
+            # If all pixels are the same, set to midpoint
+            (max_val > min_val ? ((band - min_val) * max_value) / (max_val - min_val) : band * 0 + max_value / 2).cast(image.format)
           end
-        ).scaleimage
+        )
       end
 
       # Remove alpha channel from Vips image
@@ -159,6 +162,16 @@ module RubyNeuralNets
       def self.remove_alpha(image)
         # Remove alpha channel if present (4 bands -> 3 bands)
         image.bands == 4 ? image.extract_band(0, n: 3) : image
+      end
+
+      # Get the max value of a channel value of an image
+      #
+      # Parameters::
+      # * *image* (Vips::Image): The image
+      # Result::
+      # * Integer: The max value a pixel channel can have
+      def self.max_channel_value(image)
+        2 ** image.get('bits-per-sample') - 1
       end
 
     end

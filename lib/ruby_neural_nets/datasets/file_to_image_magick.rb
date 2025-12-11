@@ -28,6 +28,7 @@ module RubyNeuralNets
       #   * *rows* (Integer or nil): Number of rows if it applies to all images, or nil otherwise
       #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
+      #   * *depth* (Integer or nil): Depth (number of bits) used to encode pixel channel's values if it applies to all images, or nil otherwise
       def image_stats
         # Assume all images have the same properties as the first one
         sample_image = Magick::ImageList.new(@dataset[0][0]).first
@@ -42,7 +43,8 @@ module RubyNeuralNets
               3
             else
               raise "Unknown colorspace: #{sample_image.colorspace}"
-            end
+            end,
+          depth: sample_image.quantum_depth
         }
       end
 

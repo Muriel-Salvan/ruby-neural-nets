@@ -4,18 +4,8 @@ module RubyNeuralNets
 
   module Datasets
 
-    # Dataset wrapper that normalizes Numo DFloat arrays by dividing by a factor.
+    # Dataset wrapper that normalizes Numo DFloat arrays between 0 and 1.
     class NumoNormalize < Wrapper
-
-      # Constructor
-      #
-      # Parameters::
-      # * *dataset* (Dataset): Dataset to be wrapped
-      # * *factor* (Float): Normalization factor to divide by
-      def initialize(dataset, factor:)
-        super(dataset)
-        @factor = factor
-      end
 
       # Access an element of the dataset
       #
@@ -27,7 +17,7 @@ module RubyNeuralNets
       def [](index)
         x, y = @dataset[index]
         # Normalize by dividing by factor
-        [x / @factor, y]
+        [x / (2 ** @dataset.image_stats[:depth] - 1), y]
       end
 
       # Convert an element to an image
@@ -38,7 +28,7 @@ module RubyNeuralNets
       # * Object: The image representation (delegated to underlying dataset)
       def to_image(element)
         # Scale back by factor before delegating
-        @dataset.to_image(element * @factor)
+        @dataset.to_image(element * (2 ** @dataset.image_stats[:depth] - 1))
       end
 
     end

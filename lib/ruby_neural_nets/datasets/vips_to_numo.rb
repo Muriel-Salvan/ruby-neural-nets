@@ -18,7 +18,19 @@ module RubyNeuralNets
       def [](index)
         image, y = @dataset[index]
         # Convert Vips image to Numo DFloat without intermediate Ruby arrays
-        [Numo::UInt8.from_binary(image.write_to_memory).cast_to(Numo::DFloat), y]
+        [
+          (
+            case @dataset.image_stats[:depth]
+            when 8
+              Numo::UInt8
+            when 16
+              Numo::UInt16
+            else
+              raise "Unsupported depth: #{@dataset.image_stats[:depth]}"
+            end
+          ).from_binary(image.write_to_memory).cast_to(Numo::DFloat),
+          y
+        ]
       end
 
       # Convert an element to an image

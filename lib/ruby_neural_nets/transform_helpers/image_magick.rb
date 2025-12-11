@@ -97,13 +97,14 @@ module RubyNeuralNets
           pixels_map = Helpers.image_pixels_map(image)
           original_pixels = Numo::DFloat[image.export_pixels(0, 0, image.columns, image.rows, pixels_map)]
           new_image = Magick::Image.new(image.columns, image.rows)
+          max_value = max_channel_value(image)
           new_image.import_pixels(
             0,
             0,
             image.columns,
             image.rows,
             pixels_map,
-            (original_pixels + numo_rng.normal(shape: original_pixels.shape, loc: 0.0, scale: noise_intensity * 65535)).clip(0, 65535).flatten.to_a
+            (original_pixels + numo_rng.normal(shape: original_pixels.shape, loc: 0.0, scale: noise_intensity * max_value)).clip(0, max_value).flatten.to_a
           )
           new_image
         else
@@ -168,6 +169,16 @@ module RubyNeuralNets
         else
           image
         end
+      end
+
+      # Get the max value of a channel value of an image
+      #
+      # Parameters::
+      # * *image* (Magick::Image): The image
+      # Result::
+      # * Integer: The max value a pixel channel can have
+      def self.max_channel_value(image)
+        2 ** image.quantum_depth - 1
       end
 
     end

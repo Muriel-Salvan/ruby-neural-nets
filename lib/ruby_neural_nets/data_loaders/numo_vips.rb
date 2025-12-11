@@ -174,8 +174,7 @@ module RubyNeuralNets
         Datasets::Minibatch.new(
           Datasets::EpochShuffler.new(
             Datasets::NumoNormalize.new(
-              Datasets::VipsToNumo.new(augmented_dataset),
-              factor: 255
+              Datasets::VipsToNumo.new(augmented_dataset)
             ),
             rng:
           ),

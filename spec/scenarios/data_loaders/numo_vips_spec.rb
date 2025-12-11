@@ -1,19 +1,19 @@
 require_relative 'shared/data_loader_scenarios'
-require 'ruby_neural_nets/data_loaders/numo_image_magick'
+require 'ruby_neural_nets/data_loaders/numo_vips'
 
-describe RubyNeuralNets::DataLoaders::NumoImageMagick do
-  include_examples 'data loader scenarios', 
-    rotation_expected: [0.5, 0.7, 0, 0.05, 1, 0.05, 0, 0.7, 0.5]
+describe RubyNeuralNets::DataLoaders::NumoVips do
+  include_examples 'data loader scenarios',
+    rotation_expected: [0.03, 0.32, 0, 0, 0.92, 0.15, 0, 0.54, 0.54]
 
-  # Creates a new NumoImageMagick data loader with default values for test scenarios.
+  # Creates a new NumoVips data loader with default values for test scenarios.
   # Allows overriding specific default values through keyword arguments.
   #
   # Parameters::
   # * *overrides* (Hash): Keyword arguments to override default values
   # Result::
-  # * RubyNeuralNets::DataLoaders::NumoImageMagick: The instantiated data loader
+  # * RubyNeuralNets::DataLoaders::NumoVips: The instantiated data loader
   def new_data_loader(**overrides)
-    RubyNeuralNets::DataLoaders::NumoImageMagick.new(
+    RubyNeuralNets::DataLoaders::NumoVips.new(
       **{
         dataset: 'test_dataset',
         max_minibatch_size: 10,
