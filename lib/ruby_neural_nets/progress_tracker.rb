@@ -1,3 +1,5 @@
+require 'get_process_mem'
+require 'sys-proctable'
 require 'ruby_neural_nets/logger'
 
 module RubyNeuralNets
@@ -13,6 +15,9 @@ module RubyNeuralNets
     def initialize(display_graphs: true)
       @display_graphs = display_graphs
       if @display_graphs
+        # Due to a GnuPlot and wxWidgets bug in Ubuntu, we need this work-around.
+        # cf. https://sourceforge.net/p/gnuplot/bugs/2634/#
+        ENV['GDK_BACKEND'] = 'x11'
         require 'numo/gnuplot'
         require 'numo/narray'
         @graph_row_padding = 80
@@ -216,12 +221,25 @@ module RubyNeuralNets
     # Parameters::
     # * Proc: Code block to execute when the session is ready
     def session
+      # Create a thread to measure memory consumption
+      max_memory_used = 0
+      stop_mem_thread = false
+      mem_thread = Thread.new do
+        until stop_mem_thread do
+          current_memory_used = rss_mem_used
+          max_memory_used = current_memory_used if current_memory_used > max_memory_used
+          sleep 3
+        end
+      end
       session_start_time = Time.now
       yield
       session_end_time = Time.now
+      stop_mem_thread = true
+      mem_thread.join
       
       # Display session summary
       log "Session timings: #{session_start_time.utc.strftime('%F %T')} - #{session_end_time.utc.strftime('%F %T')} (#{session_end_time - session_start_time.round(2)} seconds)"
+      log "Session max memory used: #{(max_memory_used / 1048576).to_i} MB"
       
       # Display final results for each experiment
       @experiments.each do |exp_id, exp_data|
@@ -423,6 +441,33 @@ module RubyNeuralNets
         accuracy: last_progress[:accuracy]
       }
     end
+
+    # Get the total memory consumption of this process and its children
+    #
+    # Result::
+    # * Integer: Bytes of total RSS memory consumption
+    def rss_mem_used
+      current_pid = $$
+      ([current_pid] + child_pids(current_pid)).inject(0) { |sum_mem, pid| sum_mem + GetProcessMem.new(pid).bytes }
+    end
+
+    # Recursively get all children PIDs of a given PID
+    #
+    # Parameters::
+    # * *pid* (Integer): PID for which we look for child PIDs
+    # * *processes* (Array<Struct::ProcTableStruct>): List of all processes [default: Sys::ProcTable.ps]
+    # Result::
+    # * Array<Integer>: List of children PIDs
+    def child_pids(pid, processes: Sys::ProcTable.ps)
+      found_child_pids = []
+      processes.each do |process|
+        if process.ppid == pid
+          child_pid = process.pid
+          found_child_pids.concat([child_pid] + child_pids(child_pid, processes:))
+        end
+      end
+      found_child_pids
+    end    
 
   end
 

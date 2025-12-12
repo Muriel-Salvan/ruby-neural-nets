@@ -578,45 +578,25 @@ Here are the command lines used:
 
 ```bash
 # Numo using Vips
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=NumoVips --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=NumoVips --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy --display-graphs=false
 # Numo using ImageMagick
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy --display-graphs=false
 # Torch using Vips
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=TorchVips --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=TorchVips --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --display-graphs=false
 # Torch using ImageMagick
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --resize=110,110 --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch
+bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --display-graphs=false
 ```
 
-| Experiment              | Elapsed time | Memory consumption (GB) | Final dev accuracy |
+| Experiment              | Elapsed time | Memory consumption (MB) | Final dev accuracy |
 | ----------------------- | ------------ | ----------------------- | ------------------ |
-| Torch using ImageMagick | 3m 31s       | 850                     | 95%                |
-| Numo using ImageMagick  | 3m 47s       | 750                     | 96%                |
-| Numo using Vips         | 5m 16s       | 750                     | 90%                |
-| Torch using Vips        | 5m 23s       | 850                     | 93%                |
+| Torch using ImageMagick | 5m 23s       | 760                     | 98%                |
+| Numo using ImageMagick  | 5m 23s       | 755                     | 98%                |
+| Numo using Vips         | 6m 07s       | 862                     | 97%                |
+| Torch using Vips        | 6m 08s       | 765                     | 97%                |
 
 Analysis: Overall performance is consistent between experiments:
 * ImageMagick processing is more efficient than Vips (big factor), and results in better accuracy.
-* Torch is slightly performing better than Numo Ruby implementation (small factor).
-
-## License
-
-See LICENSE file.
-Here are the command lines used:
-
-```bash
-# Numo using Vips
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoVips --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
-# Numo using ImageMagick
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
-# Torch using Vips
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=TorchVips --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true
-```
-
-| Experiment             | Elapsed time | Memory consumption (GB) | Final dev accuracy |
-| ---------------------- | ------------ | ----------------------- | ------------------ |
-| Numo using Vips        | 15m 12s      | 0.9                     | 90%                |
-| Numo using ImageMagick | 2m 24s       | 0.9                     | 96%                |
-| Torch using Vips       | 3m 28s       | 1.0                     | 93%                |
+* Torch and Numo Ruby implementation have very similar performance.
 
 ## License
 
