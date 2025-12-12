@@ -19,6 +19,7 @@ module RubyNeuralNets
       # Invalidate the cache
       def invalidate
         @cache = {}
+        @cache_image_stats = nil
       end
 
       # Access an element of the dataset
@@ -31,6 +32,20 @@ module RubyNeuralNets
       def [](index)
         @cache[index] = @dataset[index] unless @cache.key?(index)
         @cache[index]
+      end
+
+      # Get some images stats.
+      # Those are supposed to be the same for all samples from the dataset and can be used to compute the model's architecture.
+      #
+      # Result::
+      # * Hash: Image stats:
+      #   * *rows* (Integer or nil): Number of rows if it applies to all images, or nil otherwise
+      #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
+      #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
+      #   * *depth* (Integer or nil): Depth (number of bits) used to encode pixel channel's values if it applies to all images, or nil otherwise
+      def image_stats
+        @cache_image_stats = @dataset.image_stats if @cache_image_stats.nil?
+        @cache_image_stats
       end
 
     end
