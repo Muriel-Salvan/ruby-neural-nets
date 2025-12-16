@@ -205,6 +205,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
     it 'applies minmax_normalize correctly on color images' do
       with_test_fs(
         'datasets/test_dataset/class_0/test_image_0.png' => png(2, 2, [
+          # R, G, B
           10, 50, 40,
           20, 50, 30,
           30, 40, 20,
@@ -212,10 +213,11 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         ])
       ) do
         expect_array_within(new_data_loader(minmax_normalize: true, resize: [2, 2]).dataset(:training).first.each_element.first[0], [
-          0, 1, 1,
+          # R,  G, B
+          0,    1, 1,
           0.33, 1, 0.66,
           0.66, 0, 0.33,
-          1, 0, 0
+          1,    0, 0
         ])
       end
     end

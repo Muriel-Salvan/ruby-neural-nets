@@ -152,7 +152,20 @@ module RubyNeuralNets
       # Result::
       # * Magick::Image: Image with normalized pixel values
       def self.minmax_normalize(image)
-        image.normalize_channel(Magick::AllChannels)
+        pixels_map = Helpers.image_pixels_map(image)
+        image.normalize_channel(
+          *(
+            case pixels_map
+            when 'I'
+              [Magick::AllChannels]
+            when 'RGB'
+              # Don't use AllChannels here as under Linux this will keep proportions across channels
+              [Magick::RedChannel, Magick::GreenChannel, Magick::BlueChannel]
+            else
+              raise "Unsupported pixels map: #{pixels_map}"
+            end
+          )
+        )
       end
 
       # Remove alpha channel from ImageMagick image
