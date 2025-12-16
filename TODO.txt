@@ -6,3 +6,4 @@
 * Use Keras or Torch and continue next steps in recognition using convolutional layers, transfer & multitask learning (C3W2), data augmentation, skip connections, RNNs...
 * Find techniques that are efficient for hyper parameters tuning - See C2W3
 * Add Recall as a metric - See C3W1
+* Package torchvision-alt using numo-narray-alt

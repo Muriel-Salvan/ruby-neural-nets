@@ -73,7 +73,8 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
    - Use the Q16-x64-dll.exe version, not the HDRI or static version (details [https://github.com/rmagick/rmagick?tab=readme-ov-file#windows](here)).
 3. **Bundler**: Install Bundler if not already available: `gem install bundler`
 4. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.0+cu126/libtorch/`
-5. **OpenBLAS** (optional): For improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
+    - On Linux, clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its Gemfile to depend on numo-narray-alt instead of numo-narray.
+5. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
 
 ### Setup
 

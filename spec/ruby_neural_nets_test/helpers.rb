@@ -72,6 +72,9 @@ module RubyNeuralNetsTest
       require 'fakefs/spec_helpers'
 
       FakeFS.with_fresh do
+        # Linux gets memory usage looking at /proc
+        FakeFS::FileSystem.add('/proc')
+
         files_hash.each do |path, content|
           dir = File.dirname(path)
           FileUtils.mkdir_p(dir) unless Dir.exist?(dir)

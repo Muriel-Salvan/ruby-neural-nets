@@ -19,7 +19,7 @@ require 'numo/gnuplot'
 require 'numo/linalg/linalg'
 require 'numo/narray'
 # Load a C extension for efficient computations
-Numo::Linalg::Loader.load_openblas(ENV['OPEN_BLAS_PATH']) unless ENV['OPEN_BLAS_PATH'].nil?
+Numo::Linalg::Loader.load_openblas(ENV['OPEN_BLAS_PATH']) if RUBY_PLATFORM == 'x64-mingw-ucrt' && !ENV['OPEN_BLAS_PATH'].nil?
 
 require 'ruby_neural_nets/helpers'
 RubyNeuralNets::Helpers.init(
