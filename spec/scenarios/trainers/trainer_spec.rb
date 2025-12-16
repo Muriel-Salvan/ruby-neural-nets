@@ -51,6 +51,7 @@ describe RubyNeuralNets::Trainer do
       with_test_fs(files) do
         # Create data loader inside fakefs
         data_loader = RubyNeuralNets::DataLoaders::NumoImageMagick.new(
+          datasets_path: './datasets',
           dataset: 'test_rspec_dataset',
           max_minibatch_size: 2,
           dataset_seed: 42,

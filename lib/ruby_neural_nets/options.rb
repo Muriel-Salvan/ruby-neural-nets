@@ -163,6 +163,10 @@ module RubyNeuralNets
           name: 'NumoImageMagick',
           options: {
             max_minibatch_size: 5000,
+            datasets_path: {
+              desc: 'Directory containing datasets',
+              value: './datasets'
+            },
             dataset: {
               desc: "Possible values are #{Dir.glob('./datasets/*').map { |file| File.basename(file) }.join(', ')}.",
               value: 'colors'

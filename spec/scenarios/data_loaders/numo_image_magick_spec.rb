@@ -15,6 +15,7 @@ describe RubyNeuralNets::DataLoaders::NumoImageMagick do
   def new_data_loader(**overrides)
     RubyNeuralNets::DataLoaders::NumoImageMagick.new(
       **{
+        datasets_path: './datasets',
         dataset: 'test_dataset',
         max_minibatch_size: 10,
         dataset_seed: 42,

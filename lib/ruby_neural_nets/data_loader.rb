@@ -12,14 +12,16 @@ module RubyNeuralNets
     # Constructor
     #
     # Parameters::
+    # * *datasets_path* (String): The datasets path
     # * *dataset* (String): The dataset name
     # * *max_minibatch_size* (Integer): Max size each minibatch should have
+    # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
     # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage [default: { training: 0.7, dev: 0.15, test: 0.15 }]
-    def initialize(dataset:, max_minibatch_size:, dataset_seed:, partitions:)
+    def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       rng = Random.new(dataset_seed)
       numo_rng = Numo::Random::Generator.new(seed: dataset_seed)
 
-      @partitioned_dataset = new_partitioned_dataset(name: dataset, rng:, numo_rng:, partitions:)
+      @partitioned_dataset = new_partitioned_dataset(datasets_path:, name: dataset, rng:, numo_rng:, partitions:)
       # Build the set of batching datasets, per partition name.
       # 3 kinds of datasets are considered:
       # 1. Preprocessing: This dataset contains all deterministic transformations that are needed to
@@ -150,13 +152,14 @@ module RubyNeuralNets
     # Instantiate a partitioned dataset.
     #
     # Parameters::
+    # * *datasets_path* (String): The datasets path
     # * *name* (String): Dataset name containing real data
     # * *rng* (Random): The random number generator to be used
     # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
     # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage
     # Result::
     # * LabeledDataPartitioner: The partitioned dataset.
-    def new_partitioned_dataset(name:, rng:, numo_rng:, partitions:)
+    def new_partitioned_dataset(datasets_path:, name:, rng:, numo_rng:, partitions:)
       raise 'Not implemented'
     end
 

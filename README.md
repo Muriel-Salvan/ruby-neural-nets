@@ -111,6 +111,11 @@ This runs with default settings:
 - **`--dataset`**: Choose dataset (colors, numbers)
   - Controls which dataset to load and train on
 
+- **`--datasets-path`**: Directory containing datasets (string, default: './datasets')
+  - Specifies the path to the directory where datasets are stored
+  - Datasets should be organized as subdirectories within this path
+  - Example: `--datasets-path /path/to/my/datasets` uses datasets from a custom directory
+
 - **`--model`**: Select neural network architecture (OneLayer, NLayers, etc.)
   - Controls the model type and layer configuration
   - Use `--layers` to specify hidden layer sizes (comma-separated integers)

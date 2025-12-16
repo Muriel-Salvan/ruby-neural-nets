@@ -15,6 +15,7 @@ describe RubyNeuralNets::DataLoaders::NumoVips do
   def new_data_loader(**overrides)
     RubyNeuralNets::DataLoaders::NumoVips.new(
       **{
+        datasets_path: './datasets',
         dataset: 'test_dataset',
         max_minibatch_size: 10,
         dataset_seed: 42,

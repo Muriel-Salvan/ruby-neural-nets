@@ -27,6 +27,7 @@ module RubyNeuralNets
       # Constructor
       #
       # Parameters::
+      # * *datasets_path* (String): The datasets path
       # * *dataset* (String): The dataset name
       # * *max_minibatch_size* (Integer): Max size each minibatch should have
       # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
@@ -39,7 +40,7 @@ module RubyNeuralNets
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
-      def initialize(dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
+      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
@@ -48,7 +49,7 @@ module RubyNeuralNets
         @resize = resize
         @noise_intensity = noise_intensity
         @minmax_normalize = minmax_normalize
-        super(dataset:, max_minibatch_size:, dataset_seed:, partitions:)
+        super(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       end
 
       # Display a sample image from a dataset
@@ -99,15 +100,16 @@ module RubyNeuralNets
       # Instantiate a partitioned dataset.
       #
       # Parameters::
+      # * *datasets_path* (String): The datasets path
       # * *name* (String): Dataset name containing real data
       # * *rng* (Random): The random number generator to be used
       # * *numo_rng* (Numo::Random::Generator): The Numo random number generator to be used
       # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage
       # Result::
       # * LabeledDataPartitioner: The partitioned dataset.
-      def new_partitioned_dataset(name:, rng:, numo_rng:, partitions:)
+      def new_partitioned_dataset(datasets_path:, name:, rng:, numo_rng:, partitions:)
         Datasets::LabeledDataPartitioner.new(
-          Datasets::LabeledFiles.new(name:),
+          Datasets::LabeledFiles.new(datasets_path:, name:),
           partitions:,
           rng:
         )

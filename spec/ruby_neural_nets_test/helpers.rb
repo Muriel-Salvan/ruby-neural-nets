@@ -143,7 +143,7 @@ module RubyNeuralNetsTest
     def self.fakefs_byebug
       FakeFS::FileSystem.clone("#{__dir__}/../../lib")
       FakeFS::FileSystem.clone("#{__dir__}/../../spec")
-      FakeFS::FileSystem.clone("#{__dir__}/../../vendor")
+      FakeFS::FileSystem.clone(Bundler.bundle_path.to_s)
       byebug
     end
 

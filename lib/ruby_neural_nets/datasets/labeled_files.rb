@@ -14,9 +14,11 @@ module RubyNeuralNets
       # Constructor
       #
       # Parameters::
+      # * *datasets_path* (String): The datasets path
       # * *name* (String): Name of the dataset to read (sub-directory of the datasets directory)
-      def initialize(name:)
+      def initialize(datasets_path:, name:)
         super()
+        @datasets_path = datasets_path
         @name = name
         @labels = Dir.glob("#{root}/*").
           select { |file| File.directory?(file) }.
@@ -54,7 +56,7 @@ module RubyNeuralNets
       # Result::
       # * String: The root folder
       def root
-        "./datasets/#{@name}"
+        "#{@datasets_path}/#{@name}"
       end
 
     end
