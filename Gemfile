@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'fakefs', '~> 3.0'
 gem 'fiddle'
 gem 'get_process_mem'
 gem 'irb'
@@ -24,7 +23,6 @@ when 'x86_64-linux'
 when 'x64-mingw-ucrt'
   gem 'numo-linalg'
   gem 'numo-narray'
-  gem 'win32ole'
 end
 
 gem 'byebug'

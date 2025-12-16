@@ -464,20 +464,12 @@ The test suite follows a structured organization:
 - **Progress Validation**: Ensures training progress is properly tracked and reported
 - **Component Integration**: Tests the integration between Trainer, ProgressTracker, and Experiment classes
 
-### Test Helper Methods
-
-- **`with_test_fs(files_hash)`**: A helper method that encapsulates FakeFS usage for setting up mocked filesystem structures in unit tests
-  - Takes a hash of file paths to file content and creates the corresponding files in the fake filesystem
-  - Executes the provided block within the fake filesystem context
-  - Supports any file type by accepting content as strings (e.g., PNG binary data for images)
-  - Eliminates the need for explicit FakeFS blocks in test scenarios
-
 ### Writing Tests
 
 When adding new tests:
 1. Place test files in the appropriate `spec/scenarios/<interface_kind>/` directory with `_spec.rb` suffix
 2. Use descriptive test names and contexts
-3. Use fakefs for file system mocking and the `with_test_fs` helper for defining test file structures
+3. Use with_test_dir to create test data from files
 4. Mock external dependencies (random data, external APIs) for reliable execution
 5. Test both success and failure scenarios
 6. Verify numerical outputs are within expected ranges

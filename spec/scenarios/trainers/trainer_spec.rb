@@ -29,7 +29,7 @@ describe RubyNeuralNets::Trainer do
       (0..2).each do |class_idx|
         (0..9).each do |img_idx|
           # Store the PNG data
-          files["datasets/test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"] = png(
+          files["test_rspec_dataset/#{class_idx}/test_image_#{img_idx + class_idx * 10}.png"] = png(
             28,
             28,
             { color: [
@@ -48,10 +48,10 @@ describe RubyNeuralNets::Trainer do
         end
       end
 
-      with_test_fs(files) do
+      with_test_dir(files) do |datasets_path|
         # Create data loader inside fakefs
         data_loader = RubyNeuralNets::DataLoaders::NumoImageMagick.new(
-          datasets_path: './datasets',
+          datasets_path: datasets_path,
           dataset: 'test_rspec_dataset',
           max_minibatch_size: 2,
           dataset_seed: 42,

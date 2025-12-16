@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'tmpdir'
 require 'rmagick'
 
 module RubyNeuralNetsTest
@@ -56,47 +57,21 @@ module RubyNeuralNetsTest
       image.to_blob
     end
 
-    # Helper method to setup mocked filesystem using fakefs
-    #
-    # This method sets up a virtual filesystem using fakefs with the provided files,
-    # and mocks Magick::ImageList.new to support loading images from the virtual filesystem.
+    # Setup a temporary directory with some content
     #
     # Parameters::
-    # * *files_hash* (Hash<String, String>): A hash mapping file paths to their contents (as strings, e.g., PNG data blobs)
-    # * Proc: Code block to execute within the fake filesystem context
-    #
-    # The method creates directories as needed and writes the files to the fakefs.
-    # It also mocks Magick::ImageList.new to read image data from the virtual filesystem
-    # for any file path passed to it, allowing image loading in tests without real files.
-    def with_test_fs(files_hash)
-      require 'fakefs/spec_helpers'
-
-      FakeFS.with_fresh do
-        # Linux gets memory usage looking at /proc
-        FakeFS::FileSystem.add('/proc')
-
-        files_hash.each do |path, content|
-          dir = File.dirname(path)
-          FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
-          File.write(path, content)
+    # * *content* (Hash<String, String>): A hash mapping relative file paths to their contents (as strings, e.g., PNG data blobs)
+    # * Proc: Code block to execute with the test directory setup
+    #   * Parameters::
+    #     * *dir* (String): The temporary directory created
+    def with_test_dir(content)
+      Dir.mktmpdir do |dir|
+        content.each do |path, content|
+          full_path = "#{dir}/#{path}"
+          FileUtils.mkdir_p(File.dirname(full_path))
+          File.binwrite(full_path, content)
         end
-
-        # Mock Magick::ImageList.new to return images from the fakefs files
-        Magick::ImageList.define_singleton_method(:new) do |*args|
-          png_data = File.read(args.first)
-          image = Magick::Image.from_blob(png_data).first
-          image_list = Magick::ImageList.allocate
-          image_list.send(:initialize)
-          image_list << image
-          image_list
-        end
-
-        # Mock Vips::Image.new_from_file for NumoVips tests
-        Vips::Image.define_singleton_method(:new_from_file) do |file_name|
-          Vips::Image.new_from_buffer(File.read(file_name), 'png')
-        end
-
-        yield
+        yield dir
       end
     end
 
@@ -137,19 +112,6 @@ module RubyNeuralNetsTest
     # * *threshold* (Float): Threshold range [default: 0.01]
     def expect_array_not_within(array_1, array_2, threshold = 0.01)
       expect(array_distance(array_1, array_2).max).not_to be_within(threshold).of(0)
-    end
-
-    # Get a byebug session with fakefs
-    def self.fakefs_byebug
-      FakeFS::FileSystem.clone("#{__dir__}/../../lib")
-      FakeFS::FileSystem.clone("#{__dir__}/../../spec")
-      FakeFS::FileSystem.clone(Bundler.bundle_path.to_s)
-      byebug
-    end
-
-    # Get a byebug session with fakefs
-    def fakefs_byebug
-      RubyNeuralNetsTest::Helpers.fakefs_byebug
     end
 
   end
