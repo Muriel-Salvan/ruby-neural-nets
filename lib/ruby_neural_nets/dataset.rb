@@ -13,6 +13,14 @@ module RubyNeuralNets
       raise 'Not implemented'
     end
 
+    # Is the dataset empty?
+    #
+    # Result::
+    # * Boolean: Is the dataset empty?
+    def empty?
+      size == 0
+    end
+
     # Prepare the dataset to be served for a given epoch.
     # This is called before starting an epoch.
     # This can be used to generate some data before hand, or shuffle in a particular way.

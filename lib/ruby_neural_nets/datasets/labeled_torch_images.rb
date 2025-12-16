@@ -3,6 +3,9 @@ require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/torch/sample_folder_dataset'
 require 'ruby_neural_nets/torchvision/transforms/image_magick_grayscale'
 require 'ruby_neural_nets/torchvision/transforms/image_magick_resize'
+require 'ruby_neural_nets/torchvision/transforms/vips_grayscale'
+require 'ruby_neural_nets/torchvision/transforms/vips_resize'
+require 'ruby_neural_nets/torchvision/transforms/vips_remove_alpha'
 
 module RubyNeuralNets
 
@@ -22,7 +25,7 @@ module RubyNeuralNets
       def initialize(dataset, transforms = [])
         super(dataset)
         @transforms = transforms
-        @torch_dataset = RubyNeuralNets::Torch::SampleFolderDataset.new(@dataset, @transforms)
+        @torch_dataset = RubyNeuralNets::Torch::SampleFolderDataset.new(@dataset, @transforms) unless dataset.empty?
       end
 
       # Give access to the underlying files dataset

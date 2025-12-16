@@ -1,20 +1,20 @@
-require_relative 'shared/data_loader_scenarios'
-require 'ruby_neural_nets/data_loaders/numo_image_magick'
+require_relative '../../scenarios/data_loaders/shared/data_loader_scenarios'
+require "ruby_neural_nets/data_loaders/torch_image_magick.#{RUBY_PLATFORM}"
 
-describe RubyNeuralNets::DataLoaders::NumoImageMagick do
+describe RubyNeuralNets::DataLoaders::TorchImageMagick do
   include_examples 'data loader scenarios', 
     rotation_expected: [0.5, 0.7, 0, 0.05, 1, 0.05, 0, 0.7, 0.5],
-    labels_as_onehot: true
+    labels_as_onehot: false
 
-  # Creates a new NumoImageMagick data loader with default values for test scenarios.
+  # Creates a new data loader with default values for test scenarios.
   # Allows overriding specific default values through keyword arguments.
   #
   # Parameters::
   # * *overrides* (Hash): Keyword arguments to override default values
   # Result::
-  # * RubyNeuralNets::DataLoaders::NumoImageMagick: The instantiated data loader
+  # * RubyNeuralNets::DataLoader: The instantiated data loader
   def new_data_loader(**overrides)
-    RubyNeuralNets::DataLoaders::NumoImageMagick.new(
+    RubyNeuralNets::DataLoaders::TorchImageMagick.new(
       **{
         datasets_path: './datasets',
         dataset: 'test_dataset',

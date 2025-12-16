@@ -3,7 +3,8 @@ require 'ruby_neural_nets/data_loaders/numo_vips'
 
 describe RubyNeuralNets::DataLoaders::NumoVips do
   include_examples 'data loader scenarios',
-    rotation_expected: [0.03, 0.32, 0, 0, 0.92, 0.15, 0, 0.54, 0.54]
+    rotation_expected: [0.03, 0.32, 0, 0, 0.92, 0.15, 0, 0.54, 0.54],
+    labels_as_onehot: true
 
   # Creates a new NumoVips data loader with default values for test scenarios.
   # Allows overriding specific default values through keyword arguments.

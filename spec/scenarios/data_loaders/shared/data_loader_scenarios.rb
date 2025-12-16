@@ -80,7 +80,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
             [
               dataset_type,
               data_loader.dataset(dataset_type).
-                map { |minibatch| minibatch.each_element.map { |x, y| [x[0], y.max_index] } }.
+                map { |minibatch| minibatch.each_element.map { |x, y| [x[0], options[:labels_as_onehot] ? y.max_index : y.item] } }.
                 flatten(1).
                 group_by { |(_color, class_idx)| class_idx }.
                 to_h do |class_idx, elements|
@@ -124,11 +124,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         # Check that each minibatch element is the same
         expect_array_within(
           elements.map { |x, y| [x.to_a, y.to_a] },
-          [
-            [[0], [1]],
-            [[0], [1]],
-            [[0], [1]]
-          ]
+          [[[0], [options[:labels_as_onehot] ? 1 : 0]]] * 3
         )
       end
     end
