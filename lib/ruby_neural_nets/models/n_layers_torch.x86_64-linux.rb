@@ -19,7 +19,7 @@ module RubyNeuralNets
 
     class NLayersTorch < Model
 
-      class DenseStackNet < Torch::NN::Module
+      class DenseStackNet < ::Torch::NN::Module
         include Logger
 
         # Constructor
