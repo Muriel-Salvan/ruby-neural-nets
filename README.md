@@ -452,6 +452,7 @@ The test suite follows a structured organization:
   - `spec/scenarios/trainers/`: Tests for trainer functionality
   - `spec/scenarios/data_loaders/`: Tests for data loader functionality
     - Shared scenarios in `spec/scenarios/data_loaders/shared/` are used across both NumoImageMagick and NumoVips implementations to ensure consistent behavior while accounting for their different quantization ranges (65535 for ImageMagick, 255 for Vips)
+  - Platform-specific scenarios in `spec/scenarios.<platform>/` directories contain tests for platform-dependent functionality, such as Torch-based data loaders that require platform-specific native libraries (e.g., `spec/scenarios.x86_64-linux/data_loaders/` for Linux x86_64 Torch data loader tests)
 - **`spec/ruby_neural_nets_test/`**: Unit test framework and helpers
   - `spec/ruby_neural_nets_test/helpers.rb`: Test helper methods and utilities
 - **`spec/spec_helper.rb`**: RSpec configuration and load path setup

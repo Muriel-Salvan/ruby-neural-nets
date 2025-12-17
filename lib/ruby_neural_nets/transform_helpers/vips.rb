@@ -174,6 +174,17 @@ module RubyNeuralNets
         2 ** image.get('bits-per-sample') - 1
       end
 
+      # Convert image to 8-bit (uchar) format
+      #
+      # Parameters::
+      # * *image* (Vips::Image): Input image to convert
+      # Result::
+      # * Vips::Image: Image converted to 8-bit format
+      def self.to_8_bits(image)
+        # Scale values from current bit depth to 8-bit range (0-255)
+        image.format == :uchar ? image : (image * (255.0 / max_channel_value(image))).cast(:uchar)
+      end
+
     end
   end
 end

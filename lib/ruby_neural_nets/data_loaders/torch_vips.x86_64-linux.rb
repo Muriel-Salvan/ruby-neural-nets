@@ -14,6 +14,7 @@ require 'ruby_neural_nets/torchvision/transforms/vips_minmax_normalize'
 require 'ruby_neural_nets/torchvision/transforms/vips_adaptive_invert'
 require 'ruby_neural_nets/torchvision/transforms/file_to_vips'
 require 'ruby_neural_nets/torchvision/transforms/vips_remove_alpha'
+require 'ruby_neural_nets/torchvision/transforms/vips_8_bits'
 require 'ruby_neural_nets/torchvision/transforms/cache'
 require 'ruby_neural_nets/torchvision/transforms/flatten'
 require 'ruby_neural_nets/torchvision/transforms/to_double'
@@ -136,6 +137,7 @@ module RubyNeuralNets
             Datasets::LabeledTorchImages.new(
               augmented_dataset.files_dataset,
               augmented_dataset.transforms + [
+                RubyNeuralNets::TorchVision::Transforms::Vips8Bits.new,
                 ::TorchVision::Transforms::ToTensor.new,
                 RubyNeuralNets::TorchVision::Transforms::Flatten.new,
                 RubyNeuralNets::TorchVision::Transforms::ToDouble.new

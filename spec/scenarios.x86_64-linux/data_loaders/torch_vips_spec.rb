@@ -1,9 +1,9 @@
 require_relative '../../scenarios/data_loaders/shared/data_loader_scenarios'
-require "ruby_neural_nets/data_loaders/torch_image_magick.#{RUBY_PLATFORM}"
+require "ruby_neural_nets/data_loaders/torch_vips.#{RUBY_PLATFORM}"
 
-describe RubyNeuralNets::DataLoaders::TorchImageMagick do
+describe RubyNeuralNets::DataLoaders::TorchVips do
   include_examples 'data loader scenarios', 
-    rotation_expected: [0.5, 0.7, 0, 0.05, 1, 0.05, 0, 0.7, 0.5],
+    rotation_expected: [0.03, 0.32, 0, 0, 0.92, 0.15, 0, 0.54, 0.54],
     label_from: proc { |y| y.item },
     color_from: proc { |x| x.item }
 
@@ -15,7 +15,7 @@ describe RubyNeuralNets::DataLoaders::TorchImageMagick do
   # Result::
   # * RubyNeuralNets::DataLoader: The instantiated data loader
   def new_data_loader(**overrides)
-    RubyNeuralNets::DataLoaders::TorchImageMagick.new(
+    RubyNeuralNets::DataLoaders::TorchVips.new(
       **{
         datasets_path: './datasets',
         dataset: 'test_dataset',

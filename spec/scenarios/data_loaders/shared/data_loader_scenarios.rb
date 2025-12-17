@@ -68,7 +68,8 @@ RSpec.shared_examples 'data loader scenarios' do |options|
           ((class_idx + 1) * 6).times.map do |img_idx|
             [
               "test_dataset/class_#{class_idx}/test_image_#{img_idx}.png",
-              png(1, 1, { color: [class_idx * 18 + img_idx + 1] })
+              # Scale color values so that they still get different when converted from 16 to 8 bits
+              png(1, 1, { color: [(class_idx * 18 + img_idx + 1) * 256] })
             ]
           end
         end.flatten(1).to_h
@@ -80,7 +81,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
             [
               dataset_type,
               data_loader.dataset(dataset_type).
-                map { |minibatch| minibatch.each_element.map { |x, y| [x[0], options[:labels_as_onehot] ? y.max_index : y.item] } }.
+                map { |minibatch| minibatch.each_element.map { |x, y| [options[:color_from].call(x[0]), options[:label_from].call(y)] } }.
                 flatten(1).
                 group_by { |(_color, class_idx)| class_idx }.
                 to_h do |class_idx, elements|
@@ -123,8 +124,8 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         expect(elements.size).to eq(3)
         # Check that each minibatch element is the same
         expect_array_within(
-          elements.map { |x, y| [x.to_a, y.to_a] },
-          [[[0], [options[:labels_as_onehot] ? 1 : 0]]] * 3
+          elements.map { |x, y| [x.to_a, [options[:label_from].call(y)]] },
+          [[[0], [0]]] * 3
         )
       end
     end
