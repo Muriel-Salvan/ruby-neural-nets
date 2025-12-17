@@ -22,9 +22,9 @@ module RubyNeuralNets
         n_x = rows * cols * channels
         # Define a very simple neural net with 1 softmax layer to categorize the 10 numbers
         # Softmax layer weights [nbr_classes, n_x]
-        @w_1 = register_parameters([nbr_classes, n_x], Initializers::GlorotNormal)
+        @w_1 = register_parameters([nbr_classes, n_x], Initializers::GlorotNormal, name: 'W')
         # Softmax layer bias [nbr_classes, 1]
-        @b_1 = register_parameters([nbr_classes, 1], Initializers::Zero)
+        @b_1 = register_parameters([nbr_classes, 1], Initializers::Zero, name: 'B')
       end
 
       # Perform the forward propagation given an input layer

@@ -23,6 +23,8 @@ when 'x86_64-linux'
 when 'x64-mingw-ucrt'
   gem 'numo-linalg'
   gem 'numo-narray'
+  # This is used by sys-proctable on Windows
+  gem 'win32ole'
 end
 
 gem 'byebug'
