@@ -39,26 +39,39 @@ module RubyNeuralNets
         def forward(x)
           # Execute the ONNX model graph
           graph = @model.graph
-          
           # Create a mapping of tensor names to their values
           tensor_values = {}
-          
           # Set the input tensor and ensure it requires gradients for backpropagation
-          input_name = graph.input.first.name
           x.requires_grad!(true) unless x.requires_grad
-          tensor_values[input_name] = x
-          
+          tensor_values[graph.input.first.name] = x
           # Execute each node in the graph
           graph.node.each do |node|
             execute_node(node, tensor_values)
           end
-          
           # Return the output tensor
-          output_name = graph.output.first.name
-          tensor_values[output_name]
+          tensor_values[graph.output.first.name]
         end
 
         private
+
+        PROTOBUF_TO_TORCH_MAPPING = {
+          Onnx::TensorProto::DataType::FLOAT => {
+            data_method: :float_data,
+            unpack: 'f*'
+          },
+          Onnx::TensorProto::DataType::DOUBLE => {
+            data_method: :double_data,
+            unpack: 'd*'
+          },
+          Onnx::TensorProto::DataType::INT32 => {
+            data_method: :int32_data,
+            unpack: 'l*'
+          },
+          Onnx::TensorProto::DataType::INT64 => {
+            data_method: :int64_data,
+            unpack: 'q*'
+          }
+        }
 
         # Convert an ONNX TensorProto to a Torch tensor
         #
@@ -67,43 +80,30 @@ module RubyNeuralNets
         # Result::
         # * Torch::Tensor: The corresponding Torch tensor
         def tensor_proto_to_torch(tensor_proto)
-          # Convert Google::Protobuf::RepeatedField to Ruby array
-          dims = tensor_proto.dims.to_a
-          
-          case tensor_proto.data_type
-          when Onnx::TensorProto::DataType::FLOAT
-            if tensor_proto.float_data.empty?
-              # Use raw_data if float_data is empty
-              raw_data = tensor_proto.raw_data.unpack('f*')
-              ::Torch.tensor(raw_data, dtype: :double).reshape(dims)
-            else
-              ::Torch.tensor(tensor_proto.float_data.to_a, dtype: :double).reshape(dims)
-            end
-          when Onnx::TensorProto::DataType::DOUBLE
-            if tensor_proto.double_data.empty?
-              raw_data = tensor_proto.raw_data.unpack('d*')
-              ::Torch.tensor(raw_data, dtype: :double).reshape(dims)
-            else
-              ::Torch.tensor(tensor_proto.double_data.to_a, dtype: :double).reshape(dims)
-            end
-          when Onnx::TensorProto::DataType::INT32
-            if tensor_proto.int32_data.empty?
-              raw_data = tensor_proto.raw_data.unpack('l*')
-              ::Torch.tensor(raw_data, dtype: :double).reshape(dims)
-            else
-              ::Torch.tensor(tensor_proto.int32_data.to_a, dtype: :double).reshape(dims)
-            end
-          when Onnx::TensorProto::DataType::INT64
-            if tensor_proto.int64_data.empty?
-              raw_data = tensor_proto.raw_data.unpack('q*')
-              ::Torch.tensor(raw_data, dtype: :double).reshape(dims)
-            else
-              ::Torch.tensor(tensor_proto.int64_data.to_a, dtype: :double).reshape(dims)
-            end
-          else
-            raise "Unsupported tensor data type: #{tensor_proto.data_type}"
-          end
+          raise "Unsupported tensor data type: #{tensor_proto.data_type}" unless PROTOBUF_TO_TORCH_MAPPING.key?(tensor_proto.data_type)
+
+          # Use raw_data if the typed data is empty
+          protobuf_mapping = PROTOBUF_TO_TORCH_MAPPING[tensor_proto.data_type]
+          protobuf_data = tensor_proto.send(protobuf_mapping[:data_method])
+          ::Torch.tensor(protobuf_data.empty? ? tensor_proto.raw_data.unpack(protobuf_mapping[:unpack]) : protobuf_data.to_a, dtype: :double).reshape(tensor_proto.dims.to_a)
         end
+
+        NODE_TYPE_TO_METHOD = {
+          # General Matrix Multiplication (Dense layer)
+          'Gemm' => :execute_gemm,
+          # Softmax activation
+          'Softmax' => :execute_softmax,
+          # ReLU activation
+          'Relu' => :execute_relu,
+          # Element-wise addition
+          'Add' => :execute_add,
+          # Matrix multiplication
+          'MatMul' => :execute_matmul,
+          # Reshape operation
+          'Reshape' => :execute_reshape,
+          # Transpose operation
+          'Transpose' => :execute_transpose
+        }
 
         # Execute a single ONNX node
         #
@@ -116,45 +116,18 @@ module RubyNeuralNets
             if tensor_value.nil?
               # Try to get it from the registered parameters (initializers)
               param = named_parameters[input_name]
-              if param
-                param
-              else
-                raise "Tensor '#{input_name}' not found in tensor_values or registered parameters"
-              end
+              raise "Tensor '#{input_name}' not found in tensor_values or registered parameters" if param.nil?
+
+              param
             else
               tensor_value
             end
           end
           
-          case node.op_type
-          when 'Gemm'
-            # General Matrix Multiplication (Dense layer)
-            # Input format: [input, weight, bias] where bias is optional
-            output = execute_gemm(input_tensors, node.attribute)
-          when 'Softmax'
-            # Softmax activation
-            output = execute_softmax(input_tensors, node.attribute)
-          when 'Relu'
-            # ReLU activation
-            output = execute_relu(input_tensors)
-          when 'Add'
-            # Element-wise addition
-            output = execute_add(input_tensors)
-          when 'MatMul'
-            # Matrix multiplication
-            output = execute_matmul(input_tensors)
-          when 'Reshape'
-            # Reshape operation
-            output = execute_reshape(input_tensors, node.attribute)
-          when 'Transpose'
-            # Transpose operation
-            output = execute_transpose(input_tensors, node.attribute)
-          else
-            raise "Unsupported ONNX operation: #{node.op_type}"
-          end
+          raise "Unsupported ONNX operation: #{node.op_type}" unless NODE_TYPE_TO_METHOD.key?(node.op_type)
           
           # Store the output tensor
-          tensor_values[node.output.first] = output
+          tensor_values[node.output.first] = self.send(NODE_TYPE_TO_METHOD[node.op_type], input_tensors, node.attribute)
           
           debug { "Executed #{node.op_type}: #{node.input} -> #{node.output}" }
         end
@@ -167,27 +140,19 @@ module RubyNeuralNets
         # Result::
         # * Torch::Tensor: The output tensor
         def execute_gemm(input_tensors, attributes)
-          input, weight = input_tensors[0], input_tensors[1]
+          input = input_tensors[0]
           bias = input_tensors[2]
           
           # Extract attributes
           alpha = find_attribute(attributes, 'alpha')&.f || 1.0
           beta = find_attribute(attributes, 'beta')&.f || 1.0
           trans_a = find_attribute(attributes, 'transA')&.i || 0
-          trans_b = find_attribute(attributes, 'transB')&.i || 0
           
           # Transpose if needed
-          weight = weight.t if trans_b == 1
           input = input.t if trans_a == 1
           
-          # For ONNX Dense layer: weight is stored as [nbr_classes, features] but needs to be [features, nbr_classes]
-          # for matrix multiplication with input [batch_size, features]
-          unless trans_b == 1
-            weight = weight.t
-          end
-          
           # Compute: alpha * (input @ weight) + beta * bias
-          output = alpha * (input.matmul(weight))
+          output = alpha * (input.matmul(input_tensors[1].t))
           output = output + beta * bias if bias
           
           output
@@ -201,43 +166,40 @@ module RubyNeuralNets
         # Result::
         # * Torch::Tensor: The output tensor
         def execute_softmax(input_tensors, attributes)
-          input = input_tensors.first
-          axis = find_attribute(attributes, 'axis')&.i || -1
-          
-          ::Torch::NN::Functional.softmax(input, dim: axis)
+          ::Torch::NN::Functional.softmax(input_tensors.first, dim: (find_attribute(attributes, 'axis')&.i || -1))
         end
 
         # Execute ReLU operation
         #
         # Parameters::
         # * *input_tensors* (Array<Torch::Tensor>): [input]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
         # Result::
         # * Torch::Tensor: The output tensor
-        def execute_relu(input_tensors)
-          input = input_tensors.first
-          ::Torch::NN::Functional.relu(input)
+        def execute_relu(input_tensors, attributes)
+          ::Torch::NN::Functional.relu(input_tensors.first)
         end
 
         # Execute Add operation
         #
         # Parameters::
         # * *input_tensors* (Array<Torch::Tensor>): [input1, input2]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
         # Result::
         # * Torch::Tensor: The output tensor
-        def execute_add(input_tensors)
-          input1, input2 = input_tensors
-          input1 + input2
+        def execute_add(input_tensors, attributes)
+          input_tensors[0] + input_tensors[1]
         end
 
         # Execute MatMul operation
         #
         # Parameters::
         # * *input_tensors* (Array<Torch::Tensor>): [input1, input2]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
         # Result::
         # * Torch::Tensor: The output tensor
-        def execute_matmul(input_tensors)
-          input1, input2 = input_tensors
-          input1.matmul(input2)
+        def execute_matmul(input_tensors, attributes)
+          input_tensors[0].matmul(input_tensors[1])
         end
 
         # Execute Reshape operation
@@ -248,12 +210,7 @@ module RubyNeuralNets
         # Result::
         # * Torch::Tensor: The output tensor
         def execute_reshape(input_tensors, attributes)
-          input = input_tensors.first
-          shape_tensor = input_tensors[1]
-          
-          # Convert shape tensor to Ruby array
-          shape = shape_tensor.to_a
-          input.reshape(shape)
+          input_tensors.first.reshape(input_tensors[1].to_a)
         end
 
         # Execute Transpose operation
