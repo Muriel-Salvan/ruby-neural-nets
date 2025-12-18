@@ -107,7 +107,7 @@ module RubyNeuralNets
             new_stats[:cols], new_stats[:rows] = transform.size
           when TorchVision::Transforms::ImageMagickGrayscale, TorchVision::Transforms::VipsGrayscale
             new_stats[:channels] = 1
-          when TorchVision::Transforms::VipsRemoveAlpha
+          when TorchVision::Transforms::ImageMagickRemoveAlpha, TorchVision::Transforms::VipsRemoveAlpha
             new_stats[:channels] -= 1 if new_stats[:channels] == 2 || new_stats[:channels] == 4
           end
         end

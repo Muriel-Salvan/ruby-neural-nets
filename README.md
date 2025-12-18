@@ -616,6 +616,14 @@ bundle exec ruby bin/run --instability-checks=off --dataset=numbers --accuracy=C
 
 * Different seeds produce a variance of around 3% on dev accuracy, and less than 1% on training accuracy.
 
+### One layer model using ONNX and PyTorch
+
+```bash
+bundle exec ruby ./bin/run --dataset=colors --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=OnnxTorch --onnx-model=one_layer --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off
+```
+
+* We see a similar behavior as the OneLayer model (`bundle exec ruby ./bin/run --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Adam --loss=CrossEntropy --gradient-checks=off`), which validates the serialization and deserialization of the ONNX models.
+
 ### Performance benchmarks
 
 The benchmarks are made on CPU, under VirtualBox kubuntu, using 100 epochs on training on numbers dataset (caching all data preparation in memory), with 1 layer of 100 units, without minibatches.
