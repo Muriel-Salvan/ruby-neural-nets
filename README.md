@@ -17,6 +17,11 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
     - [Experiment Features](#experiment-features)
     - [Experiment Output](#experiment-output)
   - [Gradient Checking](#gradient-checking)
+  - [ONNX Model Generation](#onnx-model-generation)
+    - [Generating ONNX Models](#generating-onnx-models)
+    - [ONNX Model Structure](#onnx-model-structure)
+    - [Usage with Other Frameworks](#usage-with-other-frameworks)
+    - [Model Dependencies](#model-dependencies)
   - [Datasets](#datasets)
   - [Creating Custom Datasets](#creating-custom-datasets)
   - [Data Augmentation](#data-augmentation)
@@ -54,6 +59,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - **Training Framework**: Complete training loop with optimizers, loss functions, and accuracy metrics, featuring a simplified architecture with externalized GradientChecker, ProgressTracker, and Profiler components
 - **Weight Decay (L2 Regularization)**: Built-in L2 regularization support across all optimizers to prevent overfitting and improve generalization
 - **Gradient Checking**: Built-in gradient checking to verify analytical gradients against numerical approximations, configurable to run every n epochs
+- **ONNX Model Generation**: Generate ONNX (Open Neural Network Exchange) model files for deployment in other deep learning frameworks
 - **Profiling**: Optional epoch profiling with HTML reports generated using ruby-prof to analyze performance bottlenecks
 - **OpenBLAS Linear Algebra**: Fast matrix operations powered by OpenBLAS through numo-linalg for improved computational performance
 - **Visualization**: Confusion matrix plotting using Gnuplot, with real-time parameter visualization in progress tracker graphs
@@ -300,6 +306,47 @@ This allows for easy comparison of different architectures, hyperparameters, and
 ### Gradient Checking
 
 The framework includes built-in gradient checking to verify that analytical gradients match numerical approximations. This helps ensure the correctness of gradient computations. Gradient checking is enabled by default in the test script and will raise an exception if gradients are incorrect.
+
+### ONNX Model Generation
+
+The `generate_onnx` tool generates ONNX (Open Neural Network Exchange) model files that can be used with other deep learning frameworks and deployment environments.
+
+#### Generating ONNX Models
+
+To generate an ONNX model file:
+
+```bash
+bundle exec ruby bin/generate_onnx
+```
+
+This command:
+- Creates a OneLayer neural network model configured for 110x110x3 RGB images
+- Configures the model for 3-class classification
+- Uses the same architecture and parameter initialization as the Ruby implementation
+- Saves the model as `models/one_layer.onnx`
+- Outputs a success message when complete
+
+The generated ONNX model includes:
+- **Input Layer**: Accepts images with shape [1, 110×110×3] (batch_size, flattened_pixels)
+- **Dense Layer**: Fully connected layer with weights and bias
+- **Softmax Activation**: Produces class probabilities for the 3 output classes
+- **ONNX IR Version 8**: Compatible with modern ONNX runtime environments
+
+#### ONNX Model Structure
+
+The generated model follows the ONNX standard format with:
+- **Gemm Operation**: Implements the dense layer using matrix multiplication
+- **Softmax Operation**: Applied with axis=1 for proper class probability distribution
+- **Tensor Prototypes**: Properly typed float tensors for weights, biases, and inputs/outputs
+- **Graph Metadata**: Includes model name and producer information
+
+#### Usage with Other Frameworks
+
+The generated `models/one_layer.onnx` file can be:
+- Loaded in Python using `onnxruntime` for inference
+- Used with ONNX-compatible deployment tools
+- Integrated into web applications via ONNX Web Runtime
+- Converted to other formats (TensorFlow, TensorRT, etc.) using ONNX converters
 
 ### Datasets
 
@@ -597,6 +644,18 @@ bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability
 Analysis: Overall performance is consistent between experiments:
 * ImageMagick processing is more efficient than Vips (big factor), and results in better accuracy.
 * Torch and Numo Ruby implementation have very similar performance.
+
+## Contributing
+
+### Regenerating onnx_pb.rb
+
+onnx_pb.rb file contains the Protobuf definition of the ONNX format for Ruby. Here are the steps needed to regenerate it:
+1. Git clone https://github.com/onnx/onnx
+2. Install the protobuf compiler: `sudo apt install protobuf-compiler`
+3. Generate the Ruby protobuf bindings: `cd onnx/onnx && protoc --ruby_out=. onnx.proto`
+4. Move the generated onnx_pb.rb in lib/ruby_neural_nets/onnx/onnx_pb.rb
+
+The ONNX protobuf format is described [here](https://github.com/onnx/onnx/blob/main/docs/IR.md).
 
 ## License
 

@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'fiddle'
 gem 'get_process_mem'
+gem 'google-protobuf', '~> 3.21'
 gem 'irb'
 gem 'numo-gnuplot'
 gem 'numo-random'

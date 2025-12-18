@@ -2,8 +2,9 @@
 /.bundle
 /vendor
 
-# Don't include the datasets
+# Don't include the datasets and models
 /datasets
+/models
 
 # Don't include profiling outputs
 /profiling

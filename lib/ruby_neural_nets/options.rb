@@ -229,6 +229,14 @@ module RubyNeuralNets
             dropout_rate: {
               desc: 'Dropout rate for regularization.',
               value: 0.0
+            },
+            models_path: {
+              desc: 'Directory containing models',
+              value: './models'
+            },
+            onnx_model: {
+              desc: "Possible values are #{Dir.glob('./models/*.onnx').map { |file| File.basename(file, '.onnx') }.join(', ')}.",
+              value: 'one_layer'
             }
           }
         },

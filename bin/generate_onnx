@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+# TODO: Find why do I need that?
+$LOAD_PATH.unshift(File.expand_path("#{__dir__}/../lib"))
+
+# Make it easy to debug
+require 'byebug'
+
+# Include the test helpers to get access to onnx_one_layer method
+require_relative '../spec/ruby_neural_nets_test/helpers'
+include RubyNeuralNetsTest::Helpers
+
+# Generate ONNX content for 110x110x3 images to be classified to 3 classes
+onnx_content = onnx_one_layer(110, 110, 3, 3)
+
+# Ensure models directory exists
+require 'fileutils'
+FileUtils.mkdir_p('models')
+
+# Save model to Onnx file
+File.binwrite('models/one_layer.onnx', onnx_content)
+
+puts 'Onnx model written successfully'

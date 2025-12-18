@@ -5,6 +5,107 @@ require 'rmagick'
 module RubyNeuralNetsTest
   module Helpers
 
+    # Helper method to generate ONNX file content for a OneLayer model as a string.
+    #
+    # This method creates an ONNX model protobuf for a single layer neural network
+    # with the specified dimensions, and returns the encoded content as a string.
+    #
+    # Parameters::
+    # * *rows* (Integer): Number of rows per image
+    # * *cols* (Integer): Number of columns per image  
+    # * *channels* (Integer): Number of channels per image
+    # * *nbr_classes* (Integer): Number of classes to identify
+    # Result::
+    # * String: The ONNX model content as a binary string
+    def onnx_one_layer(rows, cols, channels, nbr_classes)
+      require 'google/protobuf'
+      require 'ruby_neural_nets/onnx/onnx_pb'
+      require 'ruby_neural_nets/models/one_layer'
+
+      # Instantiate a model with the specified dimensions
+      model = RubyNeuralNets::Models::OneLayer.new(rows, cols, channels, nbr_classes)
+      params_w = model.parameters(name: 'W').first
+      params_b = model.parameters(name: 'B').first
+
+      # Helper to create a TensorProto
+      def float_tensor(name:, dims:, values:)
+        Onnx::TensorProto.new(
+          name: name,
+          dims: dims,
+          data_type: Onnx::TensorProto::DataType::FLOAT,
+          float_data: values
+        )
+      end
+
+      # 1️⃣ Create model
+      protobuf_model = Onnx::ModelProto.new(
+        ir_version: 8,                 # Onnx IR version
+        opset_import: [Onnx::OperatorSetIdProto.new(domain: "", version: 13)],
+        producer_name: 'Ruby example',
+        graph: Onnx::GraphProto.new(
+          name: "OneLayerModel"
+        )
+      )
+
+      protobuf_graph = protobuf_model.graph
+
+      # 2️⃣ Define inputs
+      protobuf_graph.input << Onnx::ValueInfoProto.new(
+        name: 'input',
+        type: Onnx::TypeProto.new(
+          tensor_type: Onnx::TypeProto::Tensor.new(
+            elem_type: Onnx::TensorProto::DataType::FLOAT,
+            shape: Onnx::TensorShapeProto.new(
+              dim: [
+                Onnx::TensorShapeProto::Dimension.new(dim_value: 1), # batch
+                Onnx::TensorShapeProto::Dimension.new(dim_value: params_w.shape[1])  # feature size
+              ]
+            )
+          )
+        )
+      )
+
+      # 3️⃣ Create weights and bias for Dense (Gemm)
+      protobuf_graph.initializer << float_tensor(name: 'dense_weight', dims: params_w.shape, values: params_w.values.to_a.flatten)
+      protobuf_graph.initializer << float_tensor(name: 'dense_bias', dims: [params_b.shape[0]], values: params_b.values.to_a.flatten)
+
+      # 4️⃣ Create Gemm node (Dense)
+      protobuf_graph.node << Onnx::NodeProto.new(
+        op_type: 'Gemm',
+        input: %w[input dense_weight dense_bias],
+        output: %w[dense_out],
+        name: 'Dense1'
+      )
+
+      # 5️⃣ Create Softmax node
+      protobuf_graph.node << Onnx::NodeProto.new(
+        op_type: 'Softmax',
+        input: %w[dense_out],
+        output: %w[output],
+        name: 'Softmax1',
+        attribute: [Onnx::AttributeProto.new(name: 'axis', i: 1, type: :INT)]
+      )
+
+      # 6️⃣ Define output
+      protobuf_graph.output << Onnx::ValueInfoProto.new(
+        name: 'output',
+        type: Onnx::TypeProto.new(
+          tensor_type: Onnx::TypeProto::Tensor.new(
+            elem_type: Onnx::TensorProto::DataType::FLOAT,
+            shape: Onnx::TensorShapeProto.new(
+              dim: [
+                Onnx::TensorShapeProto::Dimension.new(dim_value: 1),
+                Onnx::TensorShapeProto::Dimension.new(dim_value: params_w.shape[0])
+              ]
+            )
+          )
+        )
+      )
+
+      # 7️⃣ Return model as encoded string
+      Onnx::ModelProto.encode(protobuf_model)
+    end
+
     # Helper method to generate PNG file content as a string.
     #
     # This method creates a PNG image with the specified dimensions and fills it with pixel values.
