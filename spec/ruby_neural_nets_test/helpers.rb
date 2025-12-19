@@ -5,10 +5,10 @@ require 'rmagick'
 module RubyNeuralNetsTest
   module Helpers
 
-    # Helper method to generate ONNX file content for a OneLayer model as a string.
+    # Helper method to generate ONNX file content for a OneLayer model with Gemm as a string.
     #
     # This method creates an ONNX model protobuf for a single layer neural network
-    # with the specified dimensions, and returns the encoded content as a string.
+    # with the specified dimensions using Gemm (Dense layer), and returns the encoded content as a string.
     #
     # Parameters::
     # * *rows* (Integer): Number of rows per image
@@ -17,7 +17,7 @@ module RubyNeuralNetsTest
     # * *nbr_classes* (Integer): Number of classes to identify
     # Result::
     # * String: The ONNX model content as a binary string
-    def onnx_one_layer(rows, cols, channels, nbr_classes)
+    def onnx_one_layer_gemm(rows, cols, channels, nbr_classes)
       require 'google/protobuf'
       require 'ruby_neural_nets/onnx/onnx_pb'
       require 'ruby_neural_nets/models/one_layer'
@@ -43,7 +43,7 @@ module RubyNeuralNetsTest
         opset_import: [Onnx::OperatorSetIdProto.new(domain: "", version: 13)],
         producer_name: 'Ruby example',
         graph: Onnx::GraphProto.new(
-          name: "OneLayerModel"
+          name: "OneLayerGemmModel"
         )
       )
 
@@ -103,6 +103,134 @@ module RubyNeuralNetsTest
       )
 
       # 7️⃣ Return model as encoded string
+      Onnx::ModelProto.encode(protobuf_model)
+    end
+
+    # Helper method to generate ONNX file content for a OneLayer model with Conv as a string.
+    #
+    # This method creates an ONNX model protobuf for a simple convolutional neural network
+    # with the specified dimensions using Conv operation, and returns the encoded content as a string.
+    #
+    # Parameters::
+    # * *rows* (Integer): Number of rows per image
+    # * *cols* (Integer): Number of columns per image  
+    # * *channels* (Integer): Number of channels per image
+    # * *nbr_classes* (Integer): Number of classes to identify
+    # Result::
+    # * String: The ONNX model content as a binary string
+    def onnx_one_layer_conv(rows, cols, channels, nbr_classes)
+      require 'google/protobuf'
+      require 'ruby_neural_nets/onnx/onnx_pb'
+
+      # Helper to create a TensorProto
+      def float_tensor(name:, dims:, values:)
+        Onnx::TensorProto.new(
+          name: name,
+          dims: dims,
+          data_type: Onnx::TensorProto::DataType::FLOAT,
+          float_data: values
+        )
+      end
+
+      # Define convolution parameters
+      out_channels = nbr_classes
+      kernel_size = 3
+      in_channels = channels
+
+      # Create random weights and bias for simplicity
+      conv_weight_size = out_channels * in_channels * kernel_size * kernel_size
+      conv_weight_values = Array.new(conv_weight_size) { rand(-0.1..0.1) }
+      conv_bias_values = Array.new(out_channels) { rand(-0.1..0.1) }
+
+      # 1️⃣ Create model
+      protobuf_model = Onnx::ModelProto.new(
+        ir_version: 8,                 # Onnx IR version
+        opset_import: [Onnx::OperatorSetIdProto.new(domain: "", version: 13)],
+        producer_name: 'Ruby example',
+        graph: Onnx::GraphProto.new(
+          name: "OneLayerConvModel"
+        )
+      )
+
+      protobuf_graph = protobuf_model.graph
+
+      # 2️⃣ Define inputs - Input format: [batch, channels, height, width]
+      protobuf_graph.input << Onnx::ValueInfoProto.new(
+        name: 'input',
+        type: Onnx::TypeProto.new(
+          tensor_type: Onnx::TypeProto::Tensor.new(
+            elem_type: Onnx::TensorProto::DataType::FLOAT,
+            shape: Onnx::TensorShapeProto.new(
+              dim: [
+                Onnx::TensorShapeProto::Dimension.new(dim_value: 1), # batch
+                Onnx::TensorShapeProto::Dimension.new(dim_value: in_channels), # channels
+                Onnx::TensorShapeProto::Dimension.new(dim_value: rows), # height
+                Onnx::TensorShapeProto::Dimension.new(dim_value: cols)  # width
+              ]
+            )
+          )
+        )
+      )
+
+      # 3️⃣ Create weights and bias for Conv
+      protobuf_graph.initializer << float_tensor(
+        name: 'conv_weight', 
+        dims: [out_channels, in_channels, kernel_size, kernel_size], 
+        values: conv_weight_values
+      )
+      protobuf_graph.initializer << float_tensor(
+        name: 'conv_bias', 
+        dims: [out_channels], 
+        values: conv_bias_values
+      )
+
+      # 4️⃣ Create Conv node
+      protobuf_graph.node << Onnx::NodeProto.new(
+        op_type: 'Conv',
+        input: %w[input conv_weight conv_bias],
+        output: %w[conv_out],
+        name: 'Conv1',
+        attribute: [
+          Onnx::AttributeProto.new(name: 'kernel_shape', ints: [kernel_size, kernel_size], type: :INTS),
+          Onnx::AttributeProto.new(name: 'strides', ints: [1, 1], type: :INTS),
+          Onnx::AttributeProto.new(name: 'pads', ints: [1, 1, 1, 1], type: :INTS) # padding to preserve size
+        ]
+      )
+
+      # 5️⃣ Create Global Average Pooling to reduce spatial dimensions
+      protobuf_graph.node << Onnx::NodeProto.new(
+        op_type: 'GlobalAveragePool',
+        input: %w[conv_out],
+        output: %w[pool_out],
+        name: 'GlobalPool1'
+      )
+
+      # 6️⃣ Create Softmax node
+      protobuf_graph.node << Onnx::NodeProto.new(
+        op_type: 'Softmax',
+        input: %w[pool_out],
+        output: %w[output],
+        name: 'Softmax1',
+        attribute: [Onnx::AttributeProto.new(name: 'axis', i: 1, type: :INT)]
+      )
+
+      # 7️⃣ Define output
+      protobuf_graph.output << Onnx::ValueInfoProto.new(
+        name: 'output',
+        type: Onnx::TypeProto.new(
+          tensor_type: Onnx::TypeProto::Tensor.new(
+            elem_type: Onnx::TensorProto::DataType::FLOAT,
+            shape: Onnx::TensorShapeProto.new(
+              dim: [
+                Onnx::TensorShapeProto::Dimension.new(dim_value: 1),
+                Onnx::TensorShapeProto::Dimension.new(dim_value: out_channels)
+              ]
+            )
+          )
+        )
+      )
+
+      # 8️⃣ Return model as encoded string
       Onnx::ModelProto.encode(protobuf_model)
     end
 

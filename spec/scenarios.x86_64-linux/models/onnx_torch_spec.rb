@@ -2,7 +2,7 @@ require "ruby_neural_nets/models/onnx_torch.#{RUBY_PLATFORM}"
 
 describe RubyNeuralNets::Models::OnnxTorch do
 
-  # Setup a models path containing an ONNX model for a 1 layer model
+  # Setup a models path containing an ONNX model for a 1 layer model with Gemm
   #
   # Parameters::
   # * Proc: Code block called with the models path created
@@ -11,7 +11,22 @@ describe RubyNeuralNets::Models::OnnxTorch do
   def with_one_layer_model
     with_test_dir(
       # Generate ONNX content for 110x110x3 images to be classified to 3 classes
-      'test_one_layer_model.onnx' => onnx_one_layer(110, 110, 3, 3)
+      'test_one_layer_model.onnx' => onnx_one_layer_gemm(110, 110, 3, 3)
+    ) do |models_path|
+      yield models_path
+    end
+  end
+
+  # Setup a models path containing an ONNX model for a 1 layer model with Conv
+  #
+  # Parameters::
+  # * Proc: Code block called with the models path created
+  #   * Parameters::
+  #     * *models_path* (String): The models directory
+  def with_one_layer_conv_model
+    with_test_dir(
+      # Generate ONNX content for 32x32x3 images to be classified to 3 classes using Conv
+      'test_one_layer_conv_model.onnx' => onnx_one_layer_conv(32, 32, 3, 3)
     ) do |models_path|
       yield models_path
     end
@@ -28,6 +43,22 @@ describe RubyNeuralNets::Models::OnnxTorch do
             parameters: {
               'dense_weight' => { size: 108900 },
               'dense_bias' => { size: 3 }
+            }
+          }
+        )
+        end
+    end
+
+    it 'returns the right model statistics for Conv model' do
+      with_one_layer_conv_model do |models_path|
+        # Setup test data: create a model with specific dimensions (32x32x3 images on 3 classes)
+        # Conv weights: [out_channels, in_channels, kernel_height, kernel_width] = [3, 3, 3, 3] = 81
+        # Conv bias: [out_channels] = [3] = 3
+        expect(described_class.new(32, 32, 3, 3, onnx_model: 'test_one_layer_conv_model', models_path:).stats).to eq(
+          {
+            parameters: {
+              'conv_weight' => { size: 81 },
+              'conv_bias' => { size: 3 }
             }
           }
         )
@@ -71,6 +102,39 @@ describe RubyNeuralNets::Models::OnnxTorch do
       end
     end
 
+    it 'produces expected output values for Conv model' do
+      with_one_layer_conv_model do |models_path|
+        output = described_class.new(32, 32, 3, 3, onnx_model: 'test_one_layer_conv_model', models_path:).
+          # Input: images in NCHW format [batch_size, channels, height, width] = [2, 3, 32, 32] for 2 samples
+          forward_propagate(::Torch.rand(2, 3, 32, 32, dtype: :double))
+
+        expect(output.shape).to eq([2, 3])
+        # Values should be reasonable (probabilities after softmax, should sum to 1)
+        expect(output.numo.to_a.flatten.all? { |v| v.is_a?(Float) }).to be true
+        
+        # Check that softmax output sums to approximately 1 for each sample
+        output_sums = output.sum(dim: 1).numo.to_a
+        output_sums.each do |sum|
+          expect(sum).to be_within(0.001).of(1.0)
+        end
+      end
+    end
+
+    it 'handles single sample input correctly for Conv model' do
+      with_one_layer_conv_model do |models_path|
+        output = described_class.new(32, 32, 3, 3, onnx_model: 'test_one_layer_conv_model', models_path:).
+          # Input: single image in NCHW format [batch_size, channels, height, width] = [1, 3, 32, 32]
+          forward_propagate(::Torch.rand(1, 3, 32, 32, dtype: :double))
+
+        expect(output.shape).to eq([1, 3])
+        # Values should be reasonable (probabilities after softmax)
+        expect(output.numo.to_a.flatten.all? { |v| v.is_a?(Float) }).to be true
+        
+        # Check that softmax output sums to approximately 1
+        expect(output.sum.item).to be_within(0.001).of(1.0)
+      end
+    end
+
   end
 
   describe '#gradient_descent' do
@@ -90,6 +154,41 @@ describe RubyNeuralNets::Models::OnnxTorch do
         model.initialize_back_propagation_cache
         # Input: flattened images, shape [batch_size, n_x] = [2, 36300]
         a = model.forward_propagate(::Torch.rand(2, 110 * 110 * 3, dtype: :double), train: true)
+
+        # Backward propagate
+        model.gradient_descent(nil, a, nil, ::Torch::NN::CrossEntropyLoss.new.call(a, ::Torch.tensor([0, 1], dtype: :long)))
+
+        # Update parameters
+        optimizer.step
+
+        # Check that gradients were computed by autograd
+        model.parameters.each do |param|
+          expect(param.torch_parameter.grad).not_to be_nil
+          expect(param.torch_parameter.grad.numo.to_a.flatten.any? { |g| g != 0 }).to be true
+        end
+
+        # Assert that parameters have been updated
+        model.parameters.each do |param|
+          expect(param.torch_parameter.numo).not_to eq(original_params[param.name])
+        end
+      end
+    end
+
+    it 'updates parameters correctly during gradient descent for Conv model' do
+      with_one_layer_conv_model do |models_path|
+        # Setup test data: create a model with specific dimensions (32x32x3 images on 3 classes)
+        model = described_class.new(32, 32, 3, 3, onnx_model: 'test_one_layer_conv_model', models_path:)
+
+        # Setup optimizer
+        optimizer = ::Torch::Optim::Adam.new(model.parameters.map(&:torch_parameter), lr: 0.1)
+
+        # Store original parameter values
+        original_params = model.parameters.map { |p| [p.name, p.torch_parameter.numo.dup] }.to_h
+
+        # Forward propagate
+        model.initialize_back_propagation_cache
+        # Input: images in NCHW format [batch_size, channels, height, width] = [2, 3, 32, 32]
+        a = model.forward_propagate(::Torch.rand(2, 3, 32, 32, dtype: :double), train: true)
 
         # Backward propagate
         model.gradient_descent(nil, a, nil, ::Torch::NN::CrossEntropyLoss.new.call(a, ::Torch.tensor([0, 1], dtype: :long)))

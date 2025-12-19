@@ -91,6 +91,10 @@ module RubyNeuralNets
         NODE_TYPE_TO_METHOD = {
           # General Matrix Multiplication (Dense layer)
           'Gemm' => :execute_gemm,
+          # Convolution operation
+          'Conv' => :execute_conv,
+          # Global Average Pooling operation
+          'GlobalAveragePool' => :execute_global_average_pool,
           # Softmax activation
           'Softmax' => :execute_softmax,
           # ReLU activation
@@ -156,6 +160,45 @@ module RubyNeuralNets
           output = output + beta * bias if bias
           
           output
+        end
+
+        # Execute Conv operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [input, weight, bias?]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The output tensor
+        def execute_conv(input_tensors, attributes)
+          # Extract padding attributes
+          pad_top, pad_left, pad_bottom, pad_right = find_attribute(attributes, 'pads')&.ints&.to_a || [0, 0, 0, 0]
+          
+          # Perform convolution using Torch's functional interface
+          # ONNX Conv weight format: [out_channels, in_channels, kernel_height, kernel_width]
+          # Torch conv2d expects the same format
+          ::Torch::NN::Functional.conv2d(
+            # Apply padding if needed
+            (pad_top + pad_left + pad_bottom + pad_right) > 0 ? ::Torch::NN::Functional.pad(input_tensors[0], [pad_left, pad_right, pad_top, pad_bottom]) : input_tensors[0],
+            input_tensors[1],
+            input_tensors[2],
+            stride: find_attribute(attributes, 'strides')&.ints&.to_a || [1, 1],
+            padding: 0, # We already applied padding manually
+            dilation: find_attribute(attributes, 'dilations')&.ints&.to_a || [1, 1],
+            groups: find_attribute(attributes, 'group')&.i || 1
+          )
+        end
+
+        # Execute Global Average Pooling operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [input]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The output tensor
+        def execute_global_average_pool(input_tensors, attributes)
+          # Global average pooling computes the average over the entire spatial dimensions
+          # For 4D input [batch, channels, height, width], it reduces to [batch, channels]
+          ::Torch::NN::Functional.adaptive_avg_pool2d(input_tensors.first, [1, 1]).squeeze(dim: 2).squeeze(dim: 2)
         end
 
         # Execute Softmax operation
