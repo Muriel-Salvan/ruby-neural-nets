@@ -62,14 +62,29 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 ### Prerequisites
 
-1. **Ruby**: Ensure Ruby is installed on your system
-2. **ImageMagick**: Download and install ImageMagick from [https://imagemagick.org/script/download.php](https://imagemagick.org/script/download.php)
-   - Make sure to include DLL and C/C++ headers during installation
+1. **Ruby**: Ensure Ruby is installed on your system.
+2. Install some Rubygems in your Ruby installation:
+   - **Bundler**: `gem install bundler`.
+3. **ImageMagick**: Download and install ImageMagick from [https://imagemagick.org/script/download.php](https://imagemagick.org/script/download.php)
+   - Make sure to include DLL and C/C++ headers during installation.
    - Use the Q16-x64-dll.exe version, not the HDRI or static version (details [https://github.com/rmagick/rmagick?tab=readme-ov-file#windows](here)).
-3. **Bundler**: Install Bundler if not already available: `gem install bundler`
-4. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.0+cu126/libtorch/`
+4. Linux specific dependencies: On Linux the following dependencies need to be installed (not needed on Windows):
+   - **libvips**: Install the libvips library (`apt install libvips42`).
+   - **gnuplot**: Install the gnuplot package (`apt install gnuplot`).
+   - **xrandr**: Install the X11 server utils package (`apt install x11-xserver-utils`).
+   - **protobuf**: Install Google's Protobuf (`apt install protobuf-compiler`).
+5. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.0+cu126/libtorch/`
     - On Linux, clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its Gemfile to depend on numo-narray-alt instead of numo-narray.
-5. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
+6. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
+7. **Cuda** and **CudNN** (optional): On WSL only, Cuda and CudNN can be installed this way:
+   1. First install NVidia drivers in Windows 11 (not WSL).
+   2. Link Cuda library properly in WSL (`sudo ln -s /usr/lib/wsl/lib/libcuda.so /usr/lib/libcuda.so`).
+   3. Install CudNN library:
+      - `wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb`
+      - `sudo dpkg -i cuda-keyring_1.1-1_all.deb`
+      - `sudo apt update`
+      - `sudo apt -y install cudnn`
+   4. Update the cache of ldconfig (`sudo ldconfig`).
 
 ### Setup
 
