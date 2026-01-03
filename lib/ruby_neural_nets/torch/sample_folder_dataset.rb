@@ -25,6 +25,10 @@ module RubyNeuralNets
 
       private
       
+      def find_classes(dir)
+        [@dataset.labels, @dataset.labels.map.with_index.to_h]
+      end
+
       def make_dataset(directory, class_to_idx, extensions, is_valid_file)
         @dataset.map { |(file, label)| [file, class_to_idx[label]] }
       end

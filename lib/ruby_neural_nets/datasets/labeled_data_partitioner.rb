@@ -36,11 +36,11 @@ module RubyNeuralNets
           next_index = 0
           [
             label,
-            partitions.to_h do |partition, partition_percentage|
+            partitions.map.with_index do |(partition, partition_percentage), idx_partition|
               first_index = next_index
-              next_index = next_index + (indexes.size * partition_percentage).round
+              next_index = idx_partition == partitions.size - 1 ? indexes.size : next_index + (indexes.size * partition_percentage).round
               [partition, shuffled_indexes[first_index..next_index - 1] || []]
-            end
+            end.to_h
           ]
         end
         # Partition the labeled indexes

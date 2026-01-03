@@ -219,4 +219,30 @@ RSpec.shared_examples 'data loader scenarios' do |options|
       end
     end
   end
+
+  describe 'datasets with no label sub-directories' do
+
+    it 'handles datasets with no sub-directories by using default label' do
+      with_test_dir(
+        'test_dataset/test_image_0.png' => png(1, 1, { color: [1] }),
+        'test_dataset/test_image_1.png' => png(1, 1, { color: [2] }),
+        'test_dataset/test_image_2.png' => png(1, 1, { color: [3] })
+      ) do |datasets_path|
+        data_loader = new_data_loader(datasets_path: datasets_path)
+        
+        # Should have only the default label
+        expect(data_loader.labels.sort).to eq(['no_label'])
+        
+        # Should have 3 elements in the dataset
+        expect(%i[training dev test].inject(0) { |sum, partition| sum + data_loader.dataset(partition).map { |minibatch| minibatch.size }.sum }).to eq(3)
+        
+        # Check that all elements have the default label
+        data_loader.dataset(:training).first.each_element.each do |x, y|
+          expect(options[:label_from].call(y)).to eq(0) # First (and only) label index should be 0
+        end
+      end
+    end
+
+  end
+  
 end

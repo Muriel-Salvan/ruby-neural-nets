@@ -11,6 +11,9 @@ module RubyNeuralNets
       #   Array<String>
       attr_reader :labels
 
+      # Name given to the default label when the dataset is not labelled
+      DEFAULT_LABEL = 'no_label'
+
       # Constructor
       #
       # Parameters::
@@ -24,9 +27,14 @@ module RubyNeuralNets
           select { |file| File.directory?(file) }.
           map { |file| File.basename(file) }.
           sort
-        @dataset = @labels.
-          map { |label| Dir.glob("#{root}/#{label}/*").sort.map { |file| [file, label] } }.
-          flatten(1)
+        if @labels.empty?
+          @labels = [DEFAULT_LABEL]
+          @dataset = Dir.glob("#{root}/*").sort.map { |file| [file, DEFAULT_LABEL] }
+        else
+          @dataset = @labels.
+            map { |label| Dir.glob("#{root}/#{label}/*").sort.map { |file| [file, label] } }.
+            flatten(1)
+        end
         raise "No data in dataset #{name}" if @dataset.empty?
       end
 
