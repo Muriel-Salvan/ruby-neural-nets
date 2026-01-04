@@ -93,6 +93,8 @@ module RubyNeuralNets
           'Gemm' => :execute_gemm,
           # Convolution operation
           'Conv' => :execute_conv,
+          # Max Pooling operation
+          'MaxPool' => :execute_max_pool,
           # Global Average Pooling operation
           'GlobalAveragePool' => :execute_global_average_pool,
           # Softmax activation
@@ -185,6 +187,40 @@ module RubyNeuralNets
             padding: 0, # We already applied padding manually
             dilation: find_attribute(attributes, 'dilations')&.ints&.to_a || [1, 1],
             groups: find_attribute(attributes, 'group')&.i || 1
+          )
+        end
+
+        # Execute MaxPool operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [input]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The output tensor
+        def execute_max_pool(input_tensors, attributes)
+          # Extract attributes
+          kernel_shape = find_attribute(attributes, 'kernel_shape')&.ints&.to_a || [2, 2]
+          strides = find_attribute(attributes, 'strides')&.ints&.to_a || [1, 1]
+          pads = find_attribute(attributes, 'pads')&.ints&.to_a || [0, 0, 0, 0]
+          dilations = find_attribute(attributes, 'dilations')&.ints&.to_a || [1, 1]
+          ceil_mode = find_attribute(attributes, 'ceil_mode')&.i || 0
+          
+          # Extract padding values
+          pad_top, pad_left, pad_bottom, pad_right = pads
+          
+          # Apply padding if needed
+          input = (pad_top + pad_left + pad_bottom + pad_right) > 0 ? 
+                   ::Torch::NN::Functional.pad(input_tensors.first, [pad_left, pad_right, pad_top, pad_bottom]) : 
+                   input_tensors.first
+          
+          # Perform max pooling using Torch's functional interface
+          ::Torch::NN::Functional.max_pool2d(
+            input,
+            kernel_size: kernel_shape,
+            stride: strides,
+            padding: 0, # We already applied padding manually
+            dilation: dilations,
+            ceil_mode: ceil_mode == 1
           )
         end
 
