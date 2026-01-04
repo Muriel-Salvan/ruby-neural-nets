@@ -116,7 +116,9 @@ module RubyNeuralNets
           # Constant operation
           'Constant' => :execute_constant,
           # Gather operation
-          'Gather' => :execute_gather
+          'Gather' => :execute_gather,
+          # Unsqueeze operation
+          'Unsqueeze' => :execute_unsqueeze
         }
 
         # Execute a single ONNX node
@@ -398,6 +400,37 @@ module RubyNeuralNets
           
           # Use Torch's gather function
           data.gather(axis, indices)
+        end
+
+        # Execute Unsqueeze operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [data, axes]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The unsqueezed tensor
+        def execute_unsqueeze(input_tensors, attributes)
+          data = input_tensors[0]
+          axes = input_tensors[1]
+          
+          # Convert axes to Ruby array if it's a tensor
+          axes_array = axes.respond_to?(:to_a) ? axes.to_a : [axes.item]
+          
+          # Sort axes in descending order to avoid affecting subsequent insertions
+          axes_array.sort!.reverse!
+          
+          result = data
+          axes_array.each do |axis|
+            # Handle negative axes
+            rank = result.dim
+            axis = axis < 0 ? axis + rank + 1 : axis
+            raise "Axis #{axis} is out of bounds for tensor with rank #{rank}" if axis < 0 || axis > rank
+            
+            # Use Torch's unsqueeze function
+            result = result.unsqueeze(axis)
+          end
+          
+          result
         end
 
         # Find an attribute by name
