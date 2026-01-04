@@ -110,7 +110,9 @@ module RubyNeuralNets
           # Transpose operation
           'Transpose' => :execute_transpose,
           # Concat operation
-          'Concat' => :execute_concat
+          'Concat' => :execute_concat,
+          # Shape operation
+          'Shape' => :execute_shape
         }
 
         # Execute a single ONNX node
@@ -325,6 +327,33 @@ module RubyNeuralNets
           
           # Concatenate all input tensors along the specified axis
           ::Torch.cat(input_tensors, dim: axis)
+        end
+
+        # Execute Shape operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [input]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The shape of the input tensor as a 1D tensor
+        def execute_shape(input_tensors, attributes)
+          # Extract the start and end attributes (optional)
+          attr_start = find_attribute(attributes, 'start')&.i || 0
+          attr_end = find_attribute(attributes, 'end')&.i
+
+          # Get the shape of the input tensor
+          shape = input_tensors.first.shape
+
+          # Convert to Ruby array and apply start/end slicing if specified
+          shape_array = shape.to_a
+          if attr_end
+            shape_array = shape_array[attr_start...attr_end]
+          else
+            shape_array = shape_array[attr_start..-1]
+          end
+
+          # Return as a 1D tensor with int64 dtype (standard for ONNX Shape)
+          ::Torch.tensor(shape_array, dtype: :int64)
         end
 
         # Find an attribute by name
