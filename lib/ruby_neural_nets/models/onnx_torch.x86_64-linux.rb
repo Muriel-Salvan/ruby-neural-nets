@@ -108,7 +108,9 @@ module RubyNeuralNets
           # Reshape operation
           'Reshape' => :execute_reshape,
           # Transpose operation
-          'Transpose' => :execute_transpose
+          'Transpose' => :execute_transpose,
+          # Concat operation
+          'Concat' => :execute_concat
         }
 
         # Execute a single ONNX node
@@ -308,6 +310,21 @@ module RubyNeuralNets
           else
             input.t
           end
+        end
+
+        # Execute Concat operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): List of input tensors to concatenate
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The concatenated output tensor
+        def execute_concat(input_tensors, attributes)
+          # Extract the axis attribute (default to 0 if not specified)
+          axis = find_attribute(attributes, 'axis')&.i || 0
+          
+          # Concatenate all input tensors along the specified axis
+          ::Torch.cat(input_tensors, dim: axis)
         end
 
         # Find an attribute by name
