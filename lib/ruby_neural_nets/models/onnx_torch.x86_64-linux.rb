@@ -114,7 +114,9 @@ module RubyNeuralNets
           # Shape operation
           'Shape' => :execute_shape,
           # Constant operation
-          'Constant' => :execute_constant
+          'Constant' => :execute_constant,
+          # Gather operation
+          'Gather' => :execute_gather
         }
 
         # Execute a single ONNX node
@@ -372,6 +374,30 @@ module RubyNeuralNets
           
           # Convert the TensorProto to a Torch tensor
           tensor_proto_to_torch(value_attribute.t)
+        end
+
+        # Execute Gather operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [data, indices]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The gathered tensor
+        def execute_gather(input_tensors, attributes)
+          data = input_tensors[0]
+          indices = input_tensors[1]
+          axis = find_attribute(attributes, 'axis')&.i || 0
+          
+          # Ensure axis is within valid range
+          rank = data.dim
+          axis = axis < 0 ? axis + rank : axis
+          raise "Axis #{axis} is out of bounds for tensor with rank #{rank}" if axis < 0 || axis >= rank
+          
+          # Convert indices to int64 dtype if needed (Torch's gather requires integer indices)
+          indices = indices.to(:int64) unless indices.dtype == :int32 || indices.dtype == :int64
+          
+          # Use Torch's gather function
+          data.gather(axis, indices)
         end
 
         # Find an attribute by name
