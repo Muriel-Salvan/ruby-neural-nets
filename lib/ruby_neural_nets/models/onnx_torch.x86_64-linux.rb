@@ -57,19 +57,58 @@ module RubyNeuralNets
         PROTOBUF_TO_TORCH_MAPPING = {
           Onnx::TensorProto::DataType::FLOAT => {
             data_method: :float_data,
-            unpack: 'f*'
+            unpack: 'f*',
+            torch_data_type: :float32
           },
           Onnx::TensorProto::DataType::DOUBLE => {
             data_method: :double_data,
-            unpack: 'd*'
+            unpack: 'd*',
+            torch_data_type: :float64
           },
           Onnx::TensorProto::DataType::INT32 => {
             data_method: :int32_data,
-            unpack: 'l*'
+            unpack: 'l*',
+            torch_data_type: :int32
           },
           Onnx::TensorProto::DataType::INT64 => {
             data_method: :int64_data,
-            unpack: 'q*'
+            unpack: 'q*',
+            torch_data_type: :int64
+          },
+          Onnx::TensorProto::DataType::UINT8 => {
+            data_method: :int32_data,
+            unpack: 'c*',
+            torch_data_type: :uint8
+          },
+          Onnx::TensorProto::DataType::INT8 => {
+            data_method: :int32_data,
+            unpack: 'c*',
+            torch_data_type: :int8
+          },
+          Onnx::TensorProto::DataType::UINT16 => {
+            data_method: :int32_data,
+            unpack: 's*',
+            torch_data_type: :int16
+          },
+          Onnx::TensorProto::DataType::INT16 => {
+            data_method: :int32_data,
+            unpack: 's*',
+            torch_data_type: :int16
+          },
+          Onnx::TensorProto::DataType::BOOL => {
+            data_method: :int32_data,
+            unpack: 'c*',
+            torch_data_type: :bool
+          },
+          Onnx::TensorProto::DataType::UINT32 => {
+            data_method: :int32_data,
+            unpack: 'l*',
+            torch_data_type: :int32
+          },
+          Onnx::TensorProto::DataType::UINT64 => {
+            data_method: :int64_data,
+            unpack: 'q*',
+            torch_data_type: :int64
           }
         }
 
@@ -120,7 +159,9 @@ module RubyNeuralNets
           # Unsqueeze operation
           'Unsqueeze' => :execute_unsqueeze,
           # Slice operation
-          'Slice' => :execute_slice
+          'Slice' => :execute_slice,
+          # Cast operation
+          'Cast' => :execute_cast
         }
 
         # Execute a single ONNX node
@@ -517,6 +558,29 @@ module RubyNeuralNets
           end
           
           result
+        end
+
+        # Execute Cast operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [input]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The casted tensor
+        def execute_cast(input_tensors, attributes)
+          input = input_tensors.first
+          
+          # Extract the target data type from the 'to' attribute
+          target_type_attr = find_attribute(attributes, 'to')
+          raise "Cast operation requires a 'to' attribute" if target_type_attr.nil?
+          
+          target_onnx_type = target_type_attr.i
+          target_mapping = PROTOBUF_TO_TORCH_MAPPING[target_onnx_type]
+          
+          raise "Unsupported target data type: #{target_onnx_type}" if target_mapping.nil? || target_mapping[:torch_data_type].nil?
+          
+          # Use Torch's type conversion function
+          input.to(target_mapping[:torch_data_type])
         end
 
         # Find an attribute by name
