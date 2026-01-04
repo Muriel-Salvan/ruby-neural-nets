@@ -209,6 +209,13 @@ This runs with default settings:
 - **`--minmax-normalize`**: Scale image data to always be within the range 0 to 1 (boolean, default: false)
   - Applies min-max normalization to pixel values during preprocessing, after possible grayscale conversion
 
+- **`--flatten`**: Flatten image data to 1D array for models that expect flat input vectors (boolean, default: true)
+  - Controls whether to flatten image data to 1D arrays during batching
+  - When enabled, applies Flatten transform after tensor conversion for models expecting flat input vectors
+  - When disabled, keeps image data in original multi-dimensional format (e.g., [channels, height, width])
+  - Useful for models that require different input shapes or when working with convolutional networks
+  - Example: `--flatten false` keeps image data in multi-dimensional format
+
 - **`--track-layer`**: Specify a layer name to be tracked for a given number of hidden units (string,integer, can be used multiple times)
   - Allows monitoring specific layer parameters during training
   - Format: `--track-layer layer_name,num_units`

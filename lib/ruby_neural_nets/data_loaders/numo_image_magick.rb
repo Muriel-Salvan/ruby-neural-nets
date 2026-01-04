@@ -31,7 +31,7 @@ module RubyNeuralNets
       # * *dataset* (String): The dataset name
       # * *max_minibatch_size* (Integer): Max size each minibatch should have
       # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
-      # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage [default: { training: 0.7, dev: 0.15, test: 0.15 }]
+      # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage
       # * *nbr_clones* (Integer): Number of times each element should be cloned
       # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
       # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1

@@ -29,8 +29,32 @@ describe RubyNeuralNets::DataLoaders::TorchVips do
         trim: false,
         resize: [1, 1],
         noise_intensity: 0.0,
-        minmax_normalize: false
+        minmax_normalize: false,
+        flatten: true
       }.merge(overrides)
     )
   end
+
+  describe 'flatten option' do
+        
+    it 'does not flatten data when flatten is false' do
+      with_test_dir(
+        'test_dataset/class_0/test_image_0.png' => png(3, 2, [1000, 2000, 3000, 4000, 5000, 6000])
+      ) do |datasets_path|
+        x_tensor = new_data_loader(datasets_path: datasets_path, resize: [3, 2], flatten: false).dataset(:training).first.each_element.first[0]
+        expect(x_tensor.shape).to eq [1, 2, 3]
+        expect_array_within(
+          x_tensor.to_a,
+          [
+            [
+              [0.015, 0.03, 0.045],
+              [0.06, 0.075, 0.09]
+            ]
+          ]
+        )
+      end
+    end
+
+  end
+
 end

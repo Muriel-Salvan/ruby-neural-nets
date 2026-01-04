@@ -32,7 +32,7 @@ module RubyNeuralNets
       # * *dataset* (String): The dataset name
       # * *max_minibatch_size* (Integer): Max size each minibatch should have
       # * *dataset_seed* (Integer): Random number generator seed for dataset shuffling and data order
-      # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage [default: { training: 0.7, dev: 0.15, test: 0.15 }]
+      # * *partitions* (Hash<Symbol, Float>): List of partitions and their proportion percentage
       # * *nbr_clones* (Integer): Number of times each element should be cloned
       # * *rot_angle* (Float): Maximum rotation angle in degrees for random image transformations
       # * *grayscale* (bool): Convert images to grayscale, reducing channels from 3 to 1
@@ -41,7 +41,8 @@ module RubyNeuralNets
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
-      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
+      # * *flatten* (bool): Flatten image data to 1D array for models that expect flat input vectors
+      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, flatten:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
@@ -50,6 +51,7 @@ module RubyNeuralNets
         @resize = resize
         @noise_intensity = noise_intensity
         @minmax_normalize = minmax_normalize
+        @flatten = flatten
         super(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       end
 
@@ -138,8 +140,10 @@ module RubyNeuralNets
               augmented_dataset.files_dataset,
               augmented_dataset.transforms + [
                 RubyNeuralNets::TorchVision::Transforms::Vips8Bits.new,
-                ::TorchVision::Transforms::ToTensor.new,
-                RubyNeuralNets::TorchVision::Transforms::Flatten.new,
+                ::TorchVision::Transforms::ToTensor.new
+              ] +
+              (@flatten ? [RubyNeuralNets::TorchVision::Transforms::Flatten.new] : []) +
+              [
                 RubyNeuralNets::TorchVision::Transforms::ToDouble.new
               ]
             ),

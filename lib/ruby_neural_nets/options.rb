@@ -209,6 +209,10 @@ module RubyNeuralNets
               desc: 'Scale image data to always be within the range 0 to 1.',
               value: false
             },
+            flatten: {
+              desc: 'Flatten image data to 1D array for models that expect flat input vectors.',
+              value: true
+            },
             partitions: {
               desc: 'Hash of partition names and their proportion percentages.',
               value: { training: 0.7, dev: 0.15, test: 0.15 }
