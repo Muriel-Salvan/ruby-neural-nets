@@ -118,7 +118,9 @@ module RubyNeuralNets
           # Gather operation
           'Gather' => :execute_gather,
           # Unsqueeze operation
-          'Unsqueeze' => :execute_unsqueeze
+          'Unsqueeze' => :execute_unsqueeze,
+          # Slice operation
+          'Slice' => :execute_slice
         }
 
         # Execute a single ONNX node
@@ -439,6 +441,79 @@ module RubyNeuralNets
             
             # Use Torch's unsqueeze function
             result = result.unsqueeze(axis)
+          end
+          
+          result
+        end
+
+        # Execute Slice operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [data, starts, ends, axes?, steps?]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The sliced tensor
+        def execute_slice(input_tensors, attributes)
+          data = input_tensors[0]
+          
+          # Extract slicing parameters from inputs or attributes
+          starts = input_tensors[1] ? input_tensors[1].to_a : (find_attribute(attributes, 'starts')&.ints&.to_a || [])
+          ends = input_tensors[2] ? input_tensors[2].to_a : (find_attribute(attributes, 'ends')&.ints&.to_a || [])
+          axes = input_tensors[3] ? input_tensors[3].to_a : (find_attribute(attributes, 'axes')&.ints&.to_a || [])
+          steps = input_tensors[4] ? input_tensors[4].to_a : (find_attribute(attributes, 'steps')&.ints&.to_a || [])
+          
+          # If no axes provided, assume all dimensions
+          if axes.empty?
+            axes = (0...data.dim).to_a
+          end
+          
+          # If no steps provided, assume step 1 for all dimensions
+          if steps.empty?
+            steps = [1] * axes.length
+          end
+          
+          # Ensure all arrays have the same length
+          raise "Slice parameters must have the same length" unless starts.length == ends.length && ends.length == axes.length && axes.length == steps.length
+          
+          # Build the slice indices for each dimension
+          slice_indices = Array.new(data.dim) do |dim|
+            # Check if this dimension is being sliced
+            slice_index = axes.index(dim)
+            if slice_index
+              # This dimension is being sliced
+              start = starts[slice_index]
+              end_dim = ends[slice_index]
+              step = steps[slice_index]
+              
+              # Handle negative indices
+              dim_size = data.shape[dim]
+              start = start < 0 ? start + dim_size : start
+              end_dim = end_dim < 0 ? end_dim + dim_size : end_dim
+              
+              # Clamp values to valid range
+              start = [start, 0].max
+              end_dim = [end_dim, dim_size].min
+              
+              # Create Python-style slice object
+              [start, end_dim, step]
+            else
+              # This dimension is not being sliced, take all elements
+              nil
+            end
+          end
+          
+          # Apply slicing using Torch's tensor slicing
+          result = data
+          slice_indices.each_with_index do |slice_params, dim|
+            if slice_params
+              start, end_dim, step = slice_params
+              # Convert to integers to ensure compatibility with Torch's slice method
+              start_i = start.to_i
+              length_i = (end_dim - start).to_i
+              step_i = step.to_i
+              # Use Torch's slice method for each dimension
+              result = result.slice(dim, start_i, length_i, step_i)
+            end
           end
           
           result
