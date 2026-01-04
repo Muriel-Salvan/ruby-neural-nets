@@ -331,8 +331,19 @@ module RubyNeuralNets
           # Extract the axis attribute (default to 0 if not specified)
           axis = find_attribute(attributes, 'axis')&.i || 0
           
-          # Concatenate all input tensors along the specified axis
-          ::Torch.cat(input_tensors, dim: axis)
+          # Handle zero-dimensional tensors by reshaping them to 1D
+          # This is necessary because Torch.cat cannot concatenate zero-dimensional tensors
+          processed_tensors = input_tensors.map do |tensor|
+            if tensor.dim == 0
+              # Convert zero-dimensional tensor to 1D tensor with single element
+              tensor.reshape([1])
+            else
+              tensor
+            end
+          end
+          
+          # Concatenate all processed tensors along the specified axis
+          ::Torch.cat(processed_tensors, dim: axis)
         end
 
         # Execute Shape operation
