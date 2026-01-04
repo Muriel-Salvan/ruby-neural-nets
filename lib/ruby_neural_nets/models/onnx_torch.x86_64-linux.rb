@@ -112,7 +112,9 @@ module RubyNeuralNets
           # Concat operation
           'Concat' => :execute_concat,
           # Shape operation
-          'Shape' => :execute_shape
+          'Shape' => :execute_shape,
+          # Constant operation
+          'Constant' => :execute_constant
         }
 
         # Execute a single ONNX node
@@ -354,6 +356,22 @@ module RubyNeuralNets
 
           # Return as a 1D tensor with int64 dtype (standard for ONNX Shape)
           ::Torch.tensor(shape_array, dtype: :int64)
+        end
+
+        # Execute Constant operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): Empty array for Constant operation
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The constant tensor
+        def execute_constant(input_tensors, attributes)
+          # Extract the value attribute which contains the constant tensor
+          value_attribute = find_attribute(attributes, 'value')
+          raise "Constant operation requires a 'value' attribute" if value_attribute.nil?
+          
+          # Convert the TensorProto to a Torch tensor
+          tensor_proto_to_torch(value_attribute.t)
         end
 
         # Find an attribute by name
