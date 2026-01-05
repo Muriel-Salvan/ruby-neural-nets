@@ -161,7 +161,9 @@ module RubyNeuralNets
           # Slice operation
           'Slice' => :execute_slice,
           # Cast operation
-          'Cast' => :execute_cast
+          'Cast' => :execute_cast,
+          # Resize operation
+          'Resize' => :execute_resize
         }
 
         # Execute a single ONNX node
@@ -581,6 +583,136 @@ module RubyNeuralNets
           
           # Use Torch's type conversion function
           input.to(target_mapping[:torch_data_type])
+        end
+
+        # Execute Resize operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [input, roi?, scales?, sizes?]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The resized tensor
+        def execute_resize(input_tensors, attributes)
+          input = input_tensors[0]
+          roi = input_tensors[1]
+          scales = input_tensors[2]
+          sizes = input_tensors[3]
+          
+          # Extract attributes
+          mode = find_attribute(attributes, 'mode')&.s || 'nearest'
+          coordinate_transformation_mode = find_attribute(attributes, 'coordinate_transformation_mode')&.s || 'half_pixel'
+          nearest_mode = find_attribute(attributes, 'nearest_mode')&.s || 'round_prefer_floor'
+          cubic_coeff_a = find_attribute(attributes, 'cubic_coeff_a')&.f || -0.75
+          exclude_outside = find_attribute(attributes, 'exclude_outside')&.i || 0
+          extrapolation_value = find_attribute(attributes, 'extrapolation_value')&.f || 0.0
+          
+          # Determine output size
+          if sizes
+            output_size = sizes.to_a
+          elsif scales
+            input_shape = input.shape.to_a
+            scales_array = scales.to_a
+            output_size = input_shape.each_with_index.map { |dim, i| (dim * scales_array[i]).to_i }
+          else
+            raise "Resize operation requires either 'sizes' or 'scales' input"
+          end
+          
+          # Convert ONNX mode to Torch mode and handle compatibility
+          torch_mode = interpolate_mode_from_onnx(mode)
+          
+          # Handle different input dimensions with proper mode compatibility
+          case input.dim
+          when 3
+            # 3D input: [batch, channels, height] or [channels, height, width]
+            if input.shape[0] == 1 && output_size.length == 2
+              # Assume input is [1, channels, height] and output_size is [channels, height]
+              output_size = [1] + output_size
+            end
+            # For 3D tensors, only nearest mode is reliably supported
+            result = ::Torch::NN::Functional.interpolate(
+              input,
+              size: output_size[1..-1],
+              mode: :nearest,
+              align_corners: false
+            )
+          when 4
+            # 4D input: [batch, channels, height, width]
+            # For 4D tensors, handle mode compatibility carefully
+            # Extract spatial dimensions (height, width) from output_size
+            if output_size.length >= 2
+              spatial_size = output_size[-2..-1] # Take last 2 dimensions for height, width
+            else
+              # If output_size only has 1 dimension, use it for both height and width
+              spatial_size = [output_size[0], output_size[0]]
+            end
+            
+            # Ensure spatial_size is properly formatted as integers
+            spatial_size = spatial_size.map(&:to_i)
+            
+            # Try using upsample instead of interpolate for better compatibility
+            debug { "Using upsample for 4D tensor interpolation (original mode: #{torch_mode})" }
+            
+            # Calculate scale factors for upsample
+            input_height, input_width = input.shape[2], input.shape[3]
+            target_height, target_width = spatial_size[0], spatial_size[1]
+            
+            # Use upsample with output size (correct signature)
+            result = ::Torch::NN.upsample_bilinear2d(
+              input,
+              [target_width, target_height],
+              coordinate_transformation_mode == 'align_corners'
+            )
+          when 5
+            # 5D input: [batch, channels, depth, height, width]
+            # Extract spatial dimensions (depth, height, width) from output_size
+            if output_size.length >= 3
+              spatial_size = output_size[-3..-1] # Take last 3 dimensions for depth, height, width
+            else
+              spatial_size = output_size
+            end
+            
+            # Ensure spatial_size is properly formatted as integers
+            spatial_size = spatial_size.map(&:to_i)
+            
+            # For 5D tensors, only nearest mode is reliably supported
+            result = ::Torch::NN::Functional.interpolate(
+              input,
+              size: spatial_size,
+              mode: :nearest,
+              align_corners: false
+            )
+          else
+            # For other dimensions, use nearest neighbor as safe fallback
+            spatial_size = output_size[-2..-1] # Resize only the last 2 dimensions
+            spatial_size = spatial_size.map(&:to_i)
+            result = ::Torch::NN::Functional.interpolate(
+              input,
+              size: spatial_size,
+              mode: :nearest,
+              align_corners: false
+            )
+          end
+          
+          result
+        end
+
+        # Convert ONNX interpolation mode to Torch mode
+        #
+        # Parameters::
+        # * *onnx_mode* (String): ONNX interpolation mode
+        # Result::
+        # * Symbol: Torch interpolation mode
+        def interpolate_mode_from_onnx(onnx_mode)
+          case onnx_mode
+          when 'nearest'
+            :nearest
+          when 'linear'
+            :bilinear
+          when 'cubic'
+            :bicubic
+          else
+            :nearest # Default to nearest
+          end
         end
 
         # Find an attribute by name
