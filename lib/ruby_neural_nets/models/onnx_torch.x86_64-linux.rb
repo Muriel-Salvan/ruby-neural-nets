@@ -140,6 +140,8 @@ module RubyNeuralNets
           'Softmax' => :execute_softmax,
           # ReLU activation
           'Relu' => :execute_relu,
+          # Sigmoid activation
+          'Sigmoid' => :execute_sigmoid,
           # Element-wise addition
           'Add' => :execute_add,
           # Matrix multiplication
@@ -312,6 +314,17 @@ module RubyNeuralNets
         # * Torch::Tensor: The output tensor
         def execute_relu(input_tensors, attributes)
           ::Torch::NN::Functional.relu(input_tensors.first)
+        end
+
+        # Execute Sigmoid operation
+        #
+        # Parameters::
+        # * *input_tensors* (Array<Torch::Tensor>): [input]
+        # * *attributes* (Array<Onnx::AttributeProto>): Node attributes
+        # Result::
+        # * Torch::Tensor: The output tensor
+        def execute_sigmoid(input_tensors, attributes)
+          ::Torch.sigmoid(input_tensors.first)
         end
 
         # Execute Add operation
