@@ -16,7 +16,7 @@
 ## One layer model on colors dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+bundle exec ruby ./bin/train --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
 ```
 
 The one-layer model provides:
@@ -29,10 +29,10 @@ With just this model, we can already validate a lot of the framework's capabilit
 * Using minibatches of small sizes validate that cost decreases in average while increasing in small steps.
 * Numerical instability can be seen when the Adam optimizer is used, but not when the constant learning rate is used. Those instabilities can be solved by using the N-Layer model that also includes a Batch-normalization layer.
 * Numerical instability can be seen when initialization of the parameters is done randomly instead of using Xavier Glorot's algorithm.
-* Invalid gradient computations lead to gradient checking issuing a lot of errors, which validates gradients checking itself. Those errors usually are visible in the first 5 epochs.
+* Invalid gradient computations lead to gradient checking issuing a lot of errors, which validates the gradients checking itself. Those errors usually are visible in the first 5 epochs.
 * Once gradient checking, loss function, forward and backward propagations are fixed, we see that gradient checking is nearly constant (around 1e-7) for all kinds of datasets, optimizers, minibatches sizes and models being used.
-* Adding gradient checking severly impacts performance, as forward propagation is run an additional 2 * nbr_gradient_checks_samples * nbr_parameters times.
-* Adding numerical instability checks severly impacts performance as well.
+* Adding gradient checking severely impacts performance, as forward propagation is run an additional 2 * nbr_gradient_checks_samples * nbr_parameters times.
+* Adding numerical instability checks severely impacts performance as well.
 
 Performance:
 * After 7 epochs, accuracy for both training and dev sets stay at 100%.
@@ -40,13 +40,13 @@ Performance:
 ## One layer model on numbers dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
+bundle exec ruby ./bin/train --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Constant
 ```
 
-Using the one-layer model on the numbers model validates the following:
+Using the one-layer model on the numbers dataset validates the following:
 * When using the Adam optimizer with a bigger learning rate (0.002) we see that accuracy and cost keep increasing and decreasing. That means the model can't learn anymore certainly due to gradient descent overshooting constantly over the minimum.
 * When using the Adam optimizer with a bigger learning rate (0.003) we see numerical instability starting the third epoch.
-* When using the N-layer model with 0 hidden layers (`--model=NLayers --layers=`), without BatchNormalization layers and with bias in Dense layers, we see the exact same behavior, which validates the computation of softmax gradients without the dz = a - y shortcut done in OneLayer model.
+* When using the N-layer model with 0 hidden layers (`--model=NLayers --layers=`), without BatchNormalization layers and with bias in Dense layers, we see the exact same behavior, which validates the computation of softmax gradients without the dz = a - y shortcut done in the OneLayer model.
 * We see that removing gradient checking is not modifying any result, proving that gradient checking does not leak in computations.
 
 Performance:
@@ -56,7 +56,7 @@ Performance:
 ## N layer model on colors dataset
 
 ```bash
-bundle exec ruby ./bin/run --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+bundle exec ruby ./bin/train --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
 Observations:
@@ -74,20 +74,20 @@ See [n_layer_model_on_numbers.md](n_layer_model_on_numbers.md) for details.
 ### Experiment [A]: Same parameters as with Numo implementation
 
 ```bash
-bundle exec ruby ./bin/run -dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=l0_linear.weight,8
+bundle exec ruby ./bin/train -dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --noise-intensity=0 --rot-angle=0 --nbr-clones=1 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --dropout=0 --weight-decay=0.00 --display-samples=4 --track-layer=l0_linear.weight,8
 ```
 
 ![A](torch_numbers/a.png)
 
-* We see the same behaviour as with Numo implementation, with a smaller dev accuracy (94%), resulting in 6% variance.
+* We see the same behaviour as with the Numo implementation, with a smaller dev accuracy (94%), resulting in 6% variance.
 * After using 64 bit floats in Torch, the accuracy goes up much faster.
 * We can check that using ::Torch::NN::LogSoftmax layer with ::Torch::NN::NLLLoss loss is equivalent (but slower) than not using this last layer with ::Torch::NN::CrossEntropyLoss.
-* We see that normalizing inputs between -1 and 1 with mean 0 instead of 0 and 1 with mean 0.5 does not change the preformance of the training.
+* We see that normalizing inputs between -1 and 1 with mean 0 instead of 0 and 1 with mean 0.5 does not change the performance of the training.
 
 ### Experiment [B]: Measuring model randomness effect
 
 ```bash
-bundle exec ruby bin/run --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --training-times=5
+bundle exec ruby bin/train --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --instability-checks=off --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --training-times=5
 ```
 
 ![B](torch_numbers/b.png)
@@ -97,7 +97,7 @@ bundle exec ruby bin/run --dataset=numbers --accuracy=ClassesTorch --model=NLaye
 ### Experiment [C]: Measuring dataset randomness effect
 
 ```bash
-bundle exec ruby bin/run --instability-checks=off --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2
+bundle exec ruby bin/train --instability-checks=off --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2 --experiment --dataset=numbers --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off --data-loader=TorchVips --grayscale=true --minmax-normalize=true --adaptive-invert=true --trim=true --resize=16,16 --layers=16 --max-minibatch-size=100000 --learning-rate=1e-2
 ```
 
 ![C](torch_numbers/c.png)
@@ -107,10 +107,10 @@ bundle exec ruby bin/run --instability-checks=off --dataset=numbers --accuracy=C
 ## One layer model using ONNX and PyTorch
 
 ```bash
-bundle exec ruby ./bin/run --dataset=colors --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=OnnxTorch --onnx-model=one_layer --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off
+bundle exec ruby ./bin/train --dataset=colors --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=OnnxTorch --onnx-model=one_layer --optimizer=AdamTorch --loss=CrossEntropyTorch --gradient-checks=off
 ```
 
-* We see a similar behavior as the OneLayer model (`bundle exec ruby ./bin/run --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Adam --loss=CrossEntropy --gradient-checks=off`), which validates the serialization and deserialization of the ONNX models.
+* We see a similar behavior as the OneLayer model (`bundle exec ruby ./bin/train --dataset=colors --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=OneLayer --optimizer=Adam --loss=CrossEntropy --gradient-checks=off`), which validates the serialization and deserialization of the ONNX models.
 
 ## Performance benchmarks
 
@@ -121,13 +121,13 @@ Here are the command lines used:
 
 ```bash
 # Numo using Vips
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=NumoVips --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy --display-graphs=false
+bundle exec ruby ./bin/train --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=NumoVips --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy --display-graphs=false
 # Numo using ImageMagick
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy --display-graphs=false
+bundle exec ruby ./bin/train --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam --loss=CrossEntropy --display-graphs=false
 # Torch using Vips
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=TorchVips --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --display-graphs=false
+bundle exec ruby ./bin/train --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=TorchVips --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --display-graphs=false
 # Torch using ImageMagick
-bundle exec ruby ./bin/run --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --display-graphs=false
+bundle exec ruby ./bin/train --dataset=numbers --gradient-checks=off --instability-checks=off --grayscale=true --minmax-normalize=true --trim=true --adaptive-invert=true --resize=110,110 --data-loader=TorchImageMagick --accuracy=ClassesTorch --model=NLayersTorch --optimizer=AdamTorch --loss=CrossEntropyTorch --display-graphs=false
 ```
 
 | Experiment              | Elapsed time | Memory consumption (MB) | Final dev accuracy |

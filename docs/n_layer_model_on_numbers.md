@@ -11,7 +11,7 @@
 - [Regularization](#regularization)
 
 ```bash
-bundle exec ruby ./bin/run --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
+bundle exec ruby ./bin/train --dataset=numbers --data-loader=NumoImageMagick --accuracy=ClassesNumo --model=NLayers --optimizer=Adam
 ```
 
 ## Observations without regularization

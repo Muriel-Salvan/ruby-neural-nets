@@ -97,18 +97,18 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 
 ## Usage
 
-### Running the Example
+### Training models
 
-The `run` tool provides a comprehensive CLI interface for configuring and running neural network training experiments. Use `bundle exec ruby bin/run --help` to see all available options.
+The `train` tool provides a comprehensive CLI interface for configuring and running neural network training experiments. Use `bundle exec ruby bin/train --help` to see all available options.
 
 Run the following command to see a complete example of training a neural network on the numbers dataset:
 
 ```bash
-bundle exec ruby bin/run --dataset=numbers
+bundle exec ruby bin/train --dataset=numbers
 ```
 
-This runs with default settings:
-- **Dataset**: Handwritten digits (0-9) from the numbers dataset
+This runs with the numbers dataset and default settings for other parameters:
+- **Dataset**: Handwritten digits (0-9) from the numbers dataset (to be downloaded separately from [Kaggle](https://www.kaggle.com/datasets/ox0000dead/numbers-classification-dataset))
 - **Model**: OneLayer (simple softmax classification)
 - **Optimizer**: Adam with learning rate 0.001
 - **Training**: 100 epochs, full batch (no minibatches)
@@ -273,7 +273,7 @@ The framework supports running multiple experiments with different configuration
 To run multiple experiments, separate them with the `--experiment` flag:
 
 ```bash
-bundle exec ruby bin/run \
+bundle exec ruby bin/train \
   --exp-id=experiment1 --dataset=colors --model=OneLayer --optimizer=Constant \
   --experiment \
   --exp-id=experiment2 --dataset=numbers --model=NLayers --optimizer=Adam
@@ -288,7 +288,7 @@ This will run two separate experiments:
 Each experiment can have completely different configurations:
 
 ```bash
-bundle exec ruby bin/run \
+bundle exec ruby bin/train \
   --exp-id=baseline --dataset=numbers --model=OneLayer --optimizer=Constant --nbr-epochs=50 \
   --experiment \
   --exp-id=optimized --dataset=numbers --model=NLayers --optimizer=Adam --learning-rate=0.01 --layers=100,50 \
@@ -427,13 +427,13 @@ Applied to prepare final training batches, these handle shuffling and data group
 
 ```bash
 # Basic data augmentation
-bundle exec ruby bin/run --dataset=numbers --nbr-clones 2 --rot-angle 30
+bundle exec ruby bin/train --dataset=numbers --nbr-clones 2 --rot-angle 30
 
 # Aggressive augmentation for small datasets
-bundle exec ruby bin/run --dataset=colors --nbr-clones 5 --rot-angle 90 --resize 64,64
+bundle exec ruby bin/train --dataset=colors --nbr-clones 5 --rot-angle 90 --resize 64,64
 
 # Augmentation with noise for robustness
-bundle exec ruby bin/run --dataset=numbers --noise-intensity 0.1 --rot-angle 45
+bundle exec ruby bin/train --dataset=numbers --noise-intensity 0.1 --rot-angle 45
 ```
 
 This configuration will:
