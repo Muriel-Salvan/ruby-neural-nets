@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/accuracy'
 require 'ruby_neural_nets/gradient_checker'
+require 'ruby_neural_nets/inferer'
 require 'ruby_neural_nets/logger'
 require 'ruby_neural_nets/losses/cross_entropy'
 require 'ruby_neural_nets/profiler'
@@ -9,7 +10,7 @@ require 'ruby_neural_nets/helpers'
 
 module RubyNeuralNets
 
-  class Trainer
+  class Trainer < Inferer
     include Logger
 
     # Constructor
@@ -40,13 +41,13 @@ module RubyNeuralNets
         max_epochs.times do |idx_epoch|
           # Evaluate on dev experiments first
           dev_experiments.each do |dev_exp|
-            result = process_experiment(dev_exp, idx_epoch, false)
+            result = process_experiment(dev_exp, idx_epoch)
             dev_losses[dev_exp.exp_id] = result[:loss] if result
           end
 
           # Train on training experiments
           training_experiments.each do |training_exp|
-            process_experiment(training_exp, idx_epoch, true)
+            process_experiment(training_exp, idx_epoch)
 
             # Check early stopping for this training experiment
             if training_exp.dev_experiment
@@ -80,55 +81,54 @@ module RubyNeuralNets
 
     private
 
+    # Prepare for processing a minibatch in training mode.
+    # This method initializes the backpropagation cache and performs trainer-specific preparation steps.
+    #
+    # Parameters::
+    # * *minibatch* (Minibatch): The minibatch to prepare for
+    # * *experiment* (Experiment): The experiment being processed
+    # * *idx_minibatch* (Integer): The current minibatch index
+    def prepare_for_minibatch(minibatch, experiment, idx_minibatch)
+      # Initialize backpropagation cache for training
+      experiment.model.initialize_back_propagation_cache
+      
+      # Save model parameters before training for gradient computation
+      if experiment.training_mode
+        @saved_parameters = {}
+        experiment.model.parameters.each do |p|
+          @saved_parameters[p.name] = p.values.dup
+        end
+      end
+      
+      # Start minibatch with optimizer if in training mode
+      experiment.optimizer.start_minibatch(idx_minibatch, minibatch.size) if experiment.training_mode
+    end
+
     # Process a single experiment for an epoch
     #
     # Parameters::
     # * *experiment* (Experiment): The experiment to process
     # * *idx_epoch* (Integer): Current epoch index
-    # * *is_training* (Boolean): Whether to perform training or evaluation
     # Result::
     # * Hash or nil: Hash with :loss and :accuracy keys, or nil if not applicable
-    def process_experiment(experiment, idx_epoch, is_training)
+    def process_experiment(experiment, idx_epoch)
       result = nil
       if idx_epoch < experiment.nbr_epochs
         experiment.profiler.profile(idx_epoch) do
           log_prefix = "[Epoch #{idx_epoch}] [Exp #{experiment.exp_id}]"
-          log "#{log_prefix} Start epoch #{is_training ? 'training' : 'evaluation'} on #{experiment.model.parameters.map(&:size).sum} parameters..."
-          experiment.optimizer.start_epoch(idx_epoch) if is_training
-          experiment.dataset.prepare_for_epoch
+          log "#{log_prefix} Start epoch #{experiment.training_mode ? 'training' : 'evaluation'} on #{experiment.model.parameters.map(&:size).sum} parameters..."
+          experiment.optimizer.start_epoch(idx_epoch) if experiment.training_mode
+          
           total_loss = 0.0
           total_accuracy = 0.0
           total_size = 0
-          experiment.dataset.each.with_index do |minibatch, idx_minibatch|
+          
+          # Use the parent infer method for common logic
+          infer(experiment, idx_epoch) do |minibatch, a, idx_minibatch|
             minibatch_log_prefix = "#{log_prefix} [Minibatch #{idx_minibatch}]"
-            log "#{minibatch_log_prefix} Retrieved minibatch of size #{minibatch.size}"
-            debug { "#{minibatch_log_prefix} Minibatch X input: #{data_to_str(minibatch.x)}" }
-            debug { "#{minibatch_log_prefix} Minibatch Y reference: #{data_to_str(minibatch.y)}" }
-            # Add code to dump minibatches if the experiment option is enabled
-            if experiment.dump_minibatches
-              # For each element in the minibatch
-              # Assuming the minibatch has an each_element method
-              minibatch.each_element.with_index do |(element, y), idx_element|
-                # Write the image using Helpers
-                Helpers.write_image(
-                  experiment.dataset.to_image(element),
-                  "./minibatches/#{experiment.exp_id}/#{idx_epoch}/#{idx_minibatch}/#{idx_element}_#{experiment.dataset.underlying_label(y)}.png"
-                )
-              end
-            end
-            experiment.optimizer.start_minibatch(idx_minibatch, minibatch.size) if is_training
-
-            # Forward propagation
-            experiment.model.initialize_back_propagation_cache
-            saved_parameters = {}
-            debug do
-              "#{minibatch_log_prefix} Model parameters:\n#{experiment.model.parameters.map do |p|
-                saved_parameters[p.name] = p.values.dup
-                "* #{p.name}: #{data_to_str(p.values)}"
-              end.join("\n")}"
-            end
-            a = experiment.model.forward_propagate(minibatch.x, train: is_training)
-            back_propagation_cache = is_training ? experiment.model.back_propagation_cache : nil
+            
+            # Store the back propagation cache before it gets reinitialized
+            back_propagation_cache = experiment.model.back_propagation_cache if experiment.training_mode
             # Make sure other processing like gradient checking won't modify the cache again
             experiment.model.initialize_back_propagation_cache
 
@@ -140,9 +140,9 @@ module RubyNeuralNets
             @progress_tracker.progress(experiment, idx_epoch, idx_minibatch, minibatch, a, loss)
 
             # Back propagation and gradient descent if training
-            if is_training
+            if experiment.training_mode
               experiment.gradient_checker.check_gradients_for(idx_epoch, minibatch) do
-                # Make sure gradient descent uses caches computed by the normal forward propagation
+                # Restore the back propagation cache for gradient descent
                 experiment.model.back_propagation_cache = back_propagation_cache
                 experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch.y, experiment.model), a, minibatch, loss)
               end
@@ -150,7 +150,7 @@ module RubyNeuralNets
               debug do
                 <<~EO_Debug
                   #{minibatch_log_prefix} Model parameters gradients:
-                  #{experiment.model.parameters.map { |p| "* #{p.name}: #{data_to_str(p.values - saved_parameters[p.name])}" }.join("\n")}"
+                  #{experiment.model.parameters.map { |p| "* #{p.name}: #{data_to_str(p.values - @saved_parameters[p.name])}" }.join("\n")}"
                 EO_Debug
               end
             end
@@ -161,6 +161,7 @@ module RubyNeuralNets
             total_accuracy += accuracy * minibatch.size
             total_size += minibatch.size
           end
+          
           average_loss = total_loss / total_size
           average_accuracy = total_accuracy / total_size
           result = { loss: average_loss, accuracy: average_accuracy }

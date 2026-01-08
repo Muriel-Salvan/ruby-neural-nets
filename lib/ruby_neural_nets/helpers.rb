@@ -23,6 +23,9 @@ module RubyNeuralNets
       Random.srand(model_seed)
       Numo::NArray.srand(model_seed)
       ::Torch.manual_seed(model_seed) if const_defined?('::Torch')
+      # Load OpenBLAS for efficient computations if available
+      require 'numo/linalg/linalg'
+      Numo::Linalg::Loader.load_openblas(ENV['OPEN_BLAS_PATH']) if RUBY_PLATFORM == 'x64-mingw-ucrt' && !ENV['OPEN_BLAS_PATH'].nil?
     end
 
     # Compute sigmoid of an array

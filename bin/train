@@ -16,10 +16,7 @@ require 'ruby_neural_nets/logger'
 RubyNeuralNets::Logger.debug_mode = options[:debug]
 
 require 'numo/gnuplot'
-require 'numo/linalg/linalg'
 require 'numo/narray'
-# Load a C extension for efficient computations
-Numo::Linalg::Loader.load_openblas(ENV['OPEN_BLAS_PATH']) if RUBY_PLATFORM == 'x64-mingw-ucrt' && !ENV['OPEN_BLAS_PATH'].nil?
 
 require 'ruby_neural_nets/helpers'
 RubyNeuralNets::Helpers.init(
@@ -30,23 +27,6 @@ RubyNeuralNets::Helpers.init(
 # Create the progress tracker for all experiments
 require 'ruby_neural_nets/progress_tracker'
 progress_tracker = RubyNeuralNets::ProgressTracker.new(display_graphs: options[:display_graphs])
-
-# Return a unique experiment id, taking into account previously instantiated experiments
-#
-# Parameters::
-# * *experiment_id* (String): Wishful experiment id
-# * *experiments* (Array<Experiment>): Existing experiments
-# Result::
-# * String: Unique experiment id
-def unique_experiment_id(experiment_id, experiments)
-  exp_id_candidate = experiment_id
-  exp_id_idx = 0
-  while experiments.find { |select_exp| select_exp.exp_id == exp_id_candidate }
-    exp_id_candidate = "#{experiment_id}_#{exp_id_idx}"
-    exp_id_idx += 1
-  end
-  exp_id_candidate
-end
 
 # Instantiate all experiments
 require 'ruby_neural_nets/experiment'
@@ -89,7 +69,7 @@ options.experiments.each do |exp_info|
     dev_experiment = nil
     if exp_info[:eval_dev][:value]
       dev_experiment = RubyNeuralNets::Experiment.new(
-        exp_id: unique_experiment_id("#{exp_info[:exp_id][:value]}_dev", experiments),
+        exp_id: RubyNeuralNets.unique_experiment_id("#{exp_info[:exp_id][:value]}_dev", experiments),
         dataset: data_loader.dataset(:dev),
         training_mode: false,
         accuracy:,
@@ -108,7 +88,7 @@ options.experiments.each do |exp_info|
       experiments << dev_experiment
     end
     experiments << RubyNeuralNets::Experiment.new(
-      exp_id: unique_experiment_id("#{exp_info[:exp_id][:value]}_training", experiments),
+      exp_id: RubyNeuralNets.unique_experiment_id("#{exp_info[:exp_id][:value]}_training", experiments),
       dataset: dataset_training,
       training_mode: true,
       accuracy:,

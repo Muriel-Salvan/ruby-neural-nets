@@ -476,7 +476,8 @@ For the noise example:
 - `lib/ruby_neural_nets/parameters/`: Parameter implementations (Torch)
 - `lib/ruby_neural_nets/profiler.rb`: Performance profiling with HTML reports
 - `lib/ruby_neural_nets/progress_tracker.rb`: Training progress visualization and tracking
-- `lib/ruby_neural_nets/trainer.rb`: Training loop implementation with gradient checking
+- `lib/ruby_neural_nets/inferer.rb`: Base inference class with common forward propagation logic
+- `lib/ruby_neural_nets/trainer.rb`: Training loop implementation that inherits from Inferer, with gradient checking and training-specific logic
 - `lib/ruby_neural_nets/torch/`: PyTorch integration utilities
 - `lib/ruby_neural_nets/torchvision/`: TorchVision transforms for Ruby
 - `lib/ruby_neural_nets/torchvision/transforms/`: Individual TorchVision transform implementations

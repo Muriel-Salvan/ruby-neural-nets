@@ -23,7 +23,7 @@ describe RubyNeuralNets::Trainer do
   let(:gradient_checker) { RubyNeuralNets::GradientChecker.new(gradient_checks: :off) }
 
   describe '#train' do
-    it 'tracks progress and reports correct cost and accuracy using real data loader with mocked file access' do
+    it 'tracks progress and reports correct cost and accuracy' do
       # Define the mocked filesystem
       files = {}
       (0..2).each do |class_idx|
