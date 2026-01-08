@@ -9,6 +9,9 @@ module RubyNeuralNets
     class ApplicationError < StandardError
     end
 
+    # Maximum channel value for ImageMagick images based on quantum depth
+    MAX_CHANNEL_VALUE = 2 ** Magick::Image.new(1, 1).quantum_depth - 1
+
     # Initialize the project
     #
     # Parameters::
@@ -179,6 +182,55 @@ module RubyNeuralNets
       else
         raise "Unknown colorspace: #{image.colorspace}"
       end
+    end
+
+    # Convert a Torch tensor to an ImageMagick image.
+    # The tensor should have shape [channels, height, width].
+    # Normalizes the data so that min value corresponds to 0 and max value corresponds to the highest possible channel value.
+    #
+    # Parameters::
+    # * *tensor* (Torch::Tensor): The input tensor with shape [channels, height, width]
+    # Result::
+    # * Magick::Image: The resulting ImageMagick image
+    def self.tensor_to_image(tensor)
+      # Validate tensor shape
+      raise "Tensor must have 3 dimensions [channels, height, width], got #{tensor.shape}" unless tensor.shape.length == 3
+      
+      channels, height, width = tensor.shape
+      raise "Tensor must have 1 or 3 channels, got #{channels}" unless [1, 3].include?(channels)
+
+      # Convert tensor to Numo array for easier manipulation
+      # Use to_a to convert Torch tensor to Ruby array, then create Numo array with correct shape
+      tensor_array = tensor.to_a
+      tensor_numo = Numo::DFloat[*tensor_array].reshape(channels, height, width)
+
+      # Normalize the tensor data to 0-1 range
+      tensor_min = tensor_numo.min
+      tensor_max = tensor_numo.max
+      normalized_tensor = (tensor_numo - tensor_min) / (tensor_max - tensor_min)
+
+      # Convert normalized tensor to ImageMagick pixel format
+      # Reshape from CHW [channels, height, width] to HWC [height, width, channels]
+      reshaped_tensor = normalized_tensor.transpose(1, 2, 0)
+
+      # Convert to flat array and scale to ImageMagick range
+      pixel_data = (reshaped_tensor.flatten * MAX_CHANNEL_VALUE).round
+
+      # Create ImageMagick image
+      image = Magick::Image.new(width, height)
+      
+      # Import pixels with appropriate format
+      pixels_map = channels == 1 ? 'I' : 'RGB'
+      image.import_pixels(0, 0, width, height, pixels_map, pixel_data.to_a)
+
+      # Set appropriate colorspace
+      if channels == 1
+        image.colorspace = Magick::GRAYColorspace
+      else
+        image.colorspace = Magick::RGBColorspace
+      end
+
+      image
     end
 
   end

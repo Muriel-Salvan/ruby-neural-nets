@@ -12,6 +12,7 @@
   - [Experiment [C]: Measuring dataset randomness effect](#experiment-c-measuring-dataset-randomness-effect)
 - [One layer model using ONNX and PyTorch](#one-layer-model-using-onnx-and-pytorch)
 - [Performance benchmarks](#performance-benchmarks)
+- [Inference on image segmentation](#inference-on-image-segmentation)
 
 ## One layer model on colors dataset
 
@@ -140,3 +141,15 @@ bundle exec ruby ./bin/train --dataset=numbers --gradient-checks=off --instabili
 Analysis: Overall performance is consistent between experiments:
 * ImageMagick processing is more efficient than Vips (big factor), and results in better accuracy.
 * Torch and Numo Ruby implementation have very similar performance.
+
+## Inference on image segmentation
+
+```bash
+bundle exec ruby bin/infer --dataset=car --data-loader=TorchImageMagick --resize=320,320 --flatten=false --model=OnnxTorch --onnx-model=u2net
+```
+
+Using the ONNX model [U2-Net from Hugging Face](https://huggingface.co/BritishWerewolf/U-2-Net) on its [example image](https://huggingface.co/ybelkada/segment-anything/resolve/main/assets/car.png), we have the following image segmentation.
+
+![Source image](u2net/car.png)
+
+![Segmented image](u2net/car_segmented.png)

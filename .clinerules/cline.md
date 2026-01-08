@@ -6,6 +6,7 @@
 4. Avoid catching cases of missing or unknown data explicitely: if the data is not in the expected format then a normal exception should be raised, without having to add extra code to support it. For example when accessing a hash's value that is supposed to exist, don't test for its presence (no need for "next if hash[key].nil?").
 5. Any code or test modification should be validated by running all the tests (not only the modified ones) using `bundle exec rspec`. It is expected that it runs without any error, with 100% of success rate.
 6. Any code or test modification should trigger a verification of the README.md file content, and make sure that all sections still have up-to-date content regarding the change.
+7. Text files should always end with a carriage return character.
 
 # Documentation rules
 
@@ -24,7 +25,7 @@
 
 1. Platform-agnostic unit test scenarios are all defined under the spec/scenarios directory.
 2. Platform-specific unit test scenarios are all defined under the spec/scenarios.#{RUBY_PLATFORM} directory.
-3. Cline should run unit tests only with WSL, using the following command line: `wsl --distribution Ubuntu -- bash -i -c '"$(ls /mnt/*/Env/Linux/Programs/bash/bash)" -i -c "bundle exec rspec"'`.
+3. Cline should run unit tests only with WSL, using the following command line: `wsl --distribution Ubuntu -- bash -i -c '\"$(ls /mnt/*/Env/Linux/Programs/bash/bash)\" -i -c \"bundle exec rspec\"'`.
 4. Unit test framework and helpers are all defined under the spec/ruby_neural_nets_test directory.
 5. Unit test scenarios are grouped per kind of interface being tested. Only the following kinds are tested:
   * Under spec/scenarios/data_loaders: All unit tests testing data loaders.

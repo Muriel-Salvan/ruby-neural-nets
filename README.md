@@ -9,7 +9,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
 - [Usage](#usage)
-  - [Running the Example](#running-the-example)
+  - [Training models](#training-models)
     - [Key Options Explained](#key-options-explained)
   - [Running Multiple Experiments](#running-multiple-experiments)
     - [Basic Multiple Experiments](#basic-multiple-experiments)
@@ -22,6 +22,9 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
     - [ONNX Model Structure](#onnx-model-structure)
     - [Usage with Other Frameworks](#usage-with-other-frameworks)
     - [Model Dependencies](#model-dependencies)
+  - [Inference](#inference)
+    - [Running Inference](#running-inference)
+    - [Inference Features](#inference-features)
   - [Datasets](#datasets)
   - [Creating Custom Datasets](#creating-custom-datasets)
   - [Data Augmentation](#data-augmentation)
@@ -69,24 +72,30 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
    - Make sure to include DLL and C/C++ headers during installation.
    - Use the Q16-x64-dll.exe version, not the HDRI or static version (details [https://github.com/rmagick/rmagick?tab=readme-ov-file#windows](here)).
 4. Linux specific dependencies: On Linux the following dependencies need to be installed (not needed on Windows):
+   - **xdg-utils**: Install XDG utilities to display images properly (`apt install xdg-open`).
    - **libmagickwand-dev**: Install development headers for ImageMagick (`apt install libmagickwand-dev`).
    - **libyaml-dev**: Install development headers of libyaml (`apt install libyaml-dev`).
    - **libvips**: Install the libvips library (`apt install libvips42`).
    - **gnuplot**: Install the gnuplot package (`apt install gnuplot`).
    - **xrandr**: Install the X11 server utils package (`apt install x11-xserver-utils`).
    - **protobuf**: Install Google's Protobuf (`apt install protobuf-compiler`).
-5. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.0+cu126/libtorch/`
+5. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/`
     - On Linux, clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its Gemfile to depend on numo-narray-alt instead of numo-narray.
 6. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
-7. **Cuda** and **CudNN** (optional): On WSL only, Cuda and CudNN can be installed this way:
+7. **Cuda** and **CudNN**: On WSL only, Cuda and CudNN can be installed this way:
    1. First install NVidia drivers in Windows 11 (not WSL).
    2. Link Cuda library properly in WSL (`sudo ln -s /usr/lib/wsl/lib/libcuda.so /usr/lib/libcuda.so`).
-   3. Install CudNN library:
+   3. Install CudNN library in WSL:
       - `wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb`
       - `sudo dpkg -i cuda-keyring_1.1-1_all.deb`
       - `sudo apt update`
       - `sudo apt -y install cudnn`
-   4. Update the cache of ldconfig (`sudo ldconfig`).
+   4. Install Cuda library in WSL:
+      - `wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb`
+      - `sudo dpkg -i cuda-keyring_1.1-1_all.deb`
+      - `sudo apt update`
+      - `sudo apt -y install cuda-toolkit-13-0`
+   5. Update the cache of ldconfig (`sudo ldconfig`).
 
 ### Setup
 
@@ -360,6 +369,50 @@ The generated `models/one_layer.onnx` file can be:
 - Used with ONNX-compatible deployment tools
 - Integrated into web applications via ONNX Web Runtime
 - Converted to other formats (TensorFlow, TensorRT, etc.) using ONNX converters
+
+### Inference
+
+The `infer` tool provides a comprehensive CLI interface for running inference experiments on trained neural network models. It allows you to load models and datasets, perform forward propagation, and visualize both input and output results.
+
+#### Running Inference
+
+To run inference on a trained model:
+
+```bash
+bundle exec ruby bin/infer --dataset=numbers --model=OneLayer
+```
+
+This command:
+- Loads the specified dataset (numbers) and displays statistics
+- Creates the specified model architecture (OneLayer) with appropriate dimensions
+- Performs forward propagation on the training data
+- Displays both source input images and inferred output images
+- Logs inference results for each minibatch processed
+
+The inference process works with all the same configuration options as training, including:
+- **Dataset Selection**: Choose from available datasets (colors, numbers)
+- **Model Architecture**: Select the neural network model (OneLayer, NLayers, etc.)
+- **Data Loader**: Choose the data processing pipeline (NumoImageMagick, NumoVips, TorchVips, TorchImageMagick)
+- **Image Transformations**: Apply the same preprocessing as training (resize, rotate, noise, grayscale, etc.)
+- **Model Parameters**: Configure layer sizes, dropout rates, and other model-specific settings
+- **Debug Options**: Enable debug logging and instability checks for detailed troubleshooting
+
+#### Inference Features
+
+- **Model Loading**: Instantiates the same model architecture used during training with matching parameters
+- **Data Processing**: Applies identical preprocessing and data augmentation as training (except for random augmentations)
+- **Forward Propagation**: Performs inference-only operations without backpropagation or parameter updates
+- **Visualization**: Displays both input and output images for each processed minibatch
+- **Progress Tracking**: Shows inference progress with detailed logging of each minibatch
+- **Experiment Support**: Supports multiple inference experiments with different configurations in a single run
+- **Debug Output**: Provides detailed logging of tensor shapes and values when debug mode is enabled
+
+The inference tool is particularly useful for:
+- **Model Validation**: Verifying that trained models produce expected outputs on test data
+- **Visual Inspection**: Examining how the model processes different types of input images
+- **Debugging**: Identifying issues with model architecture or data preprocessing
+- **Performance Analysis**: Understanding model behavior on specific samples or classes
+- **Result Exploration**: Comparing inputs and outputs to gain insights into model decision-making
 
 ### Datasets
 

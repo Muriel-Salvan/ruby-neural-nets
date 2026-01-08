@@ -38,7 +38,7 @@ experiments = []
 options.experiments.each do |exp_info|
   # Load data from the dataset
   data_loader = options.instantiate(exp_info[:data_loader])
-  dataset = data_loader.dataset(:test) # Use test dataset for inference
+  dataset = data_loader.dataset(:training)
 
   # Display some stats
   puts "===== Preparing inference experiment #{exp_info[:exp_id][:value]}:"
@@ -89,6 +89,10 @@ progress_tracker.session do
       # Here we could process the inferred data if needed
       # For now, we just let the Inferer handle the forward propagation
       log "Experiment #{experiment.exp_id} infered data for minibatch #{idx_minibatch}: #{data_to_str(a)}"
+      puts 'Displaying source image...'
+      RubyNeuralNets::Helpers.display_image(RubyNeuralNets::Helpers.tensor_to_image(minibatch.each_element.first[0]))
+      puts 'Displaying inferred image...'
+      RubyNeuralNets::Helpers.display_image(RubyNeuralNets::Helpers.tensor_to_image(a[0]))
     end
   end
 end
