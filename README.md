@@ -69,6 +69,8 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
    - Make sure to include DLL and C/C++ headers during installation.
    - Use the Q16-x64-dll.exe version, not the HDRI or static version (details [https://github.com/rmagick/rmagick?tab=readme-ov-file#windows](here)).
 4. Linux specific dependencies: On Linux the following dependencies need to be installed (not needed on Windows):
+   - **libmagickwand-dev**: Install development headers for ImageMagick (`apt install libmagickwand-dev`).
+   - **libyaml-dev**: Install development headers of libyaml (`apt install libyaml-dev`).
    - **libvips**: Install the libvips library (`apt install libvips42`).
    - **gnuplot**: Install the gnuplot package (`apt install gnuplot`).
    - **xrandr**: Install the X11 server utils package (`apt install x11-xserver-utils`).

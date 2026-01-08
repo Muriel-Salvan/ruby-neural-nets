@@ -24,7 +24,7 @@
 
 1. Platform-agnostic unit test scenarios are all defined under the spec/scenarios directory.
 2. Platform-specific unit test scenarios are all defined under the spec/scenarios.#{RUBY_PLATFORM} directory.
-3. Cline should run unit tests only with WSL, using the following command line: `wsl --distribution Ubuntu -- /mnt/d/Env/Linux/Programs/bash/bash -i -c "bundle exec rspec"`.
+3. Cline should run unit tests only with WSL, using the following command line: `wsl --distribution Ubuntu -- bash -i -c '"$(ls /mnt/*/Env/Linux/Programs/bash/bash)" -i -c "bundle exec rspec"'`.
 4. Unit test framework and helpers are all defined under the spec/ruby_neural_nets_test directory.
 5. Unit test scenarios are grouped per kind of interface being tested. Only the following kinds are tested:
   * Under spec/scenarios/data_loaders: All unit tests testing data loaders.

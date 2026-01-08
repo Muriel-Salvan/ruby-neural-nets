@@ -115,8 +115,7 @@ module RubyNeuralNets
     def close_graphs
       if @display_graphs
         log 'Wait for user to close graphs'
-        graphs_to_close = @graphs.values
-        graphs_to_close.map do |gnuplot_graph|
+        @graphs.values.map do |gnuplot_graph|
           Thread.new { gnuplot_graph.pause 'mouse close' }
         end.each(&:join)
       end
