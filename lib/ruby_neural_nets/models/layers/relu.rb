@@ -18,7 +18,7 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input, train)
-          back_propagation_cache[:input] = input
+          back_propagation_cache[:input] = input if train
           input.clip(0, nil)
         end
 

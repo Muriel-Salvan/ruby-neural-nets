@@ -26,10 +26,10 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input, train)
-          back_propagation_cache[:input] = input
           if train
             # Create dropout mask
             mask = (Numo::DFloat.new(input.shape).rand > @rate)
+            back_propagation_cache[:input] = input
             back_propagation_cache[:mask] = mask
             # Apply dropout and scale
             input * mask / (1 - @rate)

@@ -38,15 +38,17 @@ module RubyNeuralNets
         # Result::
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input, train)
-          back_propagation_cache[:input] = input
           mean = input.mean(axis: 1, keepdims: true)
-          back_propagation_cache[:mean] = mean
           var = ((input - mean) ** 2).mean(axis: 1, keepdims: true)
-          back_propagation_cache[:var] = var
           sqrt_var_eps = Numo::NMath.sqrt(var + @epsilon)
-          back_propagation_cache[:sqrt_var_eps] = sqrt_var_eps
           x_hat = (input - mean) / sqrt_var_eps
-          back_propagation_cache[:x_hat] = x_hat
+          if train
+            back_propagation_cache[:input] = input
+            back_propagation_cache[:mean] = mean
+            back_propagation_cache[:var] = var
+            back_propagation_cache[:sqrt_var_eps] = sqrt_var_eps
+            back_propagation_cache[:x_hat] = x_hat
+          end
           @gamma.values * x_hat + @beta.values
         end
 

@@ -20,7 +20,7 @@ module RubyNeuralNets
         # * Numo::DFloat: The corresponding layer output
         def forward_propagate(input, train)
           output = Helpers.softmax(input)
-          back_propagation_cache[:output] = output
+          back_propagation_cache[:output] = output if train
           Helpers.check_instability(output, types: %i[not_finite zero one])
           output
         end
