@@ -15,7 +15,7 @@ module RubyNeuralNets
       # Result::
       # * Float: Corresponding accuracy
       def measure(output_pred, minibatch)
-        (minibatch.y - final_prediction(output_pred)).abs.sum(axis: 0).eq(0).count.to_f / minibatch.size
+        (minibatch.target - final_prediction(output_pred)).abs.sum(axis: 0).eq(0).count.to_f / minibatch.size
       end
 
       # Get the confusion matrix between a predicted output and the real one
@@ -26,7 +26,7 @@ module RubyNeuralNets
       # Result::
       # * Numo::DFloat: Corresponding confusion matrix
       def confusion_matrix(output_pred, minibatch)
-        minibatch.y.dot(Numo::DFloat[final_prediction(output_pred).transpose][0, nil, nil])
+        minibatch.target.dot(Numo::DFloat[final_prediction(output_pred).transpose][0, nil, nil])
       end
 
       private

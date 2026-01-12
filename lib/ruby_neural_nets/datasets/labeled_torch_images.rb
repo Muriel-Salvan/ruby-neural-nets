@@ -42,10 +42,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        @torch_dataset[index]
+        input, target = @torch_dataset[index]
+        Sample.new(
+          -> { input },
+          -> { target }
+        )
       end
 
       # Return the underlying dataset's label for a given output label of this dataset layer

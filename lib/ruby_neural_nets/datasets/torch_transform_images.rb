@@ -1,5 +1,6 @@
 require 'torchvision'
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/sample'
 require 'ruby_neural_nets/torchvision/transforms/image_magick_grayscale'
 require 'ruby_neural_nets/torchvision/transforms/image_magick_resize'
 require 'ruby_neural_nets/torchvision/transforms/vips_grayscale'
@@ -29,11 +30,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        x, y = @dataset[index]
-        [@torch_transform.call(x), y]
+        sample = @dataset[index]
+        Sample.new(
+          -> { @torch_transform.call(sample.input) },
+          -> { sample.target }
+        )
       end
 
       # Get some images stats.

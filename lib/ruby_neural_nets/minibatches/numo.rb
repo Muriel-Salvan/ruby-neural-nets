@@ -5,40 +5,14 @@ module RubyNeuralNets
   module Minibatches
 
     # Minibatch implementation for Numo arrays
-    class Numo < RubyNeuralNets::Minibatch
-
-      # Constructor
-      #
-      # Parameters::
-      # * *x* (Numo::DFloat): The minibatch input data
-      # * *y* (Numo::DFloat): The minibatch labels
-      def initialize(x, y)
-        @x = x
-        @y = y
-      end
-
-      # Get the input data (X) of the minibatch
-      #
-      # Result::
-      # * Object: The minibatch input data
-      def x
-        @x
-      end
-
-      # Get the labels (Y) of the minibatch
-      #
-      # Result::
-      # * Object: The minibatch labels
-      def y
-        @y
-      end
+    class Numo < Minibatch
 
       # Get the size of the minibatch
       #
       # Result::
       # * Integer: The minibatch size
       def size
-        @y.shape[1]
+        target.shape[1]
       end
 
       # Iterate over individual elements of the minibatch
@@ -46,13 +20,15 @@ module RubyNeuralNets
       # Parameters::
       # * *block* (Proc): Block to call for each element
       #   * Parameters::
-      #     * *x* (Object): The element X being iterated on
-      #     * *y* (Object): The element Y being iterated on
+      #     * *sample* (Sample): The sample being iterated on
       def each_element
         return to_enum(:each_element) unless block_given?
         
         size.times do |i|
-          yield @x[true, i], @y[true, i]
+          yield RubyNeuralNets::Sample.new(
+            -> { input[true, i] },
+            -> { target[true, i] }
+          )
         end
       end
 

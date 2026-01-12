@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/sample'
 
 module RubyNeuralNets
 
@@ -22,12 +23,17 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        image, y = @dataset[index]
-        # Convert ImageMagick image to pixel array and flatten to Numo DFloat
-        [Numo::DFloat[*image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), @normalize)], y]
+        sample = @dataset[index]
+        Sample.new(
+          -> do
+            image = sample.input
+            # Convert ImageMagick image to pixel array and flatten to Numo DFloat
+            Numo::DFloat[*image.dispatch(0, 0, image.columns, image.rows, Helpers.image_pixels_map(image), @normalize)]
+          end,
+          -> { sample.target }
+        )
       end
 
       # Convert an element to an image

@@ -60,18 +60,18 @@ describe RubyNeuralNets::Models::OneLayer do
       model = described_class.new(2, 2, 1, 3)
 
       # Input: flattened images, shape [n_x, minibatch_size] = [4, 2]
-      x = Numo::DFloat[[1.0, 0.0],
-                       [0.0, 1.0],
-                       [0.0, 0.0],
-                       [0.0, 0.0]]
+      input = Numo::DFloat[[1.0, 0.0],
+                            [0.0, 1.0],
+                            [0.0, 0.0],
+                            [0.0, 0.0]]
 
       # Labels: one-hot encoded, shape [nbr_classes, minibatch_size] = [3, 2]
-      y = Numo::DFloat[[1.0, 0.0],
-                       [0.0, 1.0],
-                       [0.0, 0.0]]
+      target = Numo::DFloat[[1.0, 0.0],
+                             [0.0, 1.0],
+                             [0.0, 0.0]]
 
       # Create minibatch
-      minibatch = RubyNeuralNets::Minibatches::Numo.new(x, y)
+      minibatch = RubyNeuralNets::Minibatches::Numo.new(-> { input }, -> { target })
 
       # Setup optimizer and link to parameters (use Constant for predictable updates)
       optimizer = RubyNeuralNets::Optimizers::Constant.new(learning_rate: 0.1, weight_decay: 0.0)
@@ -84,14 +84,14 @@ describe RubyNeuralNets::Models::OneLayer do
       # Forward and backward propagate
       optimizer.start_minibatch(0, minibatch.size)
       model.initialize_back_propagation_cache
-      a = model.forward_propagate(x, train: true)
+      a = model.forward_propagate(input, train: true)
       # da is not used in the method, but we pass it as per signature
       model.gradient_descent(Numo::DFloat.zeros(3, 2), a, minibatch, 1.0)
 
       # Assert the parameter updates match expected gradient descent computation
       m = minibatch.size.to_f
-      dz_1 = a - y
-      expected_dw_1 = dz_1.dot(x.transpose) / m
+      dz_1 = a - target
+      expected_dw_1 = dz_1.dot(input.transpose) / m
       expected_db_1 = dz_1.sum(axis: 1, keepdims: true) / m
       learning_rate = 0.1
       expect_array_within(model.parameters(name: 'W').first.values.flatten, (original_w - learning_rate * expected_dw_1).flatten, 1e-6)

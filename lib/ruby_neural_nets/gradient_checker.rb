@@ -47,7 +47,9 @@ module RubyNeuralNets
         (!@loss.respond_to?(:weight_decay) || @loss.weight_decay == 0)
 
       if perform_gradient_checking
-        m = minibatch.x.shape[1]
+        minibatch_input = minibatch.input
+        minibatch_target = minibatch.target
+        m = minibatch.size
         parameters = @model.parameters
         d_theta_approx = Numo::DFloat[
           *parameters.map do |parameter|
@@ -57,9 +59,9 @@ module RubyNeuralNets
               value_original = parameter.values[idx_param]
               begin
                 parameter.values[idx_param] = value_original - gradient_checking_epsilon
-                cost_minus = @loss.compute_loss(@model.forward_propagate(minibatch.x), minibatch.y, @model).sum / m
+                cost_minus = @loss.compute_loss(@model.forward_propagate(minibatch_input), minibatch_target, @model).sum / m
                 parameter.values[idx_param] = value_original + gradient_checking_epsilon
-                cost_plus = @loss.compute_loss(@model.forward_propagate(minibatch.x), minibatch.y, @model).sum / m
+                cost_plus = @loss.compute_loss(@model.forward_propagate(minibatch_input), minibatch_target, @model).sum / m
                 (cost_plus - cost_minus) / (2 * gradient_checking_epsilon)
               ensure
                 parameter.values[idx_param] = value_original

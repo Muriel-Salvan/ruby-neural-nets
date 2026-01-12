@@ -37,12 +37,12 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * RubyNeuralNets::Minibatch: The minibatch containing X and Y data
+      # * RubyNeuralNets::Minibatch: The minibatch containing input and target data
       def [](index)
         minibatch = fetch_minibatch(index)
         RubyNeuralNets::Minibatches::Numo.new(
-          Numo::DFloat.vstack(minibatch.map { |(x, _y)| x }).transpose,
-          Numo::DFloat[*minibatch.map { |(_x, y)| y }].transpose
+          -> { Numo::DFloat.vstack(minibatch.map { |sample| sample.input }).transpose },
+          -> { Numo::DFloat[*minibatch.map { |sample| sample.target }].transpose }
         )
       end
 
@@ -63,7 +63,7 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Minibatch index
       # Result::
-      # * Array< [x, y] >: List of x, y data points for this minibatch
+      # * Array< Sample >: List of samples for this minibatch
       def fetch_minibatch(index)
         (index * @max_minibatch_size...[(index + 1) * @max_minibatch_size, @dataset.size].min).map { |index| @dataset[index] }
       end

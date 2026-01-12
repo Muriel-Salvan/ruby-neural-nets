@@ -189,16 +189,17 @@ module RubyNeuralNets
           cols = image_stats[:cols]
           channels = image_stats[:channels]
           # Detect the sample dimension based on minibatch_size
-          sample_dim = minibatch.x.shape.index(minibatch.size)
-          raise "Unable to determine sample dimension for minibatch.x shape #{minibatch.x.shape} and minibatch.size #{minibatch.size}" if sample_dim.nil?
+          minibatch_input = minibatch.input
+          sample_dim = minibatch_input.shape.index(minibatch.size)
+          raise "Unable to determine sample dimension for minibatch.input shape #{minibatch_input.shape} and minibatch.size #{minibatch.size}" if sample_dim.nil?
 
-          slices = Array.new(minibatch.x.shape.size, nil)
+          slices = Array.new(minibatch_input.shape.size, nil)
           plot_bitmaps(
             @graphs["Samples #{experiment.exp_id}"],
             [experiment.display_samples, minibatch.size].min.times.map do |idx_sample|
               slices[sample_dim] = idx_sample
               # TODO: Add a method in Minibatch that will return the slice without guessing the dimension by comparing batch size.
-              Numo::UInt8[*((minibatch.x[*slices].flatten * 255).round)].reshape(rows, cols, channels)
+              Numo::UInt8[*((minibatch_input[*slices].flatten * 255).round)].reshape(rows, cols, channels)
             end
           )
         end

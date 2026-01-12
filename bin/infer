@@ -90,7 +90,7 @@ progress_tracker.session do
       # For now, we just let the Inferer handle the forward propagation
       log "Experiment #{experiment.exp_id} infered data for minibatch #{idx_minibatch}: #{data_to_str(a)}"
       puts 'Displaying source image...'
-      RubyNeuralNets::Helpers.display_image(RubyNeuralNets::Helpers.tensor_to_image(minibatch.each_element.first[0]))
+      RubyNeuralNets::Helpers.display_image(RubyNeuralNets::Helpers.tensor_to_image(minibatch.each_element.first.input))
       puts 'Displaying inferred image...'
       RubyNeuralNets::Helpers.display_image(RubyNeuralNets::Helpers.tensor_to_image(a[0]))
     end

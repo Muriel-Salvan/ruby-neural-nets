@@ -104,18 +104,18 @@ describe RubyNeuralNets::Models::NLayers do
       model = described_class.new(2, 2, 1, 3, layers: [5], dropout_rate: 0.0)
 
       # Input: flattened images, shape [n_x, minibatch_size] = [4, 2]
-      x = Numo::DFloat[[1.0, 0.0],
-                       [0.0, 1.0],
-                       [0.0, 0.0],
-                       [0.0, 0.0]]
+      input = Numo::DFloat[[1.0, 0.0],
+                            [0.0, 1.0],
+                            [0.0, 0.0],
+                            [0.0, 0.0]]
 
       # Labels: one-hot encoded, shape [nbr_classes, minibatch_size] = [3, 2]
-      y = Numo::DFloat[[1.0, 0.0],
-                       [0.0, 1.0],
-                       [0.0, 0.0]]
+      target = Numo::DFloat[[1.0, 0.0],
+                             [0.0, 1.0],
+                             [0.0, 0.0]]
 
       # Create minibatch
-      minibatch = RubyNeuralNets::Minibatches::Numo.new(x, y)
+      minibatch = RubyNeuralNets::Minibatches::Numo.new(-> { input }, -> { target })
 
       # Setup loss function
       loss = RubyNeuralNets::Losses::CrossEntropy.new
@@ -130,9 +130,9 @@ describe RubyNeuralNets::Models::NLayers do
       # Forward and backward propagate
       optimizer.start_minibatch(0, minibatch.size)
       model.initialize_back_propagation_cache
-      a = model.forward_propagate(x, train: true)
+      a = model.forward_propagate(input, train: true)
       # da is computed using the loss function
-      da = loss.compute_loss_gradient(a, y, model)
+      da = loss.compute_loss_gradient(a, target, model)
       model.gradient_descent(da, a, minibatch, 1.0)
 
       # Assert that parameters have been updated

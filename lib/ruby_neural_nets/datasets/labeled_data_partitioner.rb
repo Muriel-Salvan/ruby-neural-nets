@@ -25,7 +25,8 @@ module RubyNeuralNets
         # For each label, get the indexes of elements belonging to that label
         # Hash< label, Array< index > >
         labeled_indexes = {}
-        @dataset.each_with_index do |(_x, label), index|
+        @dataset.each_with_index do |sample, index|
+          label = sample.target
           labeled_indexes[label] = [] unless labeled_indexes.key?(label)
           labeled_indexes[label] << index
         end

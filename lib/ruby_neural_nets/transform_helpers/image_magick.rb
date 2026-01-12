@@ -191,7 +191,7 @@ module RubyNeuralNets
       # Result::
       # * Integer: The max value a pixel channel can have
       def self.max_channel_value(image)
-        2 ** image.quantum_depth - 1
+        2 ** image.channel_depth - 1
       end
 
     end

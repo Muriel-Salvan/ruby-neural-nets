@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/transform_helpers/vips'
+require 'ruby_neural_nets/sample'
 
 module RubyNeuralNets
 
@@ -14,11 +15,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        image, y = @dataset[index]
-        [TransformHelpers::Vips.adaptive_invert(image), y]
+        sample = @dataset[index]
+        Sample.new(
+          -> { TransformHelpers::Vips.adaptive_invert(sample.input) },
+          -> { sample.target }
+        )
       end
 
     end

@@ -133,7 +133,8 @@ module RubyNeuralNets
             experiment.model.initialize_back_propagation_cache
 
             # Compute the loss for the minibatch (including L2 regularization if applicable)
-            loss = experiment.loss.compute_loss(a, minibatch.y, experiment.model)
+            minibatch_target = minibatch.target
+            loss = experiment.loss.compute_loss(a, minibatch_target, experiment.model)
             debug { "#{minibatch_log_prefix} Loss computed: #{data_to_str(loss)}" }
 
             # Display progress
@@ -144,7 +145,7 @@ module RubyNeuralNets
               experiment.gradient_checker.check_gradients_for(idx_epoch, minibatch) do
                 # Restore the back propagation cache for gradient descent
                 experiment.model.back_propagation_cache = back_propagation_cache
-                experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch.y, experiment.model), a, minibatch, loss)
+                experiment.model.gradient_descent(experiment.loss.compute_loss_gradient(a, minibatch_target, experiment.model), a, minibatch, loss)
               end
               experiment.optimizer.step
               debug do

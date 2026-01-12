@@ -80,7 +80,7 @@ module RubyNeuralNets
           [
             label,
             {
-              nbr_elements: @partitioned_dataset.select { |(_x, select_label)| select_label == label }.size
+              nbr_elements: @partitioned_dataset.select { |sample| sample.target == label }.size
             }
           ]
         end

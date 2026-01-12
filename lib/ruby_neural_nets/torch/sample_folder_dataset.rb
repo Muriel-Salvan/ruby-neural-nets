@@ -30,7 +30,7 @@ module RubyNeuralNets
       end
 
       def make_dataset(directory, class_to_idx, extensions, is_valid_file)
-        @dataset.map { |(file, label)| [file, class_to_idx[label]] }
+        @dataset.map { |sample| [sample.input, class_to_idx[sample.target]] }
       end
 
     end

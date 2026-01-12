@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/sample'
 
 module RubyNeuralNets
 
@@ -17,7 +18,7 @@ module RubyNeuralNets
       # * *dataset* (Dataset): Dataset providing labels to be one-hot encoded
       def initialize(dataset)
         super
-        labels = dataset.group_by { |x, label| label }.keys.sort
+        labels = dataset.group_by { |sample| sample.target }.keys.sort
         # Compute the map of one-hot vectors corresponding to each label
         # Hash< label, Array< Integer > >
         @one_hot_labels = labels.map.with_index do |label, idx|
@@ -35,11 +36,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        x, label = @dataset[index]
-        [x, @one_hot_labels[label]]
+        sample = @dataset[index]
+        Sample.new(
+          -> { sample.input },
+          -> { @one_hot_labels[sample.target] }
+        )
       end
 
       # Return the underlying dataset's label for a given output label of this dataset layer

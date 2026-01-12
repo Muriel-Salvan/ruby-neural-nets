@@ -15,7 +15,7 @@ module RubyNeuralNets
       # Result::
       # * Float: Corresponding accuracy
       def measure(output_pred, minibatch)
-        final_prediction(output_pred).eq(minibatch.y).sum.item.to_f / minibatch.size
+        final_prediction(output_pred).eq(minibatch.target).sum.item.to_f / minibatch.size
       end
 
       # Get the confusion matrix between a predicted output and the real one
@@ -27,7 +27,7 @@ module RubyNeuralNets
       # * Numo::DFloat: Corresponding confusion matrix
       def confusion_matrix(output_pred, minibatch)
         nbr_classes = output_pred.shape[1]
-        true_one_hot = ::Torch.zeros(minibatch.size, nbr_classes).scatter(1, minibatch.y.reshape(minibatch.size, 1), 1)
+        true_one_hot = ::Torch.zeros(minibatch.size, nbr_classes).scatter(1, minibatch.target.reshape(minibatch.size, 1), 1)
         pred_one_hot = ::Torch.zeros(minibatch.size, nbr_classes).scatter(1, final_prediction(output_pred).reshape(minibatch.size, 1), 1)
         true_one_hot.t.matmul(pred_one_hot).numo
       end

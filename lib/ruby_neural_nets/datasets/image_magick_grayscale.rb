@@ -1,5 +1,6 @@
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/transform_helpers/image_magick'
+require 'ruby_neural_nets/sample'
 
 module RubyNeuralNets
 
@@ -13,11 +14,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        image, y = @dataset[index]
-        [TransformHelpers::ImageMagick.grayscale(image), y]
+        sample = @dataset[index]
+        Sample.new(
+          -> { TransformHelpers::ImageMagick.grayscale(sample.input) },
+          -> { sample.target }
+        )
       end
 
       # Get some images stats.

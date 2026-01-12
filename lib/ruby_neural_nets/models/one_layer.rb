@@ -57,12 +57,12 @@ module RubyNeuralNets
       # * *loss* (Object): The computed loss
       def gradient_descent(da, a, minibatch, loss)
         m = minibatch.size
-        y = minibatch.y
+        target = minibatch.target
         # Backward propagate the minibatch
         # For softmax + cross-entropy, use the combined derivative
-        # dJ/dz = a - y (mathematically equivalent to the full chain rule)
+        # dJ/dz = a - target (mathematically equivalent to the full chain rule)
         # Shape [nbr_classes, minibatch.size]
-        dz_1 = a - y
+        dz_1 = a - target
 
         # Shape [nbr_classes, n_x]
         dw_1 = dz_1.dot(@back_propagation_cache[:x].transpose) / m

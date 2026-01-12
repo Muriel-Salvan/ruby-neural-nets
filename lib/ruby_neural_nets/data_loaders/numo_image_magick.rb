@@ -64,8 +64,6 @@ module RubyNeuralNets
         # Get the one-hot vector for the requested label
         target_one_hot = elements_dataset.one_hot_labels[label]
 
-        # Find a sample with the matching one-hot vector
-        found_x, _found_y = elements_dataset.find { |_select_x, select_y| select_y == target_one_hot }
         # Get image stats for dimensions
         stats = image_stats
         rows = stats[:rows]
@@ -86,9 +84,13 @@ module RubyNeuralNets
           else
             raise "Unsupported number of channels for display: #{image_stats[:channels]}"
           end,
-          # Convert normalized pixel data back to ImageMagick format
-          # The data is in 0-1 range, need to convert back to 0-65535 range
-          found_x.flatten.map { |pixel_value| (pixel_value * 65535).round }
+          # Find a sample with the matching one-hot vector
+          elements_dataset.find { |sample| sample.target == target_one_hot }.
+            input.
+            flatten.
+            # Convert normalized pixel data back to ImageMagick format
+            # The data is in 0-1 range, need to convert back to 0-65535 range
+            map { |pixel_value| (pixel_value * 65535).round }
         )
 
         log "Display sample image of label #{label} from #{dataset_type} dataset"

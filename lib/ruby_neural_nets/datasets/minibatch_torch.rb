@@ -17,7 +17,7 @@ module RubyNeuralNets
       def initialize(dataset, max_minibatch_size: 1000)
         super
         # Don't use shuffle, as the dataset given is an EpochShuffler and already handles shuffling data before it gets batched.
-        @torch_data_loader = ::Torch::Utils::Data::DataLoader.new(@dataset, batch_size: @max_minibatch_size, shuffle: false)
+        @torch_data_loader = ::Torch::Utils::Data::DataLoader.new(@dataset.map { |sample| [sample.input, sample.target] }, batch_size: @max_minibatch_size, shuffle: false)
       end
 
       # Access an element of the dataset
@@ -40,7 +40,7 @@ module RubyNeuralNets
         return to_enum(:each) unless block_given?
         
         @torch_data_loader.each do |(inputs, labels)|
-          yield RubyNeuralNets::Minibatches::Torch.new(inputs, labels)
+          yield RubyNeuralNets::Minibatches::Torch.new(-> { inputs }, -> { labels })
         end
       end
 

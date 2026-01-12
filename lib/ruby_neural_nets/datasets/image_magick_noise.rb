@@ -1,6 +1,7 @@
 require 'ruby_neural_nets/helpers'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/transform_helpers/image_magick'
+require 'ruby_neural_nets/sample'
 require 'numo/narray'
 
 module RubyNeuralNets
@@ -27,11 +28,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        image, y = @dataset[index]
-        [TransformHelpers::ImageMagick.gaussian_noise(image, @noise_intensity, @numo_rng), y]
+        sample = @dataset[index]
+        Sample.new(
+          -> { TransformHelpers::ImageMagick.gaussian_noise(sample.input, @noise_intensity, @numo_rng) },
+          -> { sample.target }
+        )
       end
 
     end

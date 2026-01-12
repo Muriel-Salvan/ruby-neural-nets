@@ -29,17 +29,18 @@ module RubyNeuralNets
         experiment.dataset.each.with_index do |minibatch, idx_minibatch|
           minibatch_log_prefix = "#{log_prefix} [Minibatch #{idx_minibatch}]"
           log "#{minibatch_log_prefix} Retrieved minibatch of size #{minibatch.size}"
-          debug { "#{minibatch_log_prefix} Minibatch X input: #{data_to_str(minibatch.x)}" }
-          debug { "#{minibatch_log_prefix} Minibatch Y reference: #{data_to_str(minibatch.y)}" }
+          minibatch_input = minibatch.input
+          debug { "#{minibatch_log_prefix} Minibatch input: #{data_to_str(minibatch_input)}" }
+          debug { "#{minibatch_log_prefix} Minibatch target: #{data_to_str(minibatch.target)}" }
           
           # Add code to dump minibatches if experiment option is enabled
           if experiment.dump_minibatches
             # For each element in the minibatch
-            minibatch.each_element.with_index do |(element, y), idx_element|
+            minibatch.each_element.with_index do |sample, idx_element|
               # Write the image using Helpers
               Helpers.write_image(
-                experiment.dataset.to_image(element),
-                "./minibatches/#{experiment.exp_id}/#{idx_epoch}/#{idx_minibatch}/#{idx_element}_#{experiment.dataset.underlying_label(y)}.png"
+                experiment.dataset.to_image(sample.input),
+                "./minibatches/#{experiment.exp_id}/#{idx_epoch}/#{idx_minibatch}/#{idx_element}_#{experiment.dataset.underlying_label(sample.target)}.png"
               )
             end
           end
@@ -52,7 +53,7 @@ module RubyNeuralNets
               "* #{p.name}: #{data_to_str(p.values)}"
             end.join("\n")}"
           end
-          a = experiment.model.forward_propagate(minibatch.x, train: experiment.training_mode)
+          a = experiment.model.forward_propagate(minibatch_input, train: experiment.training_mode)
 
           debug { "#{minibatch_log_prefix} Model output: #{data_to_str(a)}" }
 
@@ -79,4 +80,4 @@ module RubyNeuralNets
 
   end
 
-end      
+end

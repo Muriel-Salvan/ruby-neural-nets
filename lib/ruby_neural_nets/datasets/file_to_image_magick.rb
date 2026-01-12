@@ -1,5 +1,6 @@
 require 'rmagick'
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/sample'
 
 module RubyNeuralNets
 
@@ -13,11 +14,13 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        file, y = @dataset[index]
-        [Magick::ImageList.new(file).first, y]
+        sample = @dataset[index]
+        Sample.new(
+          -> { Magick::ImageList.new(sample.input).first },
+          -> { sample.target }
+        )
       end
 
       # Get some images stats.
@@ -31,7 +34,7 @@ module RubyNeuralNets
       #   * *depth* (Integer or nil): Depth (number of bits) used to encode pixel channel's values if it applies to all images, or nil otherwise
       def image_stats
         # Assume all images have the same properties as the first one
-        sample_image = Magick::ImageList.new(@dataset[0][0]).first
+        sample_image = Magick::ImageList.new(@dataset[0].input).first
         {
           rows: sample_image.rows,
           cols: sample_image.columns,

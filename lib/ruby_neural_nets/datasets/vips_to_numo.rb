@@ -1,4 +1,5 @@
 require 'ruby_neural_nets/datasets/wrapper'
+require 'ruby_neural_nets/sample'
 require 'fiddle'
 
 module RubyNeuralNets
@@ -13,24 +14,25 @@ module RubyNeuralNets
       # Parameters:::
       # * *index* (Integer): Index of the dataset element to access
       # Result:::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        image, y = @dataset[index]
-        # Convert Vips image to Numo DFloat without intermediate Ruby arrays
-        [
-          (
-            case @dataset.image_stats[:depth]
-            when 8
-              Numo::UInt8
-            when 16
-              Numo::UInt16
-            else
-              raise "Unsupported depth: #{@dataset.image_stats[:depth]}"
-            end
-          ).from_binary(image.write_to_memory).cast_to(Numo::DFloat),
-          y
-        ]
+        sample = @dataset[index]
+        Sample.new(
+          -> do
+            # Convert Vips image to Numo DFloat without intermediate Ruby arrays
+            (
+              case @dataset.image_stats[:depth]
+              when 8
+                Numo::UInt8
+              when 16
+                Numo::UInt16
+              else
+                raise "Unsupported depth: #{@dataset.image_stats[:depth]}"
+              end
+            ).from_binary(sample.input.write_to_memory).cast_to(Numo::DFloat)
+          end,
+          -> { sample.target }
+        )
       end
 
       # Convert an element to an image
