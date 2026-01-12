@@ -83,19 +83,19 @@ module RubyNeuralNets
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
         transforms = [
-          RubyNeuralNets::TorchVision::Transforms::FileToVips.new,
-          RubyNeuralNets::TorchVision::Transforms::VipsRemoveAlpha.new
+          TorchVision::Transforms::FileToVips.new,
+          TorchVision::Transforms::VipsRemoveAlpha.new
         ]
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsTrim.new if @trim
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsResize.new(@resize)
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsGrayscale.new if @grayscale
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsMinmaxNormalize.new if @minmax_normalize
-        transforms << RubyNeuralNets::TorchVision::Transforms::VipsAdaptiveInvert.new if @adaptive_invert
+        transforms << TorchVision::Transforms::VipsTrim.new if @trim
+        transforms << TorchVision::Transforms::VipsResize.new(@resize)
+        transforms << TorchVision::Transforms::VipsGrayscale.new if @grayscale
+        transforms << TorchVision::Transforms::VipsMinmaxNormalize.new if @minmax_normalize
+        transforms << TorchVision::Transforms::VipsAdaptiveInvert.new if @adaptive_invert
 
         Datasets::CacheMemory.new(
           Datasets::LabeledTorchImages.new(
             dataset,
-            [RubyNeuralNets::TorchVision::Transforms::Cache.new(transforms)]
+            [TorchVision::Transforms::Cache.new(transforms)]
           )
         )
       end
@@ -112,8 +112,8 @@ module RubyNeuralNets
       def new_augmentation_dataset(preprocessed_dataset, rng:, numo_rng:)
         # Create augmentation transforms
         augmentation_transforms = []
-        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsRotate.new(@rot_angle, rng) if @rot_angle > 0
-        augmentation_transforms << RubyNeuralNets::TorchVision::Transforms::VipsNoise.new(@noise_intensity, numo_rng) if @noise_intensity > 0
+        augmentation_transforms << TorchVision::Transforms::VipsRotate.new(@rot_angle, rng) if @rot_angle > 0
+        augmentation_transforms << TorchVision::Transforms::VipsNoise.new(@noise_intensity, numo_rng) if @noise_intensity > 0
 
         Datasets::LabeledTorchImages.new(
           Datasets::Clone.new(
@@ -139,12 +139,12 @@ module RubyNeuralNets
             Datasets::LabeledTorchImages.new(
               augmented_dataset.files_dataset,
               augmented_dataset.transforms + [
-                RubyNeuralNets::TorchVision::Transforms::Vips8Bits.new,
+                TorchVision::Transforms::Vips8Bits.new,
                 ::TorchVision::Transforms::ToTensor.new
               ] +
-              (@flatten ? [RubyNeuralNets::TorchVision::Transforms::Flatten.new] : []) +
+              (@flatten ? [TorchVision::Transforms::Flatten.new] : []) +
               [
-                RubyNeuralNets::TorchVision::Transforms::ToDouble.new
+                TorchVision::Transforms::ToDouble.new
               ]
             ),
             rng:

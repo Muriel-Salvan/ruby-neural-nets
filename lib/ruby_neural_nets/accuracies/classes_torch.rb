@@ -11,7 +11,7 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *output_pred* (Object): Predicted output
-      # * *minibatch* (RubyNeuralNets::Minibatch): Minibatch containing expected real output and size
+      # * *minibatch* (Minibatch): Minibatch containing expected real output and size
       # Result::
       # * Float: Corresponding accuracy
       def measure(output_pred, minibatch)
@@ -22,7 +22,7 @@ module RubyNeuralNets
       #
       # Parameters::
       # * *output_pred* (Object): Predicted output
-      # * *minibatch* (RubyNeuralNets::Minibatch): Minibatch containing expected real output and size
+      # * *minibatch* (Minibatch): Minibatch containing expected real output and size
       # Result::
       # * Numo::DFloat: Corresponding confusion matrix
       def confusion_matrix(output_pred, minibatch)

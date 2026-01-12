@@ -35,12 +35,12 @@ module RubyNeuralNets
       # Iterate over all elements
       #
       # Parameters::
-      # * Code: Code called for each element iterated on
+      # * *Code*: Code called for each element iterated on
       def each
         return to_enum(:each) unless block_given?
         
         @torch_data_loader.each do |(inputs, labels)|
-          yield RubyNeuralNets::Minibatches::Torch.new(-> { inputs }, -> { labels })
+          yield Minibatches::Torch.new(-> { inputs }, -> { labels })
         end
       end
 

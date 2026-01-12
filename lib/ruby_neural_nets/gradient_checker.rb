@@ -20,7 +20,7 @@ module RubyNeuralNets
       @gradient_checks_epochs_interval = gradient_checks_epochs_interval
     end
 
-    # Setup the gradients checker to perform on a given model and loss.
+    # Setup gradient checker to perform on a given model and loss.
     #
     # Parameters::
     # * *model* (Model): Model for which gradient checking is done
@@ -34,8 +34,8 @@ module RubyNeuralNets
     #
     # Parameters::
     # * *idx_epoch* (Integer): Index of the epoch for which we perform gradient checking
-    # * *minibatch* (RubyNeuralNets::Minibatch): The minibatch containing input and reference data
-    # * Code: Code called to perform gradient descent on the model
+    # * *minibatch* (Minibatch): The minibatch containing input and reference data
+    # * *Code*: Code called to perform gradient descent on the model
     def check_gradients_for(idx_epoch, minibatch)
       # Compute d_theta_approx for gradient checking before modifying parameters with back propagation
       gradient_checking_epsilon = 1e-7

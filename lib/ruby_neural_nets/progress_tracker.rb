@@ -89,7 +89,7 @@ module RubyNeuralNets
           ytics: tics
         )
         unless experiment.display_units.empty?
-          # Change it to resolve the exact parameters selected
+          # Change it to resolve to the exact parameters selected
           # Array< [ Parameter, Array< Array< Integer >           > ] >
           # Array< [ parameter,        unit_indexes_per_graph_row   ] >
           @experiments[experiment.exp_id][:display_units] = experiment.display_units.map.with_index do |(name, nbr_units), idx_param|
@@ -137,7 +137,7 @@ module RubyNeuralNets
     # * *experiment* (Experiment): The experiment object to track progress for
     # * *idx_epoch* (Integer): Epoch's index
     # * *idx_minibatch* (Integer): Minibatch index
-    # * *minibatch* (RubyNeuralNets::Minibatch): Minibatch containing input and reference data
+    # * *minibatch* (Minibatch): Minibatch containing input and reference data
     # * *a* (Object): Minibatch prediction, result of the forward propagation
     # * *loss* (Object): Computed loss for the minibatch
     def progress(experiment, idx_epoch, idx_minibatch, minibatch, a, loss)
@@ -198,7 +198,7 @@ module RubyNeuralNets
             @graphs["Samples #{experiment.exp_id}"],
             [experiment.display_samples, minibatch.size].min.times.map do |idx_sample|
               slices[sample_dim] = idx_sample
-              # TODO: Add a method in Minibatch that will return the slice without guessing the dimension by comparing batch size.
+              # TODO: Add a method in Minibatch that will return a slice without guessing at the dimension by comparing batch size.
               Numo::UInt8[*((minibatch_input[*slices].flatten * 255).round)].reshape(rows, cols, channels)
             end
           )
@@ -274,7 +274,7 @@ module RubyNeuralNets
 
     # Plot bitmaps on a given graph, stacking them horizontally and vertically
     #
-    # Parameters:::
+    # Parameters::
     # * *gnuplot_graph* (Numo::Gnuplot): The graph to plot on
     # * *bitmaps* (Array<Array<Array<Numo::UInt8>>>): Array of bitmaps, each bitmap is [rows, cols, channels]
     def plot_bitmaps(gnuplot_graph, bitmaps)
@@ -321,9 +321,9 @@ module RubyNeuralNets
 
     # Create a new graph with automatic positioning
     #
-    # Parameters:::
+    # Parameters::
     # * *title* (String): The title of the graph
-    # * *kwargs: GnuPlot properties to set as keyword arguments
+    # * *kwargs*: GnuPlot properties to set as keyword arguments
     def create_graph(title, **kwargs)
       graph = Numo::Gnuplot.new
       graph.set title: title.gsub('_', '\_')

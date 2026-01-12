@@ -25,7 +25,7 @@ module RubyNeuralNets
         return to_enum(:each_element) unless block_given?
         
         size.times do |i|
-          yield RubyNeuralNets::Sample.new(
+          yield Sample.new(
             -> { input[true, i] },
             -> { target[true, i] }
           )

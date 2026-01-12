@@ -5,7 +5,7 @@ module RubyNeuralNets
   module Minibatches
 
     # Minibatch implementation for Torch tensors
-    class Torch < RubyNeuralNets::Minibatch
+    class Torch < Minibatch
 
       # Get the size of the minibatch
       #
@@ -25,7 +25,7 @@ module RubyNeuralNets
         return to_enum(:each_element) unless block_given?
 
         size.times do |i|
-          yield RubyNeuralNets::Sample.new(
+          yield Sample.new(
             -> { input[i] },
             -> { target[i] }
           )

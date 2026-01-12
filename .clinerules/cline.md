@@ -7,6 +7,7 @@
 5. Any code or test modification should be validated by running all the tests (not only the modified ones) using `bundle exec rspec`. It is expected that it runs without any error, with the mention "0 failures" in the output.
 6. Any code or test modification should trigger a verification of the README.md file content, and make sure that all sections still have up-to-date content regarding the change.
 7. Text files should always end with a carriage return character.
+8. Module names should not be added to class names, constants and class method calls when used instead the module instead. For example, no need to add RubyNeuralNets:: in front of any class that is used inside the RubyNeuralNets module.
 
 # Documentation rules
 

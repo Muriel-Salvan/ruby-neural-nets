@@ -26,7 +26,7 @@ module RubyNeuralNets
       def initialize(dataset, transforms = [])
         super(dataset)
         @transforms = transforms
-        @torch_dataset = RubyNeuralNets::Torch::SampleFolderDataset.new(@dataset, @transforms) unless dataset.empty?
+        @torch_dataset = Torch::SampleFolderDataset.new(@dataset, @transforms) unless dataset.empty?
       end
 
       # Give access to the underlying files dataset
@@ -70,15 +70,15 @@ module RubyNeuralNets
       #   * *rows* (Integer or nil): Number of rows if it applies to all images, or nil otherwise
       #   * *cols* (Integer or nil): Number of columns if it applies to all images, or nil otherwise
       #   * *channels* (Integer or nil): Number of channels if it applies to all images, or nil otherwise
-      #   * *depth* (Integer or nil): Depth (number of bits) used to encode pixel channel's values if it applies to all images, or nil otherwise
+      #   * *depth* (Integer or nil): Depth (number of bits) used to encode the pixel channel's values if it applies to all images, or nil otherwise
       def image_stats
-        TorchTransformImages.transformed_stats(RubyNeuralNets::Datasets::FileToVips.new(@dataset).image_stats, @transforms)
+        TorchTransformImages.transformed_stats(Datasets::FileToVips.new(@dataset).image_stats, @transforms)
       end
 
       # Convert an element to an image
       #
       # Parameters:
-      # * *element* (Object): The X element returned by [] method
+      # * *element* (Object): The X element returned by the [] method
       # Result:
       # * Object: The Vips image representation
       def to_image(element)

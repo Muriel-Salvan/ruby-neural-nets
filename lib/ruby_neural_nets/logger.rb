@@ -25,9 +25,9 @@ module RubyNeuralNets
     # Includes ISO8601 UTC timestamp and caller class name.
     #
     # Parameters::
-    # * *message_proc* (Proc): A proc that returns the message string when called
+    # * *message_proc* (Proc): A proc that returns a message string when called
     def debug(&message_proc)
-      return unless RubyNeuralNets::Logger.debug_mode
+      return unless Logger.debug_mode
       
       puts "#{log_prefix} [DEBUG] #{message_proc.call}"
     end
@@ -139,7 +139,7 @@ module RubyNeuralNets
       { array: ruby_array, truncated: total_elements > ruby_array.flatten.size }
     end
 
-    # Generate the log message prefix with timestamp and class name
+    # Generate a log message prefix with timestamp and class name
     #
     # Result::
     # * String: The log prefix

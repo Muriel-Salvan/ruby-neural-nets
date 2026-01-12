@@ -55,7 +55,7 @@ module RubyNeuralNets
       # * Sample: The sample containing input and target data
       def [](index)
         file, label = @dataset[index]
-        RubyNeuralNets::Sample.new(-> { file }, -> { label })
+        Sample.new(-> { file }, -> { label })
       end
 
       private

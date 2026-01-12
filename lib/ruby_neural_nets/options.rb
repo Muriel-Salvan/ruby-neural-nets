@@ -153,13 +153,13 @@ module RubyNeuralNets
           value: 'main'
         },
         accuracy: {
-          from: RubyNeuralNets::Accuracies,
-          ancestor: RubyNeuralNets::Accuracy,
+          from: Accuracies,
+          ancestor: Accuracy,
           name: 'ClassesNumo'
         },
         data_loader: {
-          from: RubyNeuralNets::DataLoaders,
-          ancestor: RubyNeuralNets::DataLoader,
+          from: DataLoaders,
+          ancestor: DataLoader,
           name: 'NumoImageMagick',
           options: {
             max_minibatch_size: 5000,
@@ -220,13 +220,13 @@ module RubyNeuralNets
           }
         },
         loss: {
-          from: RubyNeuralNets::Losses,
-          ancestor: RubyNeuralNets::Loss,
+          from: Losses,
+          ancestor: Loss,
           name: 'CrossEntropy'
         },
         model: {
-          from: RubyNeuralNets::Models,
-          ancestor: RubyNeuralNets::Model,
+          from: Models,
+          ancestor: Model,
           name: 'OneLayer',
           options: {
             layers: [100],
@@ -245,8 +245,8 @@ module RubyNeuralNets
           }
         },
         optimizer: {
-          from: RubyNeuralNets::Optimizers,
-          ancestor: RubyNeuralNets::Optimizer,
+          from: Optimizers,
+          ancestor: Optimizer,
           name: 'Adam',
           options: {
             decay: 0.9,
@@ -365,7 +365,7 @@ module RubyNeuralNets
     # * *mod* (Module): The module from which we look for classes
     # * *ancestor* (Class): The ancestor classes should belong to
     # Result::
-    # * Hash<Class, Array<Symbol>>: For each class, the list of option kwargs that can be used with the constructor
+    # * Hash<Class, Array<Symbol>>: For each class, list of option kwargs that can be used with constructor
     def discover_classes_of(mod, ancestor)
       mod.constants.map do |const|
         model_constant = mod.const_get(const)
@@ -469,12 +469,12 @@ module RubyNeuralNets
     # Make sure all mandatory properties are set, using the Hash form.
     #
     # Parameters::
-    # * *option_info* (Object): An option info (as described from the options object).
+    # * *option_info* (Object): An option info (as described from options object).
     # * *additional_desc* (Array): Additional description to be added to those options [default: []]
     # Result::
     # * Hash<Symbol, Object>: The corresponding normalized option information
     def normalize_option_info(option_info, additional_desc: [])
-      # Normalize the configuration
+      # Normalize configuration
       normalized_info = option_info.is_a?(Hash) ? option_info : { value: option_info }
       normalized_info[:desc] = [] unless normalized_info.key?(:desc)
       normalized_info[:desc] = [normalized_info[:desc]] unless normalized_info[:desc].is_a?(Array)
