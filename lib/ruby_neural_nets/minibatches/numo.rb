@@ -21,8 +21,8 @@ module RubyNeuralNets
       # * *block* (Proc): Block to call for each element
       #   * Parameters::
       #     * *sample* (Sample): The sample being iterated on
-      def each_element
-        return to_enum(:each_element) unless block_given?
+      def each
+        return to_enum(:each) unless block_given?
         
         size.times do |i|
           yield Sample.new(

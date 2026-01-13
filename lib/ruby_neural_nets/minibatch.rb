@@ -5,6 +5,8 @@ module RubyNeuralNets
   # Base class for minibatch objects
   class Minibatch < Sample
 
+    include Enumerable
+
     # Get the size of the minibatch
     #
     # Result::
@@ -19,7 +21,7 @@ module RubyNeuralNets
     # * *block* (Proc): Block to call for each element
     #   * Parameters::
     #     * *sample* (Sample): The sample being iterated on
-    def each_element
+    def each
       raise NotImplementedError
     end
 

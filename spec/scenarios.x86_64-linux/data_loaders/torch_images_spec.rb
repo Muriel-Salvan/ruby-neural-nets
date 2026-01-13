@@ -48,7 +48,7 @@ describe RubyNeuralNets::DataLoaders::TorchImages do
       with_test_dir(
         'test_dataset/class_0/test_image_0.png' => png(3, 2, [1000, 2000, 3000, 4000, 5000, 6000])
       ) do |datasets_path|
-        x_tensor = new_data_loader(datasets_path: datasets_path, resize: [3, 2], flatten: false).dataset(:training).first.each_element.first.input
+        x_tensor = new_data_loader(datasets_path: datasets_path, resize: [3, 2], flatten: false).dataset(:training).first.first.input
         expect(x_tensor.shape).to eq [1, 2, 3]
         expect_array_within(
           x_tensor.to_a,

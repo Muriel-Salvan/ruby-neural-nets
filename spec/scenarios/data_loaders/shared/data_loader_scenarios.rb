@@ -86,7 +86,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
             [
               dataset_type,
               data_loader.dataset(dataset_type).
-                map { |minibatch| minibatch.each_element.map { |sample| [options[:color_from].call(sample.input), options[:label_from].call(sample.target)] } }.
+                map { |minibatch| minibatch.map { |sample| [options[:color_from].call(sample.input), options[:label_from].call(sample.target)] } }.
                 flatten(1).
                 group_by { |(_color, class_idx)| class_idx }.
                 to_h do |class_idx, elements|
@@ -146,7 +146,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
           test:     {         1 => 1,         3 => 1 }
         }.each do |partition, expected_images_per_target|
           expect(
-            data_loader.dataset(partition).first.each_element.
+            data_loader.dataset(partition).first.
               map { |sample| options[:label_from].call(sample.target) }.
               group_by { |sample| sample }.
               to_h { |sample, samples_list| [sample, samples_list.size] }
@@ -162,7 +162,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
       with_test_dir(
         'test_dataset/class_0/test_image_0.png' => png(1, 1, { color: [1] })
       ) do |datasets_path|
-        elements = new_data_loader(datasets_path:, nbr_clones: 3).dataset(:training).first.each_element.to_a
+        elements = new_data_loader(datasets_path:, nbr_clones: 3).dataset(:training).first.to_a
         expect(elements.size).to eq(3)
         # Check that each minibatch element is the same
         expect_array_within(
@@ -179,7 +179,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         'test_dataset/class_0/test_image_0.png' => png(3, 3, [0, 65535, 0, 0, 65535, 0, 0, 65535, 0])
       ) do |datasets_path|
         # Since rotation is random within the angle, we check that the vertical bar is rotated a bit
-        expect_array_within(new_data_loader(datasets_path:, rot_angle: 90.0, resize: [3, 3]).dataset(:training).first.each_element.first.input, options[:rotation_expected])
+        expect_array_within(new_data_loader(datasets_path:, rot_angle: 90.0, resize: [3, 3]).dataset(:training).first.first.input, options[:rotation_expected])
       end
     end
   end
@@ -190,7 +190,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         'test_dataset/class_0/test_image_0.png' => png(1, 1, { color: [1] })
       ) do |datasets_path|
         # Black pixel, should invert to white
-        expect_array_within(new_data_loader(datasets_path:, adaptive_invert: true).dataset(:training).first.each_element.first.input.to_a, [1])
+        expect_array_within(new_data_loader(datasets_path:, adaptive_invert: true).dataset(:training).first.first.input.to_a, [1])
       end
     end
 
@@ -199,7 +199,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         'test_dataset/class_0/test_image_0.png' => png(1, 1, { color: [65535] })
       ) do |datasets_path|
         # White pixel, should stay white
-        expect_array_within(new_data_loader(datasets_path:, adaptive_invert: true).dataset(:training).first.each_element.first.input.to_a, [1])
+        expect_array_within(new_data_loader(datasets_path:, adaptive_invert: true).dataset(:training).first.first.input.to_a, [1])
       end
     end
   end
@@ -213,7 +213,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         'test_dataset/class_0/test_image_0.png' => png(5, 5, Array.new(25, 65535).fill(0, 6, 3).fill(0, 11, 3).fill(0, 16, 3))
       ) do |datasets_path|
         # After trim and resize, the colors should be close to the inner rectangle (0)
-        expect(new_data_loader(datasets_path:, trim: true, resize: [5, 5]).dataset(:training).first.each_element.first.input.to_a).to eq([0] * 25)
+        expect(new_data_loader(datasets_path:, trim: true, resize: [5, 5]).dataset(:training).first.first.input.to_a).to eq([0] * 25)
       end
     end
   end
@@ -223,7 +223,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
       with_test_dir(
         'test_dataset/class_0/test_image_0.png' => png(3, 3, { color: [32768] })
       ) do |datasets_path|
-        x = new_data_loader(datasets_path:, resize: [3, 3], noise_intensity: 0.1).dataset(:training).first.each_element.first.input.to_a
+        x = new_data_loader(datasets_path:, resize: [3, 3], noise_intensity: 0.1).dataset(:training).first.first.input.to_a
         # With noise, the pixel value should be different from the original, different between themselves but with the same mean
         expect_array_not_within(x, [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
         expect(x.sum / x.size).to be_within(0.1).of(0.5)
@@ -237,7 +237,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
       with_test_dir(
         'test_dataset/class_0/test_image_0.png' => png(2, 2, [10, 20, 30, 40])
       ) do |datasets_path|
-        expect_array_within(new_data_loader(datasets_path:, minmax_normalize: true, resize: [2, 2]).dataset(:training).first.each_element.first.input, [0, 0.33, 0.66, 1])
+        expect_array_within(new_data_loader(datasets_path:, minmax_normalize: true, resize: [2, 2]).dataset(:training).first.first.input, [0, 0.33, 0.66, 1])
       end
     end
 
@@ -251,7 +251,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
           40, 40, 10
         ])
       ) do |datasets_path|
-        expect_array_within(new_data_loader(datasets_path:, minmax_normalize: true, resize: [2, 2]).dataset(:training).first.each_element.first.input, [
+        expect_array_within(new_data_loader(datasets_path:, minmax_normalize: true, resize: [2, 2]).dataset(:training).first.first.input, [
           # R,  G, B
           0,    1, 1,
           0.33, 1, 0.66,
@@ -279,7 +279,7 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         expect(%i[training dev test].inject(0) { |sum, partition| sum + data_loader.dataset(partition).map { |minibatch| minibatch.size }.sum }).to eq(3)
         
         # Check that all elements have the default label
-        data_loader.dataset(:training).first.each_element.each do |sample|
+        data_loader.dataset(:training).first.each do |sample|
           expect(options[:label_from].call(sample.target)).to eq(0) # First (and only) label index should be 0
         end
       end
@@ -295,11 +295,11 @@ RSpec.shared_examples 'data loader scenarios' do |options|
       ) do |datasets_path|
         data_loader = new_data_loader(datasets_path:)
         # Read a sample from the dataset once
-        expect(data_loader.dataset(:training).first.each_element.first.input).not_to be_nil
+        expect(data_loader.dataset(:training).first.first.input).not_to be_nil
         # Delete the test PNG file from disk
         File.delete(File.join(datasets_path, 'test_dataset/class_0/test_image_0.png'))
         # Try to read the same sample again from the cache
-        expect(data_loader.dataset(:training).first.each_element.first.input).not_to be_nil
+        expect(data_loader.dataset(:training).first.first.input).not_to be_nil
       end
     end
   

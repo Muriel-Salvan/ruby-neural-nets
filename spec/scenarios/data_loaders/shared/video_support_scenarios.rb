@@ -6,7 +6,7 @@ RSpec.shared_examples 'video support scenarios' do |options|
       with_test_dir(
         'test_dataset/class_0/test_video_0.mp4' => mp4(2, 2, 2.5, { color: [32768] })
       ) do |datasets_path|
-        samples = new_data_loader(datasets_path:, video_slices_sec: 1.0, partitions: { training: 1.0 }, resize: [2, 2]).dataset(:training).first.each_element.to_a
+        samples = new_data_loader(datasets_path:, video_slices_sec: 1.0, partitions: { training: 1.0 }, resize: [2, 2]).dataset(:training).first.to_a
         # Should have 3 slices from the 2.5 second video with 1.0 second slices, with 2x2 gray images in RGB (12 values)
         expect_array_within(samples.map { |sample| sample.input.to_a }, [[0.5] * 12] * 3)
         # All of them should belong to the class indexed 0
@@ -35,7 +35,7 @@ RSpec.shared_examples 'video support scenarios' do |options|
         }.each do |partition, images_per_target|
           # Count the number of samples, grouped by class and channel value (round the value multiplied by 2)
           expect(
-            data_loader.dataset(partition).first.each_element.map do |sample|
+            data_loader.dataset(partition).first.map do |sample|
               [
                 options[:label_from].call(sample.target),
                 (sample.input.to_a.first * 2).round
@@ -64,7 +64,6 @@ RSpec.shared_examples 'video support scenarios' do |options|
           new_data_loader(datasets_path:, video_slices_sec: 1.0, partitions: { training: 1.0 }, resize: [2, 2]).
             dataset(:training).
             first.
-            each_element.
             map { |sample| [options[:label_from].call(sample.target), (sample.input.to_a.first * 2).round] }.
             sort
         ).to eq [

@@ -36,7 +36,7 @@ module RubyNeuralNets
           # Add code to dump minibatches if experiment option is enabled
           if experiment.dump_minibatches
             # For each element in the minibatch
-            minibatch.each_element.with_index do |sample, idx_element|
+            minibatch.each.with_index do |sample, idx_element|
               # Write the image using Helpers
               Helpers.write_image(
                 experiment.dataset.to_image(sample.input),
