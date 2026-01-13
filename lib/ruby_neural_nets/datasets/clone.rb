@@ -31,8 +31,7 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
         @dataset[index / @nbr_clones]
       end

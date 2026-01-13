@@ -2,6 +2,7 @@ require_relative '../../scenarios/data_loaders/shared/data_loader_scenarios'
 require "ruby_neural_nets/data_loaders/torch_image_magick.#{RUBY_PLATFORM}"
 
 describe RubyNeuralNets::DataLoaders::TorchImageMagick do
+
   include_examples 'data loader scenarios', 
     rotation_expected: [0.5, 0.7, 0, 0.05, 1, 0.05, 0, 0.7, 0.5],
     label_from: proc { |y| y.item },
