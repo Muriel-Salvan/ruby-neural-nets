@@ -27,11 +27,24 @@ module RubyNeuralNets
       # Parameters::
       # * *index* (Integer): Index of the dataset element to access
       # Result::
-      # * Object: The element X of the dataset
-      # * Object: The element Y of the dataset
+      # * Sample: The sample containing input and target data
       def [](index)
-        @cache[index] = @dataset[index] unless @cache.key?(index)
-        @cache[index]
+        unless @cache.key?(index)
+          sample = @dataset[index]
+          @cache[index] = {
+            sample: Sample.new(
+              -> do
+                @cache[index][:input] = sample.input unless @cache[index].key?(:input)
+                @cache[index][:input]
+              end,
+              -> do
+                @cache[index][:target] = sample.target unless @cache[index].key?(:target)
+                @cache[index][:target]
+              end
+            )
+          }
+        end
+        @cache[index][:sample]
       end
 
       # Get some images stats.

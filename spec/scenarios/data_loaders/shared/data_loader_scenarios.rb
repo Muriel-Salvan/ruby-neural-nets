@@ -244,5 +244,23 @@ RSpec.shared_examples 'data loader scenarios' do |options|
     end
 
   end
+
+  describe 'caching' do
+
+    it 'caches reading data from disk' do
+      with_test_dir(
+        'test_dataset/class_0/test_image_0.png' => png(1, 1, { color: [1] })
+      ) do |datasets_path|
+        data_loader = new_data_loader(datasets_path:)
+        # Read a sample from the dataset once
+        expect(data_loader.dataset(:training).first.each_element.first.input).not_to be_nil
+        # Delete the test PNG file from disk
+        File.delete(File.join(datasets_path, 'test_dataset/class_0/test_image_0.png'))
+        # Try to read the same sample again from the cache
+        expect(data_loader.dataset(:training).first.each_element.first.input).not_to be_nil
+      end
+    end
   
+  end
+
 end
