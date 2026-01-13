@@ -312,7 +312,10 @@ module RubyNeuralNetsTest
     # Result::
     # * Array: The distance
     def array_distance(array_1, array_2)
-      array_1.to_a.zip(array_2.to_a).map { |(e_1, e_2)| (e_1 - e_2).abs }
+      a1 = array_1.to_a
+      a2 = array_2.to_a
+      expect(a1.size).to eq(a2.size), "expected same size (#{a1.size} != #{a2.size}) between #{a1} and expected #{a2}"
+      a1.zip(a2).map { |(e_1, e_2)| (e_1 - e_2).abs }
     end
 
     # Expect a given array to have all its elements within the range of another array.
@@ -324,6 +327,7 @@ module RubyNeuralNetsTest
     # * *threshold* (Float): Threshold range [default: 0.01]
     def expect_array_within(array_1, array_2, threshold = 0.01)
       if array_1.is_a?(Array) && array_1.first.is_a?(Array)
+        expect(array_1.size).to eq(array_2.size), "expected same size (#{array_1.size} != #{array_2.size}) between #{array_1.to_a} and expected #{array_2.to_a}"
         array_1.zip(array_2).each do |(sub_array_1, sub_array_2)|
           expect_array_within(sub_array_1, sub_array_2, threshold = threshold)
         end
