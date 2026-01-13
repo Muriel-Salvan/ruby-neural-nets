@@ -14,7 +14,7 @@ module RubyNeuralNets
       # * *dataset* (Dataset): Dataset providing labels to be one-hot encoded
       def initialize(dataset)
         super
-        @labels = dataset.group_by { |sample| sample.target }.keys.sort.map.with_index { |label, idx| [label, idx] }.to_h
+        @labels = dataset.labels.sort.map.with_index { |label, idx| [label, idx] }.to_h
       end
 
       # Access an element of the dataset

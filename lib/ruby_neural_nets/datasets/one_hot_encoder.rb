@@ -18,7 +18,7 @@ module RubyNeuralNets
       # * *dataset* (Dataset): Dataset providing labels to be one-hot encoded
       def initialize(dataset)
         super
-        labels = dataset.group_by { |sample| sample.target }.keys.sort
+        labels = dataset.labels.sort
         # Compute the map of one-hot vectors corresponding to each label
         # Hash< label, Array< Integer > >
         @one_hot_labels = labels.map.with_index do |label, idx|

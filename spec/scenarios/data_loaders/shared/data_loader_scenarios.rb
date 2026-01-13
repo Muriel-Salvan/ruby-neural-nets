@@ -1,6 +1,7 @@
 RSpec.shared_examples 'data loader scenarios' do |options|
 
   describe 'image stats' do
+
     it 'returns the right image stats for grayscale images' do
       # Don't use fully black images as they are encoded as 8 bits by ImageMagick automatically
       with_test_dir('test_dataset/class_0/test_image_0.png' => png(10, 20, { color: [1] })) do |datasets_path|
@@ -13,9 +14,11 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         expect(new_data_loader(datasets_path:, resize: [10, 20]).image_stats).to eq({ rows: 20, cols: 10, channels: 3, depth: 16 })
       end
     end
+
   end
 
   describe 'labels' do
+
     it 'returns the right labels' do
       with_test_dir(
         'test_dataset/class_a/test_image_0.png' => png(1, 1, { color: [1] }),
@@ -53,9 +56,11 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         })
       end
     end
+
   end
 
   describe 'partitioning' do
+
     it 'partitions correctly the dataset' do
       with_test_dir(
         # 3 classes, having the following number of files:
@@ -113,6 +118,43 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         )
       end
     end
+
+    it 'partitions correctly the dataset with partitions missing some labels completely' do
+      with_test_dir(
+        # Class index 0
+        'test_dataset/class_a/test_image_0.png' => png(1, 1, { color: [1] }),
+        'test_dataset/class_a/test_image_1.png' => png(1, 1, { color: [1] }),
+        # Class index 1
+        'test_dataset/class_b/test_image_0.png' => png(1, 1, { color: [1] }),
+        'test_dataset/class_b/test_image_1.png' => png(1, 1, { color: [1] }),
+        'test_dataset/class_b/test_image_2.png' => png(1, 1, { color: [1] }),
+        'test_dataset/class_b/test_image_3.png' => png(1, 1, { color: [1] }),
+        # Class index 2
+        'test_dataset/class_c/test_image_0.png' => png(1, 1, { color: [1] }),
+        # Class index 3
+        'test_dataset/class_d/test_image_0.png' => png(1, 1, { color: [1] }),
+        'test_dataset/class_d/test_image_1.png' => png(1, 1, { color: [1] }),
+        'test_dataset/class_d/test_image_2.png' => png(1, 1, { color: [1] }),
+        'test_dataset/class_d/test_image_3.png' => png(1, 1, { color: [1] })
+      ) do |datasets_path|
+        data_loader = new_data_loader(datasets_path:, partitions: { training: 0.5, dev: 0.25, test: 0.25 })
+        # For each partition, check the number of files per class index
+        {
+          #         { class_index => nbr_images }
+          training: { 0 => 1, 1 => 2, 2 => 1, 3 => 2 },
+          dev:      { 0 => 1, 1 => 1,         3 => 1 },
+          test:     {         1 => 1,         3 => 1 }
+        }.each do |partition, expected_images_per_target|
+          expect(
+            data_loader.dataset(partition).first.each_element.
+              map { |sample| options[:label_from].call(sample.target) }.
+              group_by { |sample| sample }.
+              to_h { |sample, samples_list| [sample, samples_list.size] }
+          ).to eq(expected_images_per_target)
+        end
+      end
+    end
+
   end
 
   describe 'cloning' do
