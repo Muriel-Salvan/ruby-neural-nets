@@ -145,7 +145,7 @@ Analysis: Overall performance is consistent between experiments:
 ## Inference on image segmentation
 
 ```bash
-bundle exec ruby bin/infer --dataset=car --data-loader=TorchImageMagick --resize=320,320 --flatten=false --model=OnnxTorch --onnx-model=u2net
+bundle exec ruby bin/infer --dataset=car --data-loader=TorchImageMagick --resize=320,320 --flatten=false --model=OnnxTorch --onnx-model=u2net --max-minibatch-size=1
 ```
 
 Using the ONNX model [U2-Net from Hugging Face](https://huggingface.co/BritishWerewolf/U-2-Net) on its [example image](https://huggingface.co/ybelkada/segment-anything/resolve/main/assets/car.png), we have the following image segmentation.
