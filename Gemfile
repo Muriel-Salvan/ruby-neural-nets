@@ -13,6 +13,7 @@ gem 'rmagick'
 gem 'rspec'
 gem 'ruby-prof'
 gem 'ruby-vips'
+gem 'streamio-ffmpeg'
 gem 'sys-proctable'
 gem 'terminal-table'
 case RUBY_PLATFORM

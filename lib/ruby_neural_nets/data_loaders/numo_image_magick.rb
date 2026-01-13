@@ -40,7 +40,8 @@ module RubyNeuralNets
       # * *resize* (Array): Resize dimensions [width, height] for image transformations
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
-      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:)
+      # * *video_slices_sec* (Float): Number of seconds of each video slice used to extract images from MP4 files
+      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, video_slices_sec:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
@@ -49,6 +50,7 @@ module RubyNeuralNets
         @resize = resize
         @noise_intensity = noise_intensity
         @minmax_normalize = minmax_normalize
+        @video_slices_sec = video_slices_sec
         super(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       end
 
@@ -111,7 +113,10 @@ module RubyNeuralNets
       # * LabeledDataPartitioner: The partitioned dataset.
       def new_partitioned_dataset(datasets_path:, name:, rng:, numo_rng:, partitions:)
         Datasets::LabeledDataPartitioner.new(
-          Datasets::LabeledFiles.new(datasets_path:, name:),
+          Datasets::FileToImageMagick.new(
+            Datasets::LabeledFiles.new(datasets_path:, name:),
+            video_slices_sec: @video_slices_sec
+          ),
           partitions:,
           rng:
         )
@@ -124,9 +129,7 @@ module RubyNeuralNets
       # Result::
       # * Dataset: The dataset with preprocessing applied
       def new_preprocessing_dataset(dataset)
-        base_dataset = Datasets::FileToImageMagick.new(
-          Datasets::OneHotEncoder.new(dataset)
-        )
+        base_dataset = Datasets::OneHotEncoder.new(dataset)
         resized_dataset = Datasets::ImageMagickResize.new(@trim ? Datasets::ImageMagickTrim.new(base_dataset) : base_dataset, resize: @resize)
 
         # Apply preprocessing layers

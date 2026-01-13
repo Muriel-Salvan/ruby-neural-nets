@@ -71,7 +71,8 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 3. **ImageMagick**: Download and install ImageMagick from [https://imagemagick.org/script/download.php](https://imagemagick.org/script/download.php)
    - Make sure to include DLL and C/C++ headers during installation.
    - Use the Q16-x64-dll.exe version, not the HDRI or static version (details [https://github.com/rmagick/rmagick?tab=readme-ov-file#windows](here)).
-4. Linux specific dependencies: On Linux the following dependencies need to be installed (not needed on Windows):
+4. **ffmpeg**: Install FFmpeg for video processing and MP4 support (`apt install ffmpeg` or download it from [ffmpeg.org](https://www.ffmpeg.org/)). Required for extracting frames from MP4 videos.
+5. Linux specific dependencies: On Linux the following dependencies need to be installed (not needed on Windows):
    - **xdg-utils**: Install XDG utilities to display images properly (`apt install xdg-open`).
    - **libmagickwand-dev**: Install development headers for ImageMagick (`apt install libmagickwand-dev`).
    - **libyaml-dev**: Install development headers of libyaml (`apt install libyaml-dev`).
@@ -79,10 +80,10 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
    - **gnuplot**: Install the gnuplot package (`apt install gnuplot`).
    - **xrandr**: Install the X11 server utils package (`apt install x11-xserver-utils`).
    - **protobuf**: Install Google's Protobuf (`apt install protobuf-compiler`).
-5. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/`
+6. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/`
     - On Linux, clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its Gemfile to depend on numo-narray-alt instead of numo-narray.
-6. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
-7. **Cuda** and **CudNN**: On WSL only, Cuda and CudNN can be installed this way:
+7. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
+8. **Cuda** and **CudNN**: On WSL only, Cuda and CudNN can be installed this way:
    1. First install NVidia drivers in Windows 11 (not WSL).
    2. Link Cuda library properly in WSL (`sudo ln -s /usr/lib/wsl/lib/libcuda.so /usr/lib/libcuda.so`).
    3. Install CudNN library in WSL:
@@ -147,6 +148,13 @@ This runs with the numbers dataset and default settings for other parameters:
 
 - **`--data-loader`**: Select data loading method (NumoImageMagick, NumoVips, TorchVips, TorchImageMagick)
   - Controls the dataset processing pipeline (partitioning, shuffling, caching, encoding, minibatching)
+  - Note: Only NumoImageMagick and TorchImages data loaders support MP4 video processing
+
+- **`--video-slices-sec`**: Number of seconds between video frames extracted from MP4 files (float, default: 1.0)
+  - Controls the temporal resolution when processing video datasets
+  - Smaller values produce more frames (higher temporal resolution), larger values produce fewer frames
+  - Example: `--video-slices-sec=0.5` extracts frames every 0.5 seconds from MP4 files
+  - Only applies when MP4 files are present in the dataset; ignored for PNG-only datasets
 
 - **`--partitions`**: Hash of partition names and their proportion percentages [default: { training: 0.7, dev: 0.15, test: 0.15 }]
   - Controls how the dataset is split into training, development, and test partitions
@@ -416,21 +424,61 @@ The inference tool is particularly useful for:
 
 ### Datasets
 
-The project can use datasets in the `datasets/` directory, having the structure `datasets/<dataset_name>/<class_name>/<image_name>.png`.
+The project can use datasets in the `datasets/` directory, having the structure `datasets/<dataset_name>/<class_name>/<image_name>.png` or `datasets/<dataset_name>/<class_name>/<video_name>.mp4`.
 
 The following datasets can be used easily:
 - **colors**: Classification of colored images (red, green, blue)
 - **numbers**: Handwritten digit recognition (0-9), downloaded from https://www.kaggle.com/datasets/ox0000dead/numbers-classification-dataset
 
-Each dataset consists of PNG images organized in class subdirectories.
+Each dataset consists of PNG images and/or MP4 videos organized in class subdirectories. The framework automatically detects and handles both file formats:
+- **PNG images**: Loaded directly as static images
+- **MP4 videos**: Automatically sliced into frames at regular intervals for training
+
+#### Video Processing
+
+When MP4 files are present in the dataset, the framework automatically processes them by:
+1. **Video Slicing**: Extracts frames from videos at regular time intervals
+2. **Frame Extraction**: Uses FFmpeg to capture screenshots at specified time offsets
+3. **Mixed Datasets**: Seamlessly combines both static images and video frames in the same dataset
+
+The `--video-slices-sec` parameter controls the interval between extracted frames:
+- **Default**: 1.0 seconds between frames
+- **Example**: A 3.5-second video with `--video-slices-sec=1.0` produces 4 frames (at 0s, 1s, 2s, 3s)
+- **Fine Control**: Use smaller values (e.g., 0.5) for more frames, larger values for fewer frames
+
+This feature enables training on video datasets where temporal information is important, such as action recognition, video classification, or motion analysis tasks.
 
 ### Creating Custom Datasets
 
 To use your own dataset:
 1. Create a new directory under `datasets/`
-2. Organize images in subdirectories named after their classes
-3. Ensure all images are in PNG format
+2. Organize images and/or videos in subdirectories named after their classes
+3. Ensure all images are in PNG format and videos are in MP4 format
 4. Instantiate the dataset in your code: `RubyNeuralNets::Dataset.new('your_dataset_name')`
+
+#### Video Dataset Example
+
+For video datasets, you can mix PNG images and MP4 videos:
+
+```
+datasets/
+└── my_video_dataset/
+    ├── action_jump/
+    │   ├── jump_01.png
+    │   ├── jump_02.mp4
+    │   └── jump_03.mp4
+    ├── action_run/
+    │   ├── run_01.mp4
+    │   └── run_02.mp4
+    └── action_walk/
+        ├── walk_01.png
+        └── walk_02.mp4
+```
+
+Training on a video dataset:
+```bash
+bundle exec ruby bin/train --dataset=my_video_dataset --video-slices-sec=0.5 --data-loader=NumoImageMagick
+```
 
 ### Data Augmentation
 
@@ -489,6 +537,12 @@ bundle exec ruby bin/train --dataset=colors --nbr-clones 5 --rot-angle 90 --resi
 
 # Augmentation with noise for robustness
 bundle exec ruby bin/train --dataset=numbers --noise-intensity 0.1 --rot-angle 45
+
+# Video processing with high temporal resolution
+bundle exec ruby bin/train --dataset=my_video_dataset --video-slices-sec=0.5 --data-loader=NumoImageMagick
+
+# Video processing with mixed dataset (images + videos)
+bundle exec ruby bin/train --dataset=action_dataset --video-slices-sec=1.0 --nbr-clones 2 --rot-angle 15
 ```
 
 This configuration will:
@@ -501,6 +555,11 @@ For the noise example:
 - Add Gaussian noise with intensity 0.1 to each image
 - Apply random rotation between -45° and +45°
 - Helps improve model robustness to noise and orientation variations
+
+For the video examples:
+- Extract frames from MP4 videos every 0.5 seconds (high temporal resolution) or 1.0 seconds (standard resolution)
+- Automatically combine video frames with any static images in the dataset
+- Apply the same data augmentation pipeline to both video frames and static images
 
 ### Code Structure
 

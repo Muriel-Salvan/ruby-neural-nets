@@ -343,6 +343,33 @@ module RubyNeuralNetsTest
       expect(array_distance(array_1, array_2).max).not_to be_within(threshold).of(0)
     end
 
+    # Helper method to generate MP4 file content as a string using streamio-ffmpeg.
+    # This method creates an MP4 video from a PNG image with specified duration.
+    #
+    # Parameters::
+    # * *width* (Integer): The width of the video in pixels
+    # * *height* (Integer): The height of the video in pixels
+    # * *duration* (Float): Duration of the video in seconds
+    # * *pixels* (Array<Integer> or Hash): Pixel data for the video frame (same format as png method)
+    # Result::
+    # * String: The MP4 file content as a binary string
+    def mp4(width, height, duration, pixels)
+      require 'streamio-ffmpeg'
+      require 'tmpdir'
+      Dir.mktmpdir do |temp_dir|
+        # Create a PNG image from the pixel data
+        png_file = "#{temp_dir}/frame.png"
+        File.binwrite(png_file, png(width, height, pixels))
+        # Use ffmpeg to create MP4 from the PNG image
+        mp4_file = "#{temp_dir}/video.mp4"
+        # Run ffmpeg command to create video with specified duration
+        # -loop 1 loops the image, -t sets duration, -r sets framerate
+        system("ffmpeg -y -loop 1 -i #{png_file} -t #{duration} -r 10 -pix_fmt yuv420p #{mp4_file}", exception: true)
+        # Read the generated MP4 file
+        File.binread(mp4_file)
+      end
+    end
+
   end
 
 end

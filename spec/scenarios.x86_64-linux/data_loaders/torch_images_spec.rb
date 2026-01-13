@@ -1,10 +1,15 @@
 require_relative '../../scenarios/data_loaders/shared/data_loader_scenarios'
+require_relative '../../scenarios/data_loaders/shared/video_support_scenarios'
 require "ruby_neural_nets/data_loaders/torch_images.#{RUBY_PLATFORM}"
 
 describe RubyNeuralNets::DataLoaders::TorchImages do
 
   include_examples 'data loader scenarios', 
     rotation_expected: [0.5, 0.7, 0, 0.05, 1, 0.05, 0, 0.7, 0.5],
+    label_from: proc { |y| y.item },
+    color_from: proc { |x| x.item }
+
+  include_examples 'video support scenarios',
     label_from: proc { |y| y.item },
     color_from: proc { |x| x.item }
 
@@ -31,7 +36,8 @@ describe RubyNeuralNets::DataLoaders::TorchImages do
         resize: [1, 1],
         noise_intensity: 0.0,
         minmax_normalize: false,
-        flatten: true
+        flatten: true,
+        video_slices_sec: 1.0
       }.merge(overrides)
     )
   end

@@ -216,6 +216,10 @@ module RubyNeuralNets
             partitions: {
               desc: 'Hash of partition names and their proportion percentages.',
               value: { training: 0.7, dev: 0.15, test: 0.15 }
+            },
+            video_slices_sec: {
+              desc: 'Number of seconds of each video slice used to extract images from MP4 files.',
+              value: 1.0
             }
           }
         },
