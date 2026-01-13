@@ -44,4 +44,4 @@
 
 1. Always try to group all edits for a given task in the same file in 1 step.
 2. For big files, replace_in_file does not work properly. Use write_in_file when you see that there are no edits in the proposed changes.
-3. Cline should run unit tests only with WSL, using the following command line: `wsl --distribution Ubuntu -- bash -i -c '\"$(ls /mnt/*/Env/Linux/Programs/bash/bash)\" -i -c \"bundle exec rspec\"'`. Don't forget to include the antislashes before the double quotes exactly as it is written, otherwise escaping won't work.
+3. Cline should run unit tests only with WSL, using the following command line: `.\wsl_tests.cmd`.
