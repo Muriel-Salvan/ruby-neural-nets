@@ -17,7 +17,46 @@ module RubyNeuralNets
       def initialize(dataset, max_minibatch_size: 1000)
         super
         # Don't use shuffle, as the dataset given is an EpochShuffler and already handles shuffling data before it gets batched.
-        @torch_data_loader = ::Torch::Utils::Data::DataLoader.new(@dataset.map { |sample| [sample.input, sample.target] }, batch_size: @max_minibatch_size, shuffle: false)
+        # Use lazy evaluation by passing the dataset directly and providing a custom collate_fn
+        @torch_data_loader = ::Torch::Utils::Data::DataLoader.new(
+          @dataset,
+          batch_size: @max_minibatch_size,
+          shuffle: false,
+          collate_fn: method(:custom_collate_fn)
+        )
+      end
+
+      # Custom collate function that processes Sample objects lazily
+      #
+      # Parameters::
+      # * *batch* (Array<Sample>): Array of Sample objects to be collated
+      # Result::
+      # * Array: Array containing [inputs, labels] tensors
+      def custom_collate_fn(batch)
+        # Use the default collate behavior to create tensors
+        [default_convert(batch.map(&:input)), default_convert(batch.map(&:target))]
+      end
+
+      # Default convert method similar to Torch's DataLoader
+      #
+      # Parameters::
+      # * *batch* (Array): Array of elements to convert
+      # Result::
+      # * Object: Converted batch (tensor or other format)
+      def default_convert(batch)
+        return batch if batch.empty?
+        
+        elem = batch[0]
+        case elem
+        when ::Torch::Tensor
+          ::Torch.stack(batch, 0)
+        when Integer
+          ::Torch.tensor(batch)
+        when Array
+          batch.transpose.map { |v| default_convert(v) }
+        else
+          batch
+        end
       end
 
       # Access an element of the dataset
