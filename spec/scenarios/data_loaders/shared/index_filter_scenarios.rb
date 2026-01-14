@@ -15,7 +15,7 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(training_samples.size).to eq(2)
         # Check that we have samples with colors 2 and 4 (indexes 1 and 3)
         colors = training_samples.map { |sample| options[:color_from].call(sample.input).to_f }.sort
-        expect(colors).to eq([2.0, 4.0])
+        expect(colors).to eq([2.0/65535, 4.0/65535])
       end
     end
 
@@ -33,7 +33,7 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(training_samples.size).to eq(4)
         # Check that we have samples with colors 2,3,4,6 (indexes 1,2,3,5)
         colors = training_samples.map { |sample| options[:color_from].call(sample.input).to_f }.sort
-        expect(colors).to eq([2.0, 3.0, 4.0, 6.0])
+        expect(colors).to eq([2.0/65535, 3.0/65535, 4.0/65535, 6.0/65535])
       end
     end
 
@@ -48,7 +48,7 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(training_samples.size).to eq(3)
         # Check that we have all samples
         colors = training_samples.map { |sample| options[:color_from].call(sample.input).to_f }.sort
-        expect(colors).to eq([1.0, 2.0, 3.0])
+        expect(colors).to eq([1.0/65535, 2.0/65535, 3.0/65535])
       end
     end
 
@@ -68,7 +68,7 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(dev_samples.size).to eq(1)
         # Check colors: original indexes 0,2,4 have colors 1,3,5
         all_colors = (training_samples + dev_samples).map { |sample| options[:color_from].call(sample.input).to_f }
-        expect(all_colors.sort).to eq([1.0, 3.0, 5.0])
+        expect(all_colors.sort).to eq([1.0/65535, 3.0/65535, 5.0/65535])
       end
     end
 
