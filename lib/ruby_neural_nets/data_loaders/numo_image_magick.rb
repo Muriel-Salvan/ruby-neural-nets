@@ -1,6 +1,7 @@
 require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
+require 'ruby_neural_nets/datasets/index_filter'
 require 'ruby_neural_nets/datasets/file_to_image_magick'
 require 'ruby_neural_nets/datasets/image_magick_grayscale'
 require 'ruby_neural_nets/datasets/image_magick_adaptive_invert'
@@ -41,7 +42,8 @@ module RubyNeuralNets
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
       # * *video_slices_sec* (Float): Number of seconds of each video slice used to extract images from MP4 files
-      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, video_slices_sec:)
+      # * *filter_dataset* (String): Filter dataset indexes to include
+      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, video_slices_sec:, filter_dataset:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
@@ -51,6 +53,7 @@ module RubyNeuralNets
         @noise_intensity = noise_intensity
         @minmax_normalize = minmax_normalize
         @video_slices_sec = video_slices_sec
+        @filter_dataset = filter_dataset
         super(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       end
 
@@ -113,9 +116,12 @@ module RubyNeuralNets
       # * LabeledDataPartitioner: The partitioned dataset.
       def new_partitioned_dataset(datasets_path:, name:, rng:, numo_rng:, partitions:)
         Datasets::LabeledDataPartitioner.new(
-          Datasets::FileToImageMagick.new(
-            Datasets::LabeledFiles.new(datasets_path:, name:),
-            video_slices_sec: @video_slices_sec
+          Datasets::IndexFilter.new(
+            Datasets::FileToImageMagick.new(
+              Datasets::LabeledFiles.new(datasets_path:, name:),
+              video_slices_sec: @video_slices_sec
+            ),
+            filter: @filter_dataset
           ),
           partitions:,
           rng:

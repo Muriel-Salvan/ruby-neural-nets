@@ -220,6 +220,10 @@ module RubyNeuralNets
             video_slices_sec: {
               desc: 'Number of seconds of each video slice used to extract images from MP4 files.',
               value: 1.0
+            },
+            filter_dataset: {
+              desc: 'Filter dataset indexes to include. Supports individual indexes and ranges (e.g., "1,3,5-8"). Use "all" for all indexes.',
+              value: 'all'
             }
           }
         },

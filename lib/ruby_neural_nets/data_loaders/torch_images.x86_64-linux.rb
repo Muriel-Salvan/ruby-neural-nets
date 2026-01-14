@@ -1,6 +1,7 @@
 require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
+require 'ruby_neural_nets/datasets/index_filter'
 require 'ruby_neural_nets/datasets/cache_memory'
 require 'ruby_neural_nets/datasets/epoch_shuffler'
 require 'ruby_neural_nets/datasets/indexer'
@@ -45,7 +46,8 @@ module RubyNeuralNets
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
       # * *flatten* (bool): Flatten image data to 1D array for models that expect flat input vectors
       # * *video_slices_sec* (Float): Number of seconds of each video slice used to extract images from MP4 files
-      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, flatten:, video_slices_sec:)
+      # * *filter_dataset* (String): Filter dataset indexes to include
+      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, flatten:, video_slices_sec:, filter_dataset:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
@@ -56,6 +58,7 @@ module RubyNeuralNets
         @minmax_normalize = minmax_normalize
         @flatten = flatten
         @video_slices_sec = video_slices_sec
+        @filter_dataset = filter_dataset
         super(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       end
 
@@ -74,7 +77,10 @@ module RubyNeuralNets
       def new_partitioned_dataset(datasets_path:, name:, rng:, numo_rng:, partitions:)
         Datasets::LabeledDataPartitioner.new(
           Datasets::FileToImageMagick.new(
-            Datasets::LabeledFiles.new(datasets_path:, name:),
+            Datasets::IndexFilter.new(
+              Datasets::LabeledFiles.new(datasets_path:, name:),
+              filter: @filter_dataset
+            ),
             video_slices_sec: @video_slices_sec
           ),
           partitions:,

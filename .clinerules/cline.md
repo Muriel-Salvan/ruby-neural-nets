@@ -14,6 +14,7 @@ Project specific rules are defined in the [../rules/all.md](../rules/all.md) fil
 
 1. When modified files can be committed in a meaningful commit, create a new git commit in the current branch (**never in another branch**) and push the branch to the github remote. This can be done using the command: `git add <file1> <file2> ... <fileN>; git commit -m"<Meaningful git commit comment>"; git push github`.
 2. For big files, replace_in_file does not work properly. Always check that the file is containing the edits you expect. Use write_in_file when you see that there are no edits in the proposed changes.
+3. Unit tests can't be run using `bundle exec rspec` directly. Use `.\wsl_tests.cmd` instead.
 
 ## Before completing a task
 
