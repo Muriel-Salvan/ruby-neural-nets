@@ -10,7 +10,7 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         'test_dataset/class_0/test_image_3.png' => png(1, 1, { color: [4] }),
         'test_dataset/class_0/test_image_4.png' => png(1, 1, { color: [5] })
       ) do |datasets_path|
-        data_loader = new_data_loader(datasets_path:, filter_dataset: '1,3', partitions: { training: 1.0, dev: 0.0, test: 0.0 })
+        data_loader = new_data_loader(datasets_path:, filter_dataset: '1,3', partitions: { training: 1.0, dev: 0.0, test: 0.0 }, minmax_normalize: false)
         training_samples = data_loader.dataset(:training).first.to_a
         expect(training_samples.size).to eq(2)
         # Check that we have samples with colors 2 and 4 (indexes 1 and 3)
@@ -28,7 +28,7 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         'test_dataset/class_0/test_image_4.png' => png(1, 1, { color: [5] }),
         'test_dataset/class_0/test_image_5.png' => png(1, 1, { color: [6] })
       ) do |datasets_path|
-        data_loader = new_data_loader(datasets_path:, filter_dataset: '1-3,5', partitions: { training: 1.0, dev: 0.0, test: 0.0 })
+        data_loader = new_data_loader(datasets_path:, filter_dataset: '1-3,5', partitions: { training: 1.0, dev: 0.0, test: 0.0 }, minmax_normalize: false)
         training_samples = data_loader.dataset(:training).first.to_a
         expect(training_samples.size).to eq(4)
         # Check that we have samples with colors 2,3,4,6 (indexes 1,2,3,5)
@@ -43,7 +43,7 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         'test_dataset/class_0/test_image_1.png' => png(1, 1, { color: [2] }),
         'test_dataset/class_0/test_image_2.png' => png(1, 1, { color: [3] })
       ) do |datasets_path|
-        data_loader = new_data_loader(datasets_path:, filter_dataset: 'all', partitions: { training: 1.0, dev: 0.0, test: 0.0 })
+        data_loader = new_data_loader(datasets_path:, filter_dataset: 'all', partitions: { training: 1.0, dev: 0.0, test: 0.0 }, minmax_normalize: false)
         training_samples = data_loader.dataset(:training).first.to_a
         expect(training_samples.size).to eq(3)
         # Check that we have all samples
