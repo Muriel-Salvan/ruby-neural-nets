@@ -38,12 +38,12 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 - [Findings and experiments](#findings-and-experiments)
 - [Contributing](#contributing)
   - [Code Structure](#code-structure)
-- [Testing](#testing)
-  - [Running Tests](#running-tests)
-  - [Test Structure](#test-structure)
-  - [Test Features](#test-features)
-  - [Writing Tests](#writing-tests)
-  - [Regenerating onnx_pb.rb](#regenerating-onnx_pbrb)
+  - [Testing](#testing)
+    - [Running Tests](#running-tests)
+    - [Test Structure](#test-structure)
+    - [Test Features](#test-features)
+    - [Writing Tests](#writing-tests)
+    - [Regenerating onnx_pb.rb](#regenerating-onnx_pbrb)
 - [License](#license)
 
 ## Features
