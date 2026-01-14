@@ -7,3 +7,4 @@
 * Find techniques that are efficient for hyper parameters tuning - See C2W3
 * Add Recall as a metric - See C3W1
 * Package torchvision-alt using numo-narray-alt
+* Convert all Ruby methods documentation to a more Ruby standard way
