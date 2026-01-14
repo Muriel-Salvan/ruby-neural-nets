@@ -561,6 +561,20 @@ For the video examples:
 - Automatically combine video frames with any static images in the dataset
 - Apply the same data augmentation pipeline to both video frames and static images
 
+## Findings and experiments
+
+See [docs/experiments.md](docs/experiments.md) for detailed experimental results and performance benchmarks.
+
+## Contributing
+
+This is a playground project for experimenting with neural networks in Ruby. Feel free to:
+- Add new model architectures
+- Implement additional optimizers or loss functions
+- Experiment with different datasets
+- Improve performance or add features
+
+Development rules that should be followed are documented in the [rules](rules/all.md) file.
+
 ### Code Structure
 
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
@@ -595,19 +609,11 @@ For the video examples:
 - `lib/ruby_neural_nets/torchvision/transforms/`: Individual TorchVision transform implementations
 - `lib/ruby_neural_nets/transform_helpers/`: Shared image transformation utilities used across dataset layers
 
-## Contributing
-
-This is a playground project for experimenting with neural networks in Ruby. Feel free to:
-- Add new model architectures
-- Implement additional optimizers or loss functions
-- Experiment with different datasets
-- Improve performance or add features
-
-## Testing
+### Testing
 
 The project uses RSpec for unit testing to ensure the correctness of neural network implementations and training components.
 
-### Running Tests
+#### Running Tests
 
 To run the test suite:
 
@@ -617,7 +623,9 @@ bundle exec rspec
 
 This will execute all tests in the `spec/` directory.
 
-### Test Structure
+A nice helper has been made available to run those tests using WSL from PowerShell (useful for automation tasks and running both Windows and Linux specific tests): `wsl_tests.cmd`. Feel free to modify it to your local setup.
+
+#### Test Structure
 
 The test suite follows a structured organization:
 
@@ -632,14 +640,14 @@ The test suite follows a structured organization:
 - **`spec/spec_helper.rb`**: RSpec configuration and load path setup
 - **`.rspec`**: RSpec options file that automatically requires spec_helper.rb
 
-### Test Features
+#### Test Features
 
 - **Mocked File System**: Tests use the fakefs gem to mock file system operations, avoiding dependencies on actual dataset files
 - **Synthetic Data**: Generates deterministic PNG image files with pixel data based on class labels for consistent test results
 - **Progress Validation**: Ensures training progress is properly tracked and reported
 - **Component Integration**: Tests the integration between Trainer, ProgressTracker, and Experiment classes
 
-### Writing Tests
+#### Writing Tests
 
 When adding new tests:
 1. Place test files in the appropriate `spec/scenarios/<interface_kind>/` directory with `_spec.rb` suffix
@@ -648,12 +656,6 @@ When adding new tests:
 4. Mock external dependencies (random data, external APIs) for reliable execution
 5. Test both success and failure scenarios
 6. Verify numerical outputs are within expected ranges
-
-## Findings and experiments
-
-See [docs/experiments.md](docs/experiments.md) for detailed experimental results and performance benchmarks.
-
-## Contributing
 
 ### Regenerating onnx_pb.rb
 
