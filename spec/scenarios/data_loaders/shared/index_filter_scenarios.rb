@@ -15,7 +15,8 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(training_samples.size).to eq(2)
         # Check that we have samples with colors 514 and 1028 (indexes 1 and 3)
         colors = training_samples.map { |sample| options[:color_from].call(sample.input).to_f }.sort
-        expect(colors).to eq([514.0/65535, 1028.0/65535])
+        expect(colors[0]).to be_within(1e-10).of(514.0/65535)
+        expect(colors[1]).to be_within(1e-10).of(1028.0/65535)
       end
     end
 
@@ -33,7 +34,10 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(training_samples.size).to eq(4)
         # Check that we have samples with colors 514,771,1028,1542 (indexes 1,2,3,5)
         colors = training_samples.map { |sample| options[:color_from].call(sample.input).to_f }.sort
-        expect(colors).to eq([514.0/65535, 771.0/65535, 1028.0/65535, 1542.0/65535])
+        expect(colors[0]).to be_within(1e-10).of(514.0/65535)
+        expect(colors[1]).to be_within(1e-10).of(771.0/65535)
+        expect(colors[2]).to be_within(1e-10).of(1028.0/65535)
+        expect(colors[3]).to be_within(1e-10).of(1542.0/65535)
       end
     end
 
@@ -48,7 +52,9 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(training_samples.size).to eq(3)
         # Check that we have all samples
         colors = training_samples.map { |sample| options[:color_from].call(sample.input).to_f }.sort
-        expect(colors).to eq([257.0/65535, 514.0/65535, 771.0/65535])
+        expect(colors[0]).to be_within(1e-10).of(257.0/65535)
+        expect(colors[1]).to be_within(1e-10).of(514.0/65535)
+        expect(colors[2]).to be_within(1e-10).of(771.0/65535)
       end
     end
 
@@ -67,8 +73,10 @@ RSpec.shared_examples 'index filter scenarios' do |options|
         expect(training_samples.size).to eq(2)
         expect(dev_samples.size).to eq(1)
         # Check colors: original indexes 0,2,4 have colors 257,771,1285
-        all_colors = (training_samples + dev_samples).map { |sample| options[:color_from].call(sample.input).to_f }
-        expect(all_colors.sort).to eq([257.0/65535, 771.0/65535, 1285.0/65535])
+        all_colors = (training_samples + dev_samples).map { |sample| options[:color_from].call(sample.input).to_f }.sort
+        expect(all_colors[0]).to be_within(1e-10).of(257.0/65535)
+        expect(all_colors[1]).to be_within(1e-10).of(771.0/65535)
+        expect(all_colors[2]).to be_within(1e-10).of(1285.0/65535)
       end
     end
 
