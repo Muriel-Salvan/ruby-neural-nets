@@ -1,3 +1,5 @@
+require_relative 'index_filter_scenarios'
+
 RSpec.shared_examples 'data loader scenarios' do |options|
 
   describe 'image stats' do
@@ -305,11 +307,6 @@ RSpec.shared_examples 'data loader scenarios' do |options|
 
   end
 
-end
-
-require_relative 'index_filter_scenarios'
-
-RSpec.shared_examples 'data loader scenarios with index filtering' do |options|
-  include_examples 'data loader scenarios', options
   include_examples 'index filter scenarios', options
+
 end

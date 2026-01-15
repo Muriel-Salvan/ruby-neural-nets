@@ -8,6 +8,9 @@ Project specific rules are defined in the [../rules/all.md](../rules/all.md) fil
 
 ## General rules
 
+1. If the user is asking for a "Quick task", then tests, documentation and git commits are not needed from Cline, unless specifically asked in the quick task description. However other rules still apply.
+2. If the user is not asking for a "Quick task", then all rules must be followed.
+
 ## When starting a task
 
 ## When working on a task

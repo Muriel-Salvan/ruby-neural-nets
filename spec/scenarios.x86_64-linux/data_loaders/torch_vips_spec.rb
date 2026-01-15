@@ -3,7 +3,7 @@ require "ruby_neural_nets/data_loaders/torch_vips.#{RUBY_PLATFORM}"
 
 describe RubyNeuralNets::DataLoaders::TorchVips do
 
-  include_examples 'data loader scenarios with index filtering',
+  include_examples 'data loader scenarios',
     rotation_expected: [0.03, 0.32, 0, 0, 0.92, 0.15, 0, 0.54, 0.54],
     label_from: proc { |y| y.item },
     color_from: proc { |x| x.item }

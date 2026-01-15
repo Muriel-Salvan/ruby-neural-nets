@@ -4,7 +4,7 @@ require "ruby_neural_nets/data_loaders/torch_images.#{RUBY_PLATFORM}"
 
 describe RubyNeuralNets::DataLoaders::TorchImages do
 
-  include_examples 'data loader scenarios with index filtering',
+  include_examples 'data loader scenarios',
     rotation_expected: [0.5, 0.7, 0, 0.05, 1, 0.05, 0, 0.7, 0.5],
     label_from: proc { |y| y.item },
     color_from: proc { |x| x.item }
