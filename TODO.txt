@@ -1,6 +1,9 @@
-* Add simple unit tests to check big issues in main frameworks.
-* Add test case of the --help CLI.
 * Add a way to not dump logs to stdout unless TEST_DEBUG=1 in environment.
+* Add Github CI workflow with tests.
+* Add proper AI agents tooling.
+* Use a U-net model with classification.
+* Perform transfer learning on the U-net model.
+* Add test case of the --help CLI.
 * Use GPU to speed-up.
 * Glorot is supposed to be not great with ReLU. Try randn*sqrt(2/n[l-1])
 * Use Keras or Torch and continue next steps in recognition using convolutional layers, transfer & multitask learning (C3W2), data augmentation, skip connections, RNNs...
@@ -8,3 +11,4 @@
 * Add Recall as a metric - See C3W1
 * Package torchvision-alt using numo-narray-alt
 * Convert all Ruby methods documentation to a more Ruby standard way
+* Extract all ONNX to Torch functionality in a nice Rubygem
