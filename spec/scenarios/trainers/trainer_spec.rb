@@ -64,7 +64,8 @@ describe RubyNeuralNets::Trainer do
           resize: [28, 28],
           noise_intensity: 0.0,
           minmax_normalize: true,
-          video_slices_sec: 1.0
+          video_slices_sec: 1.0,
+          filter_dataset: 'all'
         )
 
         # Create experiment inside fakefs

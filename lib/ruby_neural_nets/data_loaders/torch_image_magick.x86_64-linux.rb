@@ -1,6 +1,7 @@
 require 'ruby_neural_nets/data_loader'
 require 'ruby_neural_nets/datasets/labeled_files'
 require 'ruby_neural_nets/datasets/labeled_data_partitioner'
+require 'ruby_neural_nets/datasets/index_filter'
 require 'ruby_neural_nets/datasets/cache_memory'
 require 'ruby_neural_nets/datasets/epoch_shuffler'
 require 'ruby_neural_nets/datasets/labeled_torch_images'
@@ -42,7 +43,8 @@ module RubyNeuralNets
       # * *noise_intensity* (Float): Intensity of Gaussian noise for image transformations
       # * *minmax_normalize* (bool): Scale image data to always be within the range 0 to 1
       # * *flatten* (bool): Flatten image data to 1D array for models that expect flat input vectors
-      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, flatten:)
+      # * *filter_dataset* (String): Filter dataset indexes to include
+      def initialize(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:, nbr_clones:, rot_angle:, grayscale:, adaptive_invert:, trim:, resize:, noise_intensity:, minmax_normalize:, flatten:, filter_dataset:)
         @nbr_clones = nbr_clones
         @rot_angle = rot_angle
         @grayscale = grayscale
@@ -52,6 +54,7 @@ module RubyNeuralNets
         @noise_intensity = noise_intensity
         @minmax_normalize = minmax_normalize
         @flatten = flatten
+        @filter_dataset = filter_dataset
         super(datasets_path:, dataset:, max_minibatch_size:, dataset_seed:, partitions:)
       end
 
@@ -69,7 +72,10 @@ module RubyNeuralNets
       # * LabeledDataPartitioner: The partitioned dataset.
       def new_partitioned_dataset(datasets_path:, name:, rng:, numo_rng:, partitions:)
         Datasets::LabeledDataPartitioner.new(
-          Datasets::LabeledFiles.new(datasets_path:, name:),
+          Datasets::IndexFilter.new(
+            Datasets::LabeledFiles.new(datasets_path:, name:),
+            filter: @filter_dataset
+          ),
           partitions:,
           rng:
         )

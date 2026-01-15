@@ -3,7 +3,7 @@ require "ruby_neural_nets/data_loaders/torch_image_magick.#{RUBY_PLATFORM}"
 
 describe RubyNeuralNets::DataLoaders::TorchImageMagick do
 
-  include_examples 'data loader scenarios', 
+  include_examples 'data loader scenarios',
     rotation_expected: [0.5, 0.7, 0, 0.05, 1, 0.05, 0, 0.7, 0.5],
     label_from: proc { |y| y.item },
     color_from: proc { |x| x.item }
@@ -31,7 +31,8 @@ describe RubyNeuralNets::DataLoaders::TorchImageMagick do
         resize: [1, 1],
         noise_intensity: 0.0,
         minmax_normalize: false,
-        flatten: true
+        flatten: true,
+        filter_dataset: 'all'
       }.merge(overrides)
     )
   end

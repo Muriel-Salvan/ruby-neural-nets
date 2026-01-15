@@ -30,7 +30,8 @@ describe RubyNeuralNets::DataLoaders::NumoVips do
         trim: false,
         resize: [1, 1],
         noise_intensity: 0.0,
-        minmax_normalize: false
+        minmax_normalize: false,
+        filter_dataset: 'all'
       }.merge(overrides)
     )
   end

@@ -1,3 +1,5 @@
+require_relative 'index_filter_scenarios'
+
 RSpec.shared_examples 'data loader scenarios' do |options|
 
   describe 'image stats' do
@@ -302,7 +304,9 @@ RSpec.shared_examples 'data loader scenarios' do |options|
         expect(data_loader.dataset(:training).first.first.input).not_to be_nil
       end
     end
-  
+
   end
+
+  include_examples 'index filter scenarios', options
 
 end
