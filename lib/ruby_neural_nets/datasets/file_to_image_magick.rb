@@ -5,6 +5,51 @@ require 'stringio'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/sample'
 
+# Monkey patch Open3 and IO to silence ffmpeg output
+require 'open3'
+
+# Patch Open3.capture3
+module Open3
+  class << self
+    alias :original_capture3 :capture3
+    def capture3(*cmd, **opts)
+      # Check if this is an ffmpeg command
+      cmd_str = Array(cmd).flatten.join(' ')
+      if cmd_str.include?('ffmpeg')
+        stdout, stderr, status = original_capture3(*cmd, **opts)
+        # Return empty stdout but keep stderr and status
+        ['', stderr, status]
+      else
+        original_capture3(*cmd, **opts)
+      end
+    end
+  end
+end
+
+# Patch IO.popen
+module IO
+  class << self
+    alias :original_popen :popen
+    def popen(cmd, mode = 'r', **opts)
+      # Check if this is an ffmpeg command
+      cmd_str = cmd.is_a?(Array) ? cmd.join(' ') : cmd.to_s
+      if cmd_str.include?('ffmpeg') && mode.include?('r')
+        # For reading from ffmpeg, redirect stdout to /dev/null but keep stderr
+        # This is a bit tricky, let's try to modify the command
+        if cmd.is_a?(Array)
+          modified_cmd = cmd + ['2>&1', '>/dev/null']
+          original_popen(modified_cmd, mode, **opts)
+        else
+          modified_cmd = "#{cmd} 2>&1 >/dev/null"
+          original_popen(modified_cmd, mode, **opts)
+        end
+      else
+        original_popen(cmd, mode, **opts)
+      end
+    end
+  end
+end
+
 module RubyNeuralNets
 
   module Datasets
@@ -109,14 +154,12 @@ module RubyNeuralNets
               original_index:
             }
           when '.mp4'
-            silence_output do
-              (FFMPEG::Movie.new(file_path).duration / @video_slices_sec).ceil.times do |slice_idx|
-                mapping << {
-                  file_path:,
-                  time_offset: slice_idx * @video_slices_sec,
-                  original_index:
-                }
-              end
+            (FFMPEG::Movie.new(file_path).duration / @video_slices_sec).ceil.times do |slice_idx|
+              mapping << {
+                file_path:,
+                time_offset: slice_idx * @video_slices_sec,
+                original_index:
+              }
             end
           else
             raise "Unsupported file extension: #{extension}."
@@ -138,10 +181,8 @@ module RubyNeuralNets
           # Create a temporary file for the screenshot
           Dir.mktmpdir do |temp_dir|
             temp_file = "#{temp_dir}/frame.png"
-            # Take screenshot at the specified time, silencing stdout but keeping stderr for errors
-            silence_output do
-              video.screenshot(temp_file, seek_time: file_info[:time_offset])
-            end
+            # Take screenshot at the specified time
+            video.screenshot(temp_file, seek_time: file_info[:time_offset])
             # Load the screenshot with ImageMagick
             Magick::ImageList.new(temp_file).first
           end
