@@ -4,6 +4,44 @@ require 'tmpdir'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/sample'
 
+# Silence streamio-ffmpeg logger
+FFMPEG.logger = Logger.new(IO::NULL) if defined?(FFMPEG.logger)
+
+# Monkey patch system calls to silence ffmpeg output
+require 'open3'
+
+# Patch Open3.capture3 to silence ffmpeg
+module Open3
+  class << self
+    alias :original_capture3 :capture3
+    def capture3(*cmd, **opts)
+      cmd_str = Array(cmd).flatten.join(' ')
+      if cmd_str.include?('ffmpeg')
+        # Run ffmpeg with silenced output
+        stdout, stderr, status = original_capture3(*cmd, **opts)
+        # Return empty stdout but keep stderr for errors
+        ['', stderr, status]
+      else
+        original_capture3(*cmd, **opts)
+      end
+    end
+  end
+end
+
+# Patch Kernel.system to silence ffmpeg stdout
+module Kernel
+  alias :original_system :system
+  def system(*cmd)
+    cmd_str = cmd.join(' ')
+    if cmd_str.include?('ffmpeg')
+      # Redirect stdout to /dev/null for ffmpeg commands, keep stderr
+      original_system(cmd_str + ' >/dev/null')
+    else
+      original_system(*cmd)
+    end
+  end
+end
+
 module RubyNeuralNets
 
   module Datasets
@@ -120,7 +158,7 @@ module RubyNeuralNets
           Dir.mktmpdir do |temp_dir|
             temp_file = "#{temp_dir}/frame.png"
             # Take screenshot at the specified time
-            video.screenshot(temp_file, seek_time: file_info[:time_offset], custom: ['-loglevel', 'error'])
+            video.screenshot(temp_file, seek_time: file_info[:time_offset], custom: ['-loglevel', 'quiet'])
             # Load the screenshot with ImageMagick
             Magick::ImageList.new(temp_file).first
           end
