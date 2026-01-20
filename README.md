@@ -86,8 +86,10 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
    - **gnuplot**: Install the gnuplot package (`apt install gnuplot`).
    - **xrandr**: Install the X11 server utils package (`apt install x11-xserver-utils`).
    - **protobuf**: Install Google's Protobuf (`apt install protobuf-compiler`).
-6. **libTorch**: Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure bundler to use it: `bundle config set build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/`
-    - On Linux, clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its Gemfile to depend on numo-narray-alt instead of numo-narray.
+6. **libTorch** (Linux only): Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure it:
+   - In case you use also Cuda from WSL: `bundle config set --local build.torch-rb "--with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/ --with-cuda-ldflags=-L/usr/lib/wsl/lib"`
+   - Otherwise: `bundle config set --local build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/`
+   - Clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its Gemfile to depend on numo-narray-alt instead of numo-narray.
 7. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
 8. **Cuda** and **CudNN**: On WSL only, Cuda and CudNN can be installed this way:
    1. First install NVidia drivers in Windows 11 (not WSL).
@@ -112,6 +114,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
    ```bash
    bundle install
    ```
+   In case the compilation fails by lack of memory (this can happen in WSL), use `bundle install --jobs 1`.
 
 ## Usage
 
@@ -629,7 +632,7 @@ bundle exec rspec
 
 This will execute all tests in the `spec/` directory.
 
-A nice helper has been made available to run those tests using WSL from PowerShell (useful for automation tasks and running both Windows and Linux specific tests): `wsl_tests.cmd`. Feel free to modify it to your local setup.
+A nice helper has been made available to run those tests using WSL from PowerShell (useful for automation tasks and running both Windows and Linux specific tests): `.\tools\rspec_wsl.cmd`. Feel free to modify it to your local setup.
 
 #### Test Structure
 

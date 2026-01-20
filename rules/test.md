@@ -15,4 +15,5 @@
   2. Call only the public interface of the class to be tested. Never call private methods of the interface.
   3. Write simple assertions on results of the public interface of the class to be tested. Never assert results from private methods of the interface.
 9. Each unit test scenario should run in an isolated way: running scenarios in whatever order or group should never change the result of the test. If side effects are found while running test scenarios that are impacting other test scenarios, those side effects should be removed to make sure each test scenario runs in isolation.
-10. Running tests is done using the command line `.\wsl_tests.cmd`. Successful tests should output "0 failures" in the end of tests run. If this string is not found then it means tests are failing.
+10. RSpec tests can be run in WSL using the command line `.\tools\rspec_wsl.cmd`. It accepts the same CLI arguments as rspec itself. For example, a single test scenario can be run using `.\rspec_wsl.cmd -e "tracks progress and reports correct cost and accuracy"`.
+11. Successful tests run should output "0 failures" at the end. If this string is not found then it means tests are failing.

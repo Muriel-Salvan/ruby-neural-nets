@@ -1,16 +1,9 @@
-# Don't include the bundler directories
-/.bundle
-/vendor
-
 # Don't include the datasets and models
 /datasets
 /models
 
 # Don't include profiling outputs
 /profiling
-
-# Don't include byebug history
-/.byebug_history
 
 # Don't include the generated minibatches
 /minibatches
