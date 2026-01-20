@@ -10,7 +10,7 @@ module RubyNeuralNets
     @debug_mode = false
 
     # Class-level variable to store the logger instance
-    @logger = Logger.new(STDOUT)
+    @logger = ::Logger.new(STDOUT)
 
     class << self
       attr_accessor :debug_mode
