@@ -1,11 +1,9 @@
 require 'rmagick'
 require 'streamio-ffmpeg'
 require 'tmpdir'
+require 'stringio'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/sample'
-
-# Silence streamio-ffmpeg output, keeping only errors
-FFMPEG.logger.level = Logger::ERROR if defined?(FFMPEG.logger)
 
 module RubyNeuralNets
 
@@ -79,6 +77,22 @@ module RubyNeuralNets
 
       private
 
+      # Execute a block while silencing stdout, but keeping stderr visible for errors
+      #
+      # Parameters::
+      # * *block* (Proc): The block to execute
+      # Result::
+      # * Object: The result of the block execution
+      def silence_output(&block)
+        original_stdout = $stdout
+        $stdout = StringIO.new
+        begin
+          yield
+        ensure
+          $stdout = original_stdout
+        end
+      end
+
       # Build the index mapping for all files
       #
       # Result::
@@ -95,12 +109,14 @@ module RubyNeuralNets
               original_index:
             }
           when '.mp4'
-            (FFMPEG::Movie.new(file_path).duration / @video_slices_sec).ceil.times do |slice_idx|
-              mapping << {
-                file_path:,
-                time_offset: slice_idx * @video_slices_sec,
-                original_index:
-              }
+            silence_output do
+              (FFMPEG::Movie.new(file_path).duration / @video_slices_sec).ceil.times do |slice_idx|
+                mapping << {
+                  file_path:,
+                  time_offset: slice_idx * @video_slices_sec,
+                  original_index:
+                }
+              end
             end
           else
             raise "Unsupported file extension: #{extension}."
@@ -122,8 +138,10 @@ module RubyNeuralNets
           # Create a temporary file for the screenshot
           Dir.mktmpdir do |temp_dir|
             temp_file = "#{temp_dir}/frame.png"
-            # Take screenshot at the specified time (silence stdout, keep errors)
-            video.screenshot(temp_file, seek_time: file_info[:time_offset], custom: '-loglevel error')
+            # Take screenshot at the specified time, silencing stdout but keeping stderr for errors
+            silence_output do
+              video.screenshot(temp_file, seek_time: file_info[:time_offset])
+            end
             # Load the screenshot with ImageMagick
             Magick::ImageList.new(temp_file).first
           end
