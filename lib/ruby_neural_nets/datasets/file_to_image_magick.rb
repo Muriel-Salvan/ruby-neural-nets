@@ -4,27 +4,6 @@ require 'tmpdir'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/sample'
 
-# Configure streamio-ffmpeg to use silenced ffmpeg
-# Create a wrapper that adds -loglevel error to all ffmpeg calls
-module FFMPEG
-  class << self
-    attr_accessor :original_ffmpeg_binary
-  end
-
-  self.original_ffmpeg_binary = ffmpeg_binary
-
-  def self.ffmpeg_binary=(binary)
-    @ffmpeg_binary = binary
-  end
-
-  def self.ffmpeg_binary
-    @ffmpeg_binary || 'ffmpeg'
-  end
-end
-
-# Override the ffmpeg_binary to include silencing options
-FFMPEG.ffmpeg_binary = "#{FFMPEG.original_ffmpeg_binary} -loglevel error"
-
 module RubyNeuralNets
 
   module Datasets
@@ -141,7 +120,7 @@ module RubyNeuralNets
           Dir.mktmpdir do |temp_dir|
             temp_file = "#{temp_dir}/frame.png"
             # Take screenshot at the specified time
-            video.screenshot(temp_file, seek_time: file_info[:time_offset])
+            video.screenshot(temp_file, seek_time: file_info[:time_offset], custom: ['-loglevel', 'error'])
             # Load the screenshot with ImageMagick
             Magick::ImageList.new(temp_file).first
           end
