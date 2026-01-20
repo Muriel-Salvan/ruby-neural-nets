@@ -1,54 +1,29 @@
 require 'rmagick'
 require 'streamio-ffmpeg'
 require 'tmpdir'
-require 'stringio'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/sample'
 
-# Monkey patch Open3 and IO to silence ffmpeg output
-require 'open3'
-
-# Patch Open3.capture3
-module Open3
+# Configure streamio-ffmpeg to use silenced ffmpeg
+# Create a wrapper that adds -loglevel error to all ffmpeg calls
+module FFMPEG
   class << self
-    alias :original_capture3 :capture3
-    def capture3(*cmd, **opts)
-      # Check if this is an ffmpeg command
-      cmd_str = Array(cmd).flatten.join(' ')
-      if cmd_str.include?('ffmpeg')
-        stdout, stderr, status = original_capture3(*cmd, **opts)
-        # Return empty stdout but keep stderr and status
-        ['', stderr, status]
-      else
-        original_capture3(*cmd, **opts)
-      end
-    end
+    attr_accessor :original_ffmpeg_binary
+  end
+
+  self.original_ffmpeg_binary = ffmpeg_binary
+
+  def self.ffmpeg_binary=(binary)
+    @ffmpeg_binary = binary
+  end
+
+  def self.ffmpeg_binary
+    @ffmpeg_binary || 'ffmpeg'
   end
 end
 
-# Patch IO.popen
-module IO
-  class << self
-    alias :original_popen :popen
-    def popen(cmd, mode = 'r', **opts)
-      # Check if this is an ffmpeg command
-      cmd_str = cmd.is_a?(Array) ? cmd.join(' ') : cmd.to_s
-      if cmd_str.include?('ffmpeg') && mode.include?('r')
-        # For reading from ffmpeg, redirect stdout to /dev/null but keep stderr
-        # This is a bit tricky, let's try to modify the command
-        if cmd.is_a?(Array)
-          modified_cmd = cmd + ['2>&1', '>/dev/null']
-          original_popen(modified_cmd, mode, **opts)
-        else
-          modified_cmd = "#{cmd} 2>&1 >/dev/null"
-          original_popen(modified_cmd, mode, **opts)
-        end
-      else
-        original_popen(cmd, mode, **opts)
-      end
-    end
-  end
-end
+# Override the ffmpeg_binary to include silencing options
+FFMPEG.ffmpeg_binary = "#{FFMPEG.original_ffmpeg_binary} -loglevel error"
 
 module RubyNeuralNets
 
@@ -121,22 +96,6 @@ module RubyNeuralNets
       end
 
       private
-
-      # Execute a block while silencing stdout, but keeping stderr visible for errors
-      #
-      # Parameters::
-      # * *block* (Proc): The block to execute
-      # Result::
-      # * Object: The result of the block execution
-      def silence_output(&block)
-        original_stdout = $stdout
-        $stdout = StringIO.new
-        begin
-          yield
-        ensure
-          $stdout = original_stdout
-        end
-      end
 
       # Build the index mapping for all files
       #
