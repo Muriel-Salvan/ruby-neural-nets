@@ -25,7 +25,15 @@ when 'x86_64-linux'
   # Rice 4.8.0 is not compatible with torch.rb
   gem 'rice', '4.7.1'
   gem 'torch-rb'
-  gem 'torchvision', path: "#{__dir__}/../../torchvision-ruby"
+  gem 'torchvision', path: (
+    proc do
+      # Discover automatically torchvision-ruby path, so that it works also in git worktrees
+      current_dir = __dir__
+      current_dir = File.dirname(current_dir) while current_dir != '/' && !File.exist?("#{current_dir}/torchvision-ruby")
+      raise 'Can\'t find torchvision-ruby next to parent directories' if current_dir == '/'
+      "#{current_dir}/torchvision-ruby"
+    end.call
+  )
 when 'x64-mingw-ucrt'
   gem 'numo-linalg'
   gem 'numo-narray'
