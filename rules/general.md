@@ -8,3 +8,4 @@
 6. Any code or test modification should be validated by running all the tests (not only the modified ones). It is expected that it runs without any error, with the mention "0 failures" at the end of the output.
 7. Any code or test modification should trigger a verification of the README.md file content, and make sure that all sections still have up-to-date content regarding the change.
 8. Module names should not be added to class names, constants and class method calls when used inside the module itself. For example, no need to add MyModule:: in front of any class that is used inside the MyModule module.
+9. Avoid using global variables, and always try to limit the scope of variables and methods. Don't use instance variables when local variables are enough. Don't make methods public if they don't add new user-facing features.
