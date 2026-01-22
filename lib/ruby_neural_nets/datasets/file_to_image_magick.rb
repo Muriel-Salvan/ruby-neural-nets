@@ -7,6 +7,28 @@ require 'ruby_neural_nets/sample'
 # Silence streamio-ffmpeg logger
 FFMPEG.logger = Logger.new(IO::NULL)
 
+# Silence ffmpeg stdout and stderr
+module Kernel
+  alias :original_system :system
+  def system(*cmd)
+    if cmd.length == 1 && cmd.first.is_a?(String)
+      cmd_str = cmd.first
+      if cmd_str.include?('ffmpeg') && !cmd_str.include?('>/dev/null')
+        original_system(cmd_str + ' >/dev/null 2>&1')
+      else
+        original_system(*cmd)
+      end
+    else
+      cmd_str = cmd.join(' ')
+      if cmd_str.include?('ffmpeg')
+        original_system(cmd_str + ' >/dev/null 2>&1')
+      else
+        original_system(*cmd)
+      end
+    end
+  end
+end
+
 module RubyNeuralNets
 
   module Datasets
