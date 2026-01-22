@@ -123,7 +123,7 @@ module RubyNeuralNets
           Dir.mktmpdir do |temp_dir|
             temp_file = "#{temp_dir}/frame.png"
             # Take screenshot at the specified time
-            video.screenshot(temp_file, seek_time: file_info[:time_offset], custom: ['-loglevel', 'quiet'])
+            video.screenshot(temp_file, seek_time: file_info[:time_offset], custom: ['-hide_banner', '-loglevel', 'panic'])
             # Load the screenshot with ImageMagick
             Magick::ImageList.new(temp_file).first
           end
