@@ -25,4 +25,4 @@ Dir.mktmpdir do |temp_dir|
   system "gh api repos/#{repo_owner}/#{repo_name}/pulls/#{pull_request_number}/comments/#{comment_database_id}/replies -X POST -F body=@#{body_file}", exception: true
 end
 
-puts 'Comment posted successsfully'
+puts 'Comment posted successfully'

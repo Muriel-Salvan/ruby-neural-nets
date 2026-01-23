@@ -41,4 +41,8 @@ when 'x64-mingw-ucrt'
   gem 'win32ole'
 end
 
+# Development dependencies
 gem 'byebug'
+
+# Tools dependencies
+gem 'sqlite3'

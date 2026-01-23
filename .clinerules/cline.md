@@ -17,7 +17,7 @@ Project specific rules are defined in the [../rules/all.md](../rules/all.md) fil
 ## When working on a task
 
 1. When modified files can be committed in a meaningful commit, create a new git commit in the current branch (**never in another branch**) and push the branch to the github remote. This can be done using the command: `git add <file1> <file2> ... <fileN>; git commit -m"<Meaningful git commit comment>"; git push github`.
-2. When you commit code, **always add a line to the commit message at the very end that says "Co-authored by: Cline (<model_name>)" with the name of the model you are currently using.**
+2. When you commit code, **always add a line to the commit message at the very end that says "Co-authored by: Cline (<model_name>)" with the model name given by the command `bundle exec ruby .\tools\cline_model`.**
 3. For big files, replace_in_file does not work properly. Always check that the file is containing the edits you expect. Use write_in_file when you see that there are no edits in the proposed changes.
 
 ## Before completing a task
@@ -32,7 +32,7 @@ Project specific rules are defined in the [../rules/all.md](../rules/all.md) fil
 2. A comment can invite you to perform another code change, if so get back to working on the task with all associated rules.
 3. You should reply to every comment that starts with "/cline" and has no reply from you yet:
   - You can reply to a comment using the command line `bundle exec ruby .\tools\reply_to_comment <pr_number> <comment_id> <your_comment_body_reply>`. The Pull Request number and original comment database ID are found from the output of `bundle exec ruby .\tools\check_unresolved_pr_comments`.
-  - **Always prefix your reply body with the string "[Cline (<model_name>)] " with the name of the model you are currently using.**
+  - **Always prefix your reply body with the string "[Cline (<model_name>)] " with the model name given by the command `bundle exec ruby .\tools\cline_model`.**
   - If you added new commits because of that comment, explain what improvements you made in your reply body.
   - If the user was asking a question in his comment, give an answer to his question in your reply body.
   - If you think the user comment did not need any code change, explain the reason why you think so in your reply body.
