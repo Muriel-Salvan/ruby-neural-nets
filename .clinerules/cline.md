@@ -16,8 +16,11 @@ Project specific rules are defined in the [rules/all.md](rules/all.md) file.
 
 ## When working on a task
 
-1. When modified files can be committed in a meaningful commit, create a new git commit in the current branch (**never in another branch**) and push the branch to the github remote. This can be done using the command: `git add <file1> <file2> ... <fileN>; git commit -m"<Meaningful git commit comment>"; git push github`.
-2. When you commit code, **always add a line to the commit message at the very end that says "Co-authored by: Cline (<model_name>)" with the model name given by the command `bundle exec ruby .\tools\cline_model`.**
+1. When modified files can be committed in a meaningful commit, create a new git commit in the current branch (**never in another branch**) and push the branch to the github remote. Here are the commands that can help you for this:
+  - Add files to commit: `git add <file1> <file2> ... <fileN>`
+  - Create a commit: `git commit -m"<Meaningful git commit comment>"`
+  - Push on Github: `git push github`
+2. **In all your commits, always add a line to the commit message at the very end of the git comment that says "Co-authored by: Cline (<model_name>)" with the model name given by the command `bundle exec ruby .\tools\cline_model`.**
 3. For big files, replace_in_file does not work properly. Always check that the file is containing the edits you expect. Use write_in_file when you see that there are no edits in the proposed changes.
 
 ## Before completing a task
