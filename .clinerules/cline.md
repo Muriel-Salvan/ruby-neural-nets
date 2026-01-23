@@ -13,6 +13,7 @@ Project specific rules are defined in the [rules/all.md](rules/all.md) file.
 3. RSpec tests should only be run in WSL, using the `.\tools\rspec_wsl.cmd` command, accepting any rspec argument if needed. Don't use `bundle exec rspec` directly.
 4. If the user is asking you to address Pull Request comments, use the command line `bundle exec ruby .\tools\check_unresolved_pr_comments` to get those comments, and address them (see section "When addressing Pull Requests comments" below).
 5. You can use the Github CLI tool (`gh`) to handle Github Pull Requests, comments and workflows.
+6. **Never checkout another git branch than the one already checked out for you**.
 
 ## When working on a task
 
