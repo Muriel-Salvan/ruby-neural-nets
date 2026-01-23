@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+# Usage: reply_to_comment <pull_request_number> <comment_database_id> <comment_body>
+
+require 'json'
+require 'tmpdir'
+
+pull_request_number = Integer(ARGV[0])
+comment_database_id = Integer(ARGV[1])
+comment_body = ARGV[2]
+
+raise 'Missing comment body' if comment_body.nil?
+
+repo_info = JSON.parse(`gh repo view --json owner,name`)
+repo_owner = repo_info['owner']['login']
+repo_name = repo_info['name']
+puts "Repository Github handle: #{repo_owner}/#{repo_name}"
+
+branch = `git branch --show-current`.strip
+puts "Branch name: #{branch}"
+
+Dir.mktmpdir do |temp_dir|
+  body_file = "#{temp_dir}/body.txt"
+  File.write(body_file, comment_body)
+  system "gh api repos/#{repo_owner}/#{repo_name}/pulls/#{pull_request_number}/comments/#{comment_database_id}/replies -X POST -F body=@#{body_file}", exception: true
+end
+
+puts 'Comment posted successsfully'
