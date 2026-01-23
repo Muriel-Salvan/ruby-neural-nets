@@ -20,6 +20,8 @@ module RubyNeuralNets
         super(dataset)
         @video_slices_sec = video_slices_sec
         @index_mapping = build_index_mapping
+        # Silence streamio-ffmpeg logger
+        FFMPEG.logger = ::Logger.new(IO::NULL)
       end
 
       # Access an element of the dataset
