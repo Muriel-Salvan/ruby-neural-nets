@@ -4,11 +4,6 @@ require 'tmpdir'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/sample'
 
-# Silence streamio-ffmpeg logger
-FFMPEG.logger = Logger.new(IO::NULL)
-
-
-
 module RubyNeuralNets
 
   module Datasets
@@ -25,6 +20,8 @@ module RubyNeuralNets
         super(dataset)
         @video_slices_sec = video_slices_sec
         @index_mapping = build_index_mapping
+        # Silence streamio-ffmpeg logger
+        FFMPEG.logger = ::Logger.new(IO::NULL)
       end
 
       # Access an element of the dataset
@@ -125,7 +122,7 @@ module RubyNeuralNets
           Dir.mktmpdir do |temp_dir|
             temp_file = "#{temp_dir}/frame.png"
             # Take screenshot at the specified time
-            video.screenshot(temp_file, seek_time: file_info[:time_offset], custom: ['-hide_banner', '-loglevel', 'panic'])
+            video.screenshot(temp_file, seek_time: file_info[:time_offset])
             # Load the screenshot with ImageMagick
             Magick::ImageList.new(temp_file).first
           end

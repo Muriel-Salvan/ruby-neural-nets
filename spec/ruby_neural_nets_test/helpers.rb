@@ -368,7 +368,7 @@ module RubyNeuralNetsTest
         mp4_file = "#{temp_dir}/video.mp4"
         # Run ffmpeg command to create video with specified duration
         # -loop 1 loops the image, -t sets duration, -r sets framerate
-        system("ffmpeg -y -loop 1 -i #{png_file} -t #{duration} -r 10 -pix_fmt yuv420p #{mp4_file}", exception: true)
+        system("ffmpeg -y -loop 1 -i #{png_file} -t #{duration} -r 10 -pix_fmt yuv420p #{mp4_file} -v error", exception: true)
         # Read the generated MP4 file
         File.binread(mp4_file)
       end
