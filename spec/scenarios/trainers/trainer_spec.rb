@@ -116,5 +116,16 @@ describe RubyNeuralNets::Trainer do
         end
       end
     end
+
+    it 'captures log output in test helper' do
+      # Test that logging is captured and accessible via helper
+      # Create a simple experiment mock
+      experiment = double('experiment', exp_id: 'test_exp')
+      progress_tracker.instance_variable_set(:@experiments, { 'test_exp' => { experiment: experiment } })
+      progress_tracker.notify_early_stopping(experiment, 1)
+
+      log_output = captured_log_output
+      expect(log_output).to include('Early stopping notified for [Exp test_exp] at epoch 1')
+    end
   end
 end
