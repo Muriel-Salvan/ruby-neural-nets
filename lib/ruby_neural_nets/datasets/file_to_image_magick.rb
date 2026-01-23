@@ -1,5 +1,6 @@
 require 'rmagick'
 require 'streamio-ffmpeg'
+require 'open3'
 require 'tmpdir'
 require 'ruby_neural_nets/datasets/wrapper'
 require 'ruby_neural_nets/sample'
@@ -24,6 +25,21 @@ module Kernel
         original_system(cmd_str + ' >/dev/null 2>&1')
       else
         original_system(*cmd)
+      end
+    end
+  end
+end
+
+module Open3
+  class << self
+    alias :original_capture3 :capture3
+    def capture3(*cmd)
+      result = original_capture3(*cmd)
+      cmd_str = cmd.join(' ')
+      if cmd_str.include?('ffmpeg')
+        [result[0], '', result[2]]  # keep stdout for parsing, silence stderr
+      else
+        result
       end
     end
   end
