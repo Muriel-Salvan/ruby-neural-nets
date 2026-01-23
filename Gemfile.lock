@@ -134,8 +134,8 @@ CHECKSUMS
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   multi_json (1.19.1) sha256=7aefeff8f2c854bf739931a238e4aea64592845e0c0395c8a7d2eea7fdd631b7
   numo-gnuplot (0.2.4) sha256=9c4b5eefaf2014d43686be0199144d090fdd45f68b2f66b42313f22a0e9da568
-  numo-linalg (0.1.7)
-  numo-narray (0.9.2.1)
+  numo-linalg (0.1.7) sha256=bf5faa48b682b707535a11ce8e10e8b74896aa61497e0d3b1f73a22c3455301b
+  numo-narray (0.9.2.1) sha256=eed76b47eebe1288ffd878b387f1882f4863d8e6ab5dd61453768139e14adceb
   numo-narray-alt (0.9.10) sha256=48eaac41fd9dd072700397202dfd087c2d7cbe032f3829240072e9ce48ce4676
   numo-random (0.6.2) sha256=201c83abb915547a9555bc0ac7de9c6b69fb9cbfd45bbdb9d05b3634c44260c0
   observer (0.1.2) sha256=d8a3107131ba661138d748e7be3dbafc0d82e732fffba9fccb3d7829880950ac
@@ -166,7 +166,7 @@ CHECKSUMS
   tsort (0.2.0) sha256=9650a793f6859a43b6641671278f79cfead60ac714148aabe4e3f0060480089f
   unicode-display_width (3.2.0) sha256=0cdd96b5681a5949cdbc2c55e7b420facae74c4aaf9a9815eee1087cb1853c42
   unicode-emoji (4.2.0) sha256=519e69150f75652e40bf736106cfbc8f0f73aa3fb6a65afe62fefa7f80b0f80f
-  win32ole (1.9.2)
+  win32ole (1.9.2) sha256=99612fe2c6cb397c0910680f7d1ba6366f08e37aeac83ebaeab9e72ee823e0f5
 
 BUNDLED WITH
   4.0.3
