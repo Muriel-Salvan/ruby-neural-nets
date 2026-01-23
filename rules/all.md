@@ -2,3 +2,4 @@ All those development rules are applicable to this project and should always be 
 * [General rules](general.md).
 * [Test rules](test.md).
 * [Documentation rules](documentation.md).
+* [Git rules](git.md).

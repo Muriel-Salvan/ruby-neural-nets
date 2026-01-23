@@ -12,7 +12,7 @@ raise 'Missing description' if description.nil?
 
 Dir.mktmpdir do |temp_dir|
   description_file = "#{temp_dir}/description.txt"
-  File.write(description_file, description)
+  File.write(description_file, description.gsub('\\n', "\n"))
   system "gh pr create --title \"#{title}\" --body-file \"#{description_file}\"", exception: true
 end
 

@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+# Usage: git_gommit <comment>
+
+require 'tmpdir'
+
+comment = ARGV[0]
+
+raise 'Missing comment' if comment.nil?
+
+Dir.mktmpdir do |temp_dir|
+  comment_file = "#{temp_dir}/comment.txt"
+  File.write(comment_file, comment.gsub('\\n', "\n"))
+  system "git commit --file \"#{comment_file}\"", exception: true
+end
+
+puts
+puts 'Git commit created successfully'

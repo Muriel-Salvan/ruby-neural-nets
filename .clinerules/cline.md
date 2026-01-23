@@ -18,7 +18,7 @@ Project specific rules are defined in the [rules/all.md](rules/all.md) file.
 
 1. When modified files can be committed in a meaningful commit, create a new git commit in the current branch (**never in another branch**) and push the branch to the github remote. Here are the commands that can help you for this:
   - Add files to commit: `git add <file1> <file2> ... <fileN>`
-  - Create a commit: `git commit -m"<Meaningful git commit comment>"`
+  - Create a commit: `bundle exec ruby .\tools\git_commit "<Meaningful git commit comment>"`. Don't use `git commit`. **New lines in the comment should be given using \n and not real new lines, like this: `bundle exec ruby .\tools\git_commit "Line 1\nLine 2\nLine 3"`**.
   - Push on Github: `git push github`
 2. **In all your commits, always add a line to the commit message at the very end of the git comment that says "Co-authored by: Cline (<model_name>)" with the model name given by the command `bundle exec ruby .\tools\cline_model`.**
 3. For big files, replace_in_file does not work properly. Always check that the file is containing the edits you expect. Use write_in_file when you see that there are no edits in the proposed changes.
@@ -27,7 +27,7 @@ Project specific rules are defined in the [rules/all.md](rules/all.md) file.
 
 1. **Always make sure that tests are all running without failures**, and fix any failure if they don't succeed (get back to working on the task).
 2. Always make sure that all your modifications are committed and pushed on the github remote in the current branch.
-3. The first time you push this branch on Github, create a Pull Request using the command `bundle exec ruby .\tools\create_pr <title> <description>`. Use a meaningful title and description for this Pull Request. The description should also include a section with the exact initial prompt of the user for this task.
+3. The first time you push this branch on Github, create a Pull Request using the command `bundle exec ruby .\tools\create_pr <title> <description>`. Use a meaningful title and description for this Pull Request. The description should also include a section with the exact initial prompt of the user for this task. **New lines in the description should be given using \n and not real new lines, like this: `bundle exec ruby .\tools\create_pr "Pull Request Title" "Line 1\nLine 2\nLine 3"`**.
 
 ## When addressing Pull Requests comments
 
@@ -39,3 +39,4 @@ Project specific rules are defined in the [rules/all.md](rules/all.md) file.
   - If you added new commits because of that comment, explain what improvements you made in your reply body.
   - If the user was asking a question in his comment, give an answer to his question in your reply body.
   - If you think the user comment did not need any code change, explain the reason why you think so in your reply body.
+  - **New lines in the reply comment should be given using \n and not real new lines, like this: `bundle exec ruby .\tools\reply_to_comment 3 12345 "Line 1\nLine 2\nLine 3"`**
