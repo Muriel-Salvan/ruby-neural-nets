@@ -20,9 +20,7 @@ RSpec.configure do |config|
   config.before(:each) do
     # Create a StringIO to capture log output
     @test_log_stringio = StringIO.new
-    # Create a new logger that writes to the StringIO
-    test_logger = ::Logger.new(@test_log_stringio)
     # Replace the global logger with our test logger
-    RubyNeuralNets::Logger.logger = test_logger
+    RubyNeuralNets::Logger.logger = ::Logger.new(@test_log_stringio)
   end
 end

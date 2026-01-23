@@ -45,8 +45,8 @@ describe RubyNeuralNets::Trainer do
               end
             ] }
           )
-        end
-      end
+  end
+end
 
       with_test_dir(files) do |datasets_path|
         # Create data loader inside fakefs
