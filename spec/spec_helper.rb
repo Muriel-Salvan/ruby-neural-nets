@@ -19,20 +19,10 @@ RSpec.configure do |config|
   # Set up test logger that captures output to a String instead of STDOUT
   config.before(:each) do
     # Create a StringIO to capture log output
-    stringio = StringIO.new
+    @test_log_stringio = StringIO.new
     # Create a new logger that writes to the StringIO
-    test_logger = ::Logger.new(stringio)
-    # Store the StringIO in thread-local storage for access by helpers
-    Thread.current[:test_log_stringio] = stringio
+    test_logger = ::Logger.new(@test_log_stringio)
     # Replace the global logger with our test logger
     RubyNeuralNets::Logger.logger = test_logger
-  end
-
-  # Clean up after each test
-  config.after(:each) do
-    # Clear the thread-local storage
-    Thread.current[:test_log_stringio] = nil
-    # Reset to default STDOUT logger (optional, but good practice)
-    RubyNeuralNets::Logger.logger = ::Logger.new(STDOUT)
   end
 end

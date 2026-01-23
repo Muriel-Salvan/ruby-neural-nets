@@ -309,7 +309,7 @@ module RubyNeuralNetsTest
     # Result::
     # * String: The log output captured during the current test
     def captured_log_output
-      stringio = Thread.current[:test_log_stringio]
+      stringio = @test_log_stringio
       raise "No test logger StringIO found. Make sure this is called within a test context." unless stringio
       stringio.string
     end
