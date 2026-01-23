@@ -304,6 +304,16 @@ module RubyNeuralNetsTest
       end
     end
 
+    # Get the captured log output from the current test's logger
+    #
+    # Result::
+    # * String: The log output captured during the current test
+    def captured_log_output
+      stringio = @test_log_stringio
+      raise "No test logger StringIO found. Make sure this is called within a test context." unless stringio
+      stringio.string
+    end
+
     # Compute distance between 2 arrays, element-wise
     #
     # Parameters::

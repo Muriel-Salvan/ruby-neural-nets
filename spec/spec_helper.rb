@@ -15,4 +15,12 @@ RSpec.configure do |config|
   platform_scenarios_dir = "scenarios.#{RUBY_PLATFORM}"
   scenarios_dirs << platform_scenarios_dir if File.exist?("spec/#{platform_scenarios_dir}")
   config.pattern = scenarios_dirs.map { |dir| "spec/#{dir}/**/*_spec.rb" }.join(',')
+
+  # Set up test logger that captures output to a String instead of STDOUT
+  config.before(:each) do
+    # Create a StringIO to capture log output
+    @test_log_stringio = StringIO.new
+    # Replace the global logger with our test logger
+    RubyNeuralNets::Logger.logger = ::Logger.new(@test_log_stringio)
+  end
 end
