@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+# Usage: create_pr <title> <description>
+
+require 'tmpdir'
+
+title = ARGV[0]
+description = ARGV[1]
+
+raise 'Missing title' if title.nil?
+raise 'Missing description' if description.nil?
+
+Dir.mktmpdir do |temp_dir|
+  description_file = "#{temp_dir}/description.txt"
+  File.write(description_file, description)
+  system "gh pr create --title \"#{title}\" --body-file \"#{description_file}\"", exception: true
+end
+
+puts
+puts 'Pull Request created successfully'

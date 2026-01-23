@@ -27,7 +27,7 @@ Project specific rules are defined in the [rules/all.md](rules/all.md) file.
 
 1. **Always make sure that tests are all running without failures**, and fix any failure if they don't succeed (get back to working on the task).
 2. Always make sure that all your modifications are committed and pushed on the github remote in the current branch.
-3. The first time you push this branch on Github, create a Pull Request of this branch compared to the main branch, and add a meaningful title and description for this Pull Request. The description should also include a section with the exact initial prompt of the user for this task.
+3. The first time you push this branch on Github, create a Pull Request using the command `bundle exec ruby .\tools\create_pr <title> <description>`. Use a meaningful title and description for this Pull Request. The description should also include a section with the exact initial prompt of the user for this task.
 
 ## When addressing Pull Requests comments
 
