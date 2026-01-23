@@ -2,7 +2,7 @@ Always follow all the rules defined in this file, and recursively every file lin
 
 # Project specific rules
 
-Project specific rules are defined in the [../rules/all.md](../rules/all.md) file.
+Project specific rules are defined in the [rules/all.md](rules/all.md) file.
 
 # Cline specific rules
 
