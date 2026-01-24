@@ -1,5 +1,8 @@
 source 'https://rubygems.org'
 
+# Make sure each platform tracks its own lockfile, as otherwise using bundle exec always modifies it between platforms.
+lockfile "Gemfile.#{RUBY_PLATFORM}.lock"
+
 gem 'fiddle'
 gem 'get_process_mem'
 gem 'google-protobuf', '~> 3.21'
