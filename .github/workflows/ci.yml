@@ -39,15 +39,15 @@ jobs:
         # Modify torchvision-ruby Gemfile to use numo-narray-alt instead of numo-narray
         sed -i 's/gem "numo-narray"/gem "numo-narray-alt"/' ../torchvision-ruby/Gemfile
 
-    - name: Configure bundle for torch-rb
-      run: bundle config set --local build.torch-rb --with-torch-dir=${{ env.LIBTORCH_PATH }}
-
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.4.8'
         bundler: '4'
         bundler-cache: true
+
+    - name: Configure bundle for torch-rb
+      run: bundle config set --local build.torch-rb --with-torch-dir=${{ env.LIBTORCH_PATH }}
 
     - name: Install dependencies
       run: bundle install
