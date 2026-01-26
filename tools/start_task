@@ -3,11 +3,11 @@
 require 'fileutils'
 
 puts 'Branch name:'
-branch = $stdin.gets
+branch = $stdin.gets.strip
 dir = ".worktrees/#{branch.gsub('/', '_')}"
 
 puts "Setting worktree #{dir} to work on branch #{branch}..."
 
 system "git worktree add #{dir} -b #{branch} main", exception: true
 system "git push --set-upstream github #{branch}", exception: true
-system "VSCodium.exe \"#{dir}\""
+system "VSCodium.exe \"#{dir}\"", exception: true
