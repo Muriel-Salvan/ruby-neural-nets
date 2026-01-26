@@ -32,7 +32,7 @@ jobs:
         wget https://download.pytorch.org/libtorch/cu130/libtorch-shared-with-deps-2.10.0%2Bcu130.zip
         unzip libtorch-shared-with-deps-2.10.0+cu130.zip -d ../libtorch
         # Set absolute path for libTorch
-        echo "LIBTORCH_PATH=$(realpath ../libtorch/libtorch)" >> $GITHUB_ENV
+        echo "LIBTORCH_PATH=$(realpath ../libtorch/libtorch)/" >> $GITHUB_ENV
 
     - name: Clone and modify torchvision-ruby repository
       run: |
@@ -45,6 +45,7 @@ jobs:
       with:
         ruby-version: '3.4.8'
         bundler: '4'
+        # Don't perform bundle install now: we first need bundle config
         bundler-cache: false
 
     - name: Configure bundle for torch-rb
