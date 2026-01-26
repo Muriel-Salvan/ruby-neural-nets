@@ -16,8 +16,21 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.2'
+        ruby-version: '3.4.8'
         bundler-cache: true
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libmagickwand-dev \
+          libyaml-dev \
+          libvips42 \
+          gnuplot \
+          x11-xserver-utils \
+          protobuf-compiler \
+          ffmpeg \
+          xdg-utils
 
     - name: Install dependencies
       run: bundle install
