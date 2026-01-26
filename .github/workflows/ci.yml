@@ -33,6 +33,9 @@ jobs:
           ffmpeg \
           xdg-utils
 
+    - name: Clone torchvision-ruby repository
+      run: git clone https://github.com/ankane/torchvision-ruby.git ../torchvision-ruby
+
     - name: Install dependencies
       run: bundle install
 
