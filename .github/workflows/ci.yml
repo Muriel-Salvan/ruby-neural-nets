@@ -13,6 +13,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Clone and modify torchvision-ruby repository
+      run: |
+        git clone https://github.com/ankane/torchvision-ruby.git ../torchvision-ruby
+        # Modify torchvision-ruby Gemfile to use numo-narray-alt instead of numo-narray
+        sed -i 's/gem "numo-narray"/gem "numo-narray-alt"/' ../torchvision-ruby/Gemfile
+
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -32,9 +38,6 @@ jobs:
           protobuf-compiler \
           ffmpeg \
           xdg-utils
-
-    - name: Clone torchvision-ruby repository
-      run: git clone https://github.com/ankane/torchvision-ruby.git ../torchvision-ruby
 
     - name: Install dependencies
       run: bundle install
