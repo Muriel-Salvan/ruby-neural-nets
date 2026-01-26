@@ -51,12 +51,13 @@ jobs:
     - name: Configure bundle for torch-rb
       run: |
         echo "bundle config set --local build.torch-rb --with-torch-dir=${{ env.LIBTORCH_PATH }}"
-        bundle config set --local build.torch-rb --with-torch-dir=${{ env.LIBTORCH_PATH }}
+        bundle config set --local build.torch-rb "--with-torch-dir=${{ env.LIBTORCH_PATH }}"
 
     - name: Install dependencies
       run: |
         env | sort
-        bundle config list --show-origin
+        bundle config list
+        ls -la "$LIBTORCH_PATH/lib"
         bundle install
 
     - name: Run tests
