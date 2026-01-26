@@ -31,7 +31,8 @@ jobs:
         # Download and install libTorch
         wget https://download.pytorch.org/libtorch/cu130/libtorch-shared-with-deps-2.10.0%2Bcu130.zip
         unzip libtorch-shared-with-deps-2.10.0+cu130.zip -d ../libtorch
-        echo "LIBTORCH_PATH=../libtorch/libtorch" >> $GITHUB_ENV
+        # Set absolute path for libTorch
+        echo "LIBTORCH_PATH=$(realpath ../libtorch/libtorch)" >> $GITHUB_ENV
 
     - name: Clone and modify torchvision-ruby repository
       run: |
