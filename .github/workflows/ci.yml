@@ -45,7 +45,7 @@ jobs:
       with:
         ruby-version: '3.4.8'
         bundler: '4'
-        bundler-cache: true
+        bundler-cache: false
 
     - name: Configure bundle for torch-rb
       run: bundle config set --local build.torch-rb --with-torch-dir=${{ env.LIBTORCH_PATH }}
