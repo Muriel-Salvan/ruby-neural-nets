@@ -49,12 +49,12 @@ jobs:
         bundler-cache: false
 
     - name: Configure bundle for torch-rb
-      run: /
+      run: |
         echo "bundle config set --local build.torch-rb --with-torch-dir=${{ env.LIBTORCH_PATH }}"
         bundle config set --local build.torch-rb --with-torch-dir=${{ env.LIBTORCH_PATH }}
 
     - name: Install dependencies
-      run: /
+      run: |
         env | sort
         bundle config list --show-origin
         bundle install
