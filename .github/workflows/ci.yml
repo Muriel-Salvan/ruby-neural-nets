@@ -29,7 +29,7 @@ jobs:
     - name: Install libTorch
       run: |
         # Download and install libTorch
-        wget https://download.pytorch.org/libtorch/cu130/libtorch-shared-with-deps-2.10.0%2Bcpu.zip
+        wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.10.0%2Bcpu.zip
         unzip libtorch-shared-with-deps-2.10.0+cpu.zip -d ../libtorch
         # Set absolute path for libTorch
         echo "LIBTORCH_PATH=$(realpath ../libtorch/libtorch)/" >> $GITHUB_ENV
