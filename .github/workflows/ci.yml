@@ -54,6 +54,8 @@ jobs:
         bundle config set --local build.torch-rb "--with-torch-dir=${{ env.LIBTORCH_PATH }}"
 
     - name: Install dependencies
+      env:
+        BUNDLE_BUILD__TORCH___RB: "--with-torch-dir=${{ env.LIBTORCH_PATH }}"
       run: |
         env | sort
         bundle config list
