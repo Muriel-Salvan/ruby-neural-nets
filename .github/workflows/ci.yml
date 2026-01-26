@@ -60,6 +60,7 @@ jobs:
         env | sort
         bundle config list
         ls -la "$LIBTORCH_PATH/lib"
+        ldd "$LIBTORCH_PATH/lib/libtorch.so"
         bundle install
 
     - name: Run tests
