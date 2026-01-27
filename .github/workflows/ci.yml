@@ -17,13 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.4.8'
-        bundler: '4'
-        # Don't perform bundle install now: we first need bundle config
-        bundler-cache: false
 
     - name: Configure bundle for torch-rb
       run: bundle config set --local build.torch-rb "--with-torch-dir=${{ env.LIBTORCH_PATH }}"

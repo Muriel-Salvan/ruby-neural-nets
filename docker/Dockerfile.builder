@@ -21,10 +21,18 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     lsb-release \
     \
-    # Ruby dependencies
-    ruby-full \
-    ruby-dev \
-    bundler \
+    # Ruby build dependencies
+    autoconf \
+    bison \
+    libssl-dev \
+    libyaml-dev \
+    libreadline-dev \
+    zlib1g-dev \
+    libncurses5-dev \
+    libffi-dev \
+    libgdbm-dev \
+    libgdbm-compat-dev \
+    libdb-dev \
     \
     # Image processing
     imagemagick \
@@ -34,7 +42,6 @@ RUN apt-get update && apt-get install -y \
     libvips-dev \
     \
     # Other dependencies
-    libyaml-dev \
     xdg-utils \
     gnuplot \
     x11-xserver-utils \
@@ -44,8 +51,18 @@ RUN apt-get update && apt-get install -y \
     # Clean up
     && rm -rf /var/lib/apt/lists/*
 
-# Install additional Ruby dependencies
-RUN gem install bundler
+# Install Ruby 3.4.8 from source
+RUN cd /tmp && \
+    wget https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.8.tar.gz && \
+    tar -xzf ruby-3.4.8.tar.gz && \
+    cd ruby-3.4.8 && \
+    ./configure --disable-install-doc && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /tmp/ruby-3.4.8*
+
+# Install Bundler 4
+RUN gem install bundler -v 4.0.0
 
 # Download and install libTorch
 RUN wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip && \
