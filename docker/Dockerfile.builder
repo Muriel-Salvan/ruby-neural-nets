@@ -72,9 +72,19 @@ RUN gem install bundler -v ${bundler_version}
 # Download and install libTorch
 RUN wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-${libtorch_version}%2Bcpu.zip && \
     unzip libtorch-shared-with-deps-${libtorch_version}+cpu.zip -d /opt/libtorch && \
-    rm libtorch-shared-with-deps-${libtorch_version}+cpu.zip && \
-    echo "LIBTORCH_PATH=/opt/libtorch/libtorch" >> /etc/environment
+    rm libtorch-shared-with-deps-${libtorch_version}+cpu.zip
 
 # Clone and modify torchvision-ruby repository
 RUN git clone https://github.com/ankane/torchvision-ruby.git /opt/torchvision-ruby && \
-    sed -i 's/gem "numo-narray"/gem "numo-narray-alt"/' /opt/torchvision-ruby/Gemfile
+    sed -i 's/numo-narray/numo-narray-alt/' /opt/torchvision-ruby/torchvision.gemspec
+
+# Temporarily get the Gemfile to cache dependencies
+COPY Gemfile /opt/ruby-neural-nets/Gemfile
+
+# Configure bundler globally so that it finds all dependencies, and install them already
+RUN bundle config set --global path /opt/vendor/bundle && \
+    bundle config set --global build.torch-rb "--with-torch-dir=/opt/libtorch/libtorch" && \
+    cd /opt/ruby-neural-nets && \
+    bundle install && \
+    cd .. && \
+    rm -rf /opt/ruby-neural-nets

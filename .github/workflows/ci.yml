@@ -17,16 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure bundle for torch-rb
-      run: |
-        cat /opt/torchvision-ruby/Gemfile
-        bundle config set --local build.torch-rb "--with-torch-dir=/opt/libtorch/libtorch"
-
     - name: Install dependencies
-      run: |
-        ln -s /opt/torchvision-ruby ../torchvision-ruby
-        ls -la ..
-        bundle install
+      run: bundle install
 
     - name: Run tests
       run: bundle exec rspec --format documentation
