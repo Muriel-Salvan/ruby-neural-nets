@@ -9,6 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    permissions:
+      packages: read
+
     container:
       image: ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
       options: --user root
@@ -28,7 +32,9 @@ jobs:
       run: bundle config set --local build.torch-rb "--with-torch-dir=${{ env.LIBTORCH_PATH }}"
 
     - name: Install dependencies
-      run: bundle install
+      run: |
+        ln -s /opt/torchvision-ruby ../torchvision-ruby
+        bundle install
 
     - name: Run tests
       run: |
