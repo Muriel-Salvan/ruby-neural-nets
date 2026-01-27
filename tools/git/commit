@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
-# Usage: git_gommit <comment>
+# Usage: commit <comment>
 
 require 'tmpdir'
+require_relative '../helpers'
 
 comment = ARGV[0]
 
@@ -10,7 +11,7 @@ raise 'Missing comment' if comment.nil?
 
 Dir.mktmpdir do |temp_dir|
   comment_file = "#{temp_dir}/comment.txt"
-  File.write(comment_file, comment.gsub('\\n', "\n"))
+  File.write(comment_file, comment.gsub('\\n', "\n") + RubyNeuralNetsTools.agent_signature)
   system "git commit --file \"#{comment_file}\"", exception: true
 end
 

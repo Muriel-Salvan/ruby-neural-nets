@@ -633,8 +633,6 @@ bundle exec rspec
 
 This will execute all tests in the `spec/` directory.
 
-A nice helper has been made available to run those tests using WSL from PowerShell (useful for automation tasks and running both Windows and Linux specific tests): `.\tools\rspec_wsl.cmd`. Feel free to modify it to your local setup.
-
 #### Test Structure
 
 The test suite follows a structured organization:

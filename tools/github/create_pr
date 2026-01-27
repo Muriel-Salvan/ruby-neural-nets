@@ -3,6 +3,7 @@
 # Usage: create_pr <title> <description>
 
 require 'tmpdir'
+require_relative '../helpers'
 
 title = ARGV[0]
 description = ARGV[1]
@@ -12,7 +13,7 @@ raise 'Missing description' if description.nil?
 
 Dir.mktmpdir do |temp_dir|
   description_file = "#{temp_dir}/description.txt"
-  File.write(description_file, description.gsub('\\n', "\n"))
+  File.write(description_file, description.gsub('\\n', "\n") + RubyNeuralNetsTools.agent_signature)
   system "gh pr create --title \"#{title}\" --body-file \"#{description_file}\"", exception: true
 end
 
