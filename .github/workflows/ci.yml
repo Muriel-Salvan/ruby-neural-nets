@@ -16,11 +16,12 @@ jobs:
     container:
       image: ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
       options: --user root
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+    - name: Login to GitHub Container Registry
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
     - uses: actions/checkout@v4
 
     - name: Set up Ruby
