@@ -8,10 +8,18 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-25.10
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Upgrade Ubuntu to 25.10
+      run: |
+        # Upgrade from Ubuntu 24.04 to 25.10
+        sudo sed -i 's/noble/oracular/g' /etc/apt/sources.list
+        sudo apt-get update
+        sudo apt-get install -y ubuntu-release-upgrader-core
+        sudo do-release-upgrade -f DistUpgradeViewNonInteractive -d
 
     - name: Install system dependencies
       run: |
