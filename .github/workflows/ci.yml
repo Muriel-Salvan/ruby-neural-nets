@@ -22,7 +22,10 @@ jobs:
 
     - name: Install dependencies
       run: |
+        bundle config set --global toto titi
         bundle config
+        cd ~
+        pwd
         bundle install
 
     - name: Run tests
