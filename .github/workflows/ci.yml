@@ -12,6 +12,8 @@ jobs:
 
     env:
       TORCHVISION_RUBY_PATH: /opt/torchvision-ruby
+      # Make sure the same bundle config used during the image build will be used
+      BUNDLE_APP_CONFIG: /root/.bundle
 
     container:
       image: ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
