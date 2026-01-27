@@ -19,6 +19,7 @@ jobs:
         sudo sed -i 's/noble/oracular/g' /etc/apt/sources.list
         sudo apt-get update
         sudo apt-get install -y ubuntu-release-upgrader-core
+        sudo apt-get upgrade
         sudo do-release-upgrade -f DistUpgradeViewNonInteractive -d
 
     - name: Install system dependencies
