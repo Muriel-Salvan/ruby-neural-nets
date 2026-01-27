@@ -19,7 +19,8 @@ jobs:
         sudo apt-get install -y \
           libmagickwand-dev \
           libyaml-dev \
-          libvips42 \
+          libvips-dev \
+          libvips-tools \
           gnuplot \
           x11-xserver-utils \
           protobuf-compiler \
