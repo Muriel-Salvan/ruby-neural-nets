@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      TORCHVISION_RUBY_PATH: /opt/torchvision-ruby
+
     container:
       image: ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
       options: --user root
