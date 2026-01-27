@@ -46,3 +46,13 @@ RUN apt-get update && apt-get install -y \
 
 # Install additional Ruby dependencies
 RUN gem install bundler
+
+# Download and install libTorch
+RUN wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip && \
+    unzip libtorch-shared-with-deps-2.9.1+cpu.zip -d /opt/libtorch && \
+    rm libtorch-shared-with-deps-2.9.1+cpu.zip && \
+    echo "LIBTORCH_PATH=/opt/libtorch/libtorch" >> /etc/environment
+
+# Clone and modify torchvision-ruby repository
+RUN git clone https://github.com/ankane/torchvision-ruby.git /opt/torchvision-ruby && \
+    sed -i 's/gem "numo-narray"/gem "numo-narray-alt"/' /opt/torchvision-ruby/Gemfile

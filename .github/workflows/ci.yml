@@ -9,58 +9,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
+      options: --user root
 
     steps:
     - uses: actions/checkout@v4
-
-    # TODO: Remove this step when ubuntu-latest will be on an Ubuntu version >= 25.10
-    - name: Upgrade Ubuntu to 25.10
-      run: |
-        # Upgrade from Ubuntu 24.04 to 25.10
-        # Configure release upgrader to allow non-LTS development releases
-        sudo sed -i 's/^Prompt=.*/Prompt=normal/' /etc/update-manager/release-upgrades
-        sudo apt update
-        sudo apt upgrade
-        sudo apt dist-upgrade
-
-        # Handle reboot requirement for do-release-upgrade in CI environment
-        # Check if reboot is required and simulate it in container environment
-        if [ -f /var/run/reboot-required ]; then
-          echo "Reboot required detected, handling in container environment..."
-          sudo apt install -f
-          sudo rm -f /var/run/reboot-required
-          sudo rm -f /var/run/reboot-required.pkgs
-          sudo rm -f /var/run/reboot-required.*
-        fi
-
-        sudo do-release-upgrade
-
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libmagickwand-dev \
-          libyaml-dev \
-          libvips42 \
-          gnuplot \
-          x11-xserver-utils \
-          protobuf-compiler \
-          ffmpeg \
-          xdg-utils
-
-    - name: Install libTorch
-      run: |
-        # Download and install libTorch
-        wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip
-        unzip libtorch-shared-with-deps-2.9.1+cpu.zip -d ../libtorch
-        # Set absolute path for libTorch
-        echo "LIBTORCH_PATH=$(realpath ../libtorch/libtorch)" >> $GITHUB_ENV
-
-    - name: Clone and modify torchvision-ruby repository
-      run: |
-        git clone https://github.com/ankane/torchvision-ruby.git ../torchvision-ruby
-        # Modify torchvision-ruby Gemfile to use numo-narray-alt instead of numo-narray
-        sed -i 's/gem "numo-narray"/gem "numo-narray-alt"/' ../torchvision-ruby/Gemfile
 
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
