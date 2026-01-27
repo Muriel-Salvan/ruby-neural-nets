@@ -44,6 +44,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
     - [Test Features](#test-features)
     - [Writing Tests](#writing-tests)
     - [Regenerating onnx_pb.rb](#regenerating-onnx_pbrb)
+- [Building the Docker build image](#building-the-docker-build-image)
 - [License](#license)
 
 ## Features
@@ -675,6 +676,48 @@ onnx_pb.rb file contains the Protobuf definition of the ONNX format for Ruby. He
 4. Move the generated onnx_pb.rb in lib/ruby_neural_nets/onnx/onnx_pb.rb
 
 The ONNX protobuf format is described [here](https://github.com/onnx/onnx/blob/main/docs/IR.md).
+
+### Building the Docker build image
+
+This guide explains how to build and deploy the Docker image for the Ruby Neural Nets project to GitHub Container Registry (ghcr.io).
+
+#### Prerequisites
+
+1. Docker installed on your system
+2. GitHub account with access to this repository
+3. GitHub Personal Access Token with `write:packages` scope
+
+#### Building the Docker Image
+
+To build the Docker image locally:
+
+```bash
+docker build --file ./docker/Dockerfile.builder --tag ruby-neural-nets-builder:ubuntu25.10 .
+```
+
+#### Authenticating with GitHub Container Registry
+
+1. Log in to GitHub Container Registry:
+
+```bash
+echo $GITHUB_TOKEN | docker login ghcr.io --username YOUR_GITHUB_USERNAME --password-stdin
+```
+
+Replace `YOUR_GITHUB_USERNAME` with your GitHub username and ensure `GITHUB_TOKEN` contains your personal access token.
+
+#### Tagging and Pushing the Image
+
+1. Tag the image for ghcr.io:
+
+```bash
+docker tag ruby-neural-nets-builder:ubuntu25.10 ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
+```
+
+2. Push the image to ghcr.io:
+
+```bash
+docker push ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
+```
 
 ## License
 
