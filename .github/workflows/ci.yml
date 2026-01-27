@@ -10,18 +10,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    permissions:
-      packages: read
-
     container:
       image: ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
       options: --user root
 
     steps:
-    - name: Login to GitHub Container Registry
-      run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
     - uses: actions/checkout@v4
 
     - name: Set up Ruby
