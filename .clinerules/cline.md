@@ -2,7 +2,7 @@ Always follow all the rules defined in this file, and recursively every file lin
 
 # Project specific rules
 
-Project specific rules are defined in the [rules/all.md](rules/all.md) file.
+ALWAYS follow rules defined in the [rules/all.md](rules/all.md) file and any file linked to it.
 
 # Cline specific rules
 
@@ -28,7 +28,7 @@ Project specific rules are defined in the [rules/all.md](rules/all.md) file.
 
 1. **Always make sure that tests are all running without failures**, and fix any failure if they don't succeed (get back to working on the task).
 2. Always make sure that all your modifications are committed and pushed on the github remote in the current branch.
-3. The first time you push this branch on Github, create a Pull Request using the command `bundle exec ruby .\tools\create_pr <title> <description>`. Use a meaningful title and description for this Pull Request. The description should also include a section with the exact initial prompt of the user for this task. **New lines in the description should be given using \n and not real new lines, like this: `bundle exec ruby .\tools\create_pr "Pull Request Title" "Line 1\nLine 2\nLine 3"`**.
+3. The first time you push this branch on Github, create a Pull Request using the command `bundle exec ruby .\tools\create_pr <title> <description>`. Use a meaningful title and description for this Pull Request. The description should also include a section with the exact initial prompt of the user for this task. **New lines in the description should be given using \n and not real new lines, like this: `bundle exec ruby .\tools\create_pr "Pull Request Title" "Line 1\nLine 2\nLine 3"`**. **The description should always end with a line that says "Co-authored by: Cline (<model_name>)" with the model name given by the command `bundle exec ruby .\tools\cline_model`.**
 
 ## When addressing Pull Requests comments
 

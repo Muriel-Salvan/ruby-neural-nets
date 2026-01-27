@@ -1,3 +1,9 @@
+* Cline rules are not followed properly.
+  - Add the Co-Authored information in a template. Use templates everywhere.
+  - Make it clear to never git commit amend or change history.
+  - Make rules more concise: NEVER use --no-verify. ALWAYS fix pre-commit hook failures directly.
+  - Provide a tool to run bash commands in WSL.
+  - Use Rules, Workflows, Skills and Hooks properly.
 * Add a way to not dump logs to stdout unless TEST_DEBUG=1 in environment.
 * Add Github CI workflow with tests.
 * Add proper AI agents tooling.

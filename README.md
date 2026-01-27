@@ -90,7 +90,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
 6. **libTorch** (Linux only): Download the C++ library from [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), and configure it:
    - In case you use also Cuda from WSL: `bundle config set --local build.torch-rb "--with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/ --with-cuda-ldflags=-L/usr/lib/wsl/lib"`
    - Otherwise: `bundle config set --local build.torch-rb --with-torch-dir=/path/to/libtorch-shared-with-deps-2.9.1+cu130/libtorch/`
-   - Clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its Gemfile to depend on numo-narray-alt instead of numo-narray.
+   - Clone the https://github.com/ankane/torchvision-ruby repository next to ruby_neural_nets and modify its torchvision.gemspec file to depend on numo-narray-alt instead of numo-narray.
 7. **OpenBLAS** (optional): On Windows only, for improved matrix computation performance, install OpenBLAS and set the `OPEN_BLAS_PATH` environment variable to the path containing the OpenBLAS library files (e.g., `OPEN_BLAS_PATH=/path/to/openblas/lib`). If not set, the framework will run without OpenBLAS acceleration.
 8. **Cuda** and **CudNN**: On WSL only, Cuda and CudNN can be installed this way:
    1. First install NVidia drivers in Windows 11 (not WSL).
