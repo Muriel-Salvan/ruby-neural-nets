@@ -16,13 +16,12 @@ jobs:
     - name: Upgrade Ubuntu to 25.10
       run: |
         # Upgrade from Ubuntu 24.04 to 25.10
-        sudo sed -i 's/noble/oracular/g' /etc/apt/sources.list
-        sudo apt-get update
-        sudo apt-get install -y ubuntu-release-upgrader-core
         # Configure release upgrader to allow non-LTS development releases
         sudo sed -i 's/^Prompt=.*/Prompt=normal/' /etc/update-manager/release-upgrades
-        sudo apt-get upgrade
-        sudo do-release-upgrade -f DistUpgradeViewNonInteractive -d
+        sudo apt update
+        sudo apt upgrade
+        sudo apt dist-upgrade
+        sudo do-release-upgrade
 
     - name: Install system dependencies
       run: |
