@@ -30,11 +30,15 @@ when 'x86_64-linux'
   gem 'torch-rb'
   gem 'torchvision', path: (
     proc do
-      # Discover automatically torchvision-ruby path, so that it works also in git worktrees
-      current_dir = __dir__
-      current_dir = File.dirname(current_dir) while current_dir != '/' && !File.exist?("#{current_dir}/torchvision-ruby")
-      raise 'Can\'t find torchvision-ruby next to parent directories' if current_dir == '/'
-      "#{current_dir}/torchvision-ruby"
+      if ENV['TORCHVISION_RUBY_PATH']
+        ENV['TORCHVISION_RUBY_PATH']
+      else
+        # Discover automatically torchvision-ruby path, so that it works also in git worktrees
+        current_dir = __dir__
+        current_dir = File.dirname(current_dir) while current_dir != '/' && !File.exist?("#{current_dir}/torchvision-ruby")
+        raise 'Can\'t find torchvision-ruby next to parent directories' if current_dir == '/'
+        "#{current_dir}/torchvision-ruby"
+      end
     end.call
   )
 when 'x64-mingw-ucrt'

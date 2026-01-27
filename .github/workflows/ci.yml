@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      TORCHVISION_RUBY_PATH: /opt/torchvision-ruby
+      # Make sure the same bundle config used during the image build will be used
+      BUNDLE_APP_CONFIG: /root/.bundle
+
+    container:
+      image: ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
+      options: --user root
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: bundle install
+
+    - name: Run tests
+      run: bundle exec rspec --format documentation
