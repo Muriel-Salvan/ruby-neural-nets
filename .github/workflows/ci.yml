@@ -79,4 +79,5 @@ jobs:
     - name: Run tests
       run: |
         ls -la /usr/lib/x86_64-linux-gnu/libvips.*
+        nm -gD /usr/lib/x86_64-linux-gnu/libvips.so.42
         bundle exec rspec --format documentation
