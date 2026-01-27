@@ -18,11 +18,14 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Configure bundle for torch-rb
-      run: bundle config set --local build.torch-rb "--with-torch-dir=${{ env.LIBTORCH_PATH }}"
+      run: |
+        cat /opt/torchvision-ruby/Gemfile
+        bundle config set --local build.torch-rb "--with-torch-dir=/opt/libtorch/libtorch"
 
     - name: Install dependencies
       run: |
         ln -s /opt/torchvision-ruby ../torchvision-ruby
+        ls -la ..
         bundle install
 
     - name: Run tests
