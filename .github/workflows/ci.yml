@@ -23,12 +23,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install dependencies
-      run: |
-        bundle config set --global toto titi
-        bundle config
-        cd ~
-        pwd
-        bundle install
+      run: bundle install
 
     - name: Run tests
       run: bundle exec rspec --format documentation
