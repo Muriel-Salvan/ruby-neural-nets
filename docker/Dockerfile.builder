@@ -1,7 +1,11 @@
 # Dockerfile for Ruby Neural Nets project
 # Ubuntu 25.10 base image with all dependencies
-
 FROM ubuntu:25.10
+
+ARG ruby_version=3.4
+ARG ruby_version_patch=8
+ARG bundler_version=4.0.4
+ARG libtorch_version=2.9.1
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -20,6 +24,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     gnupg \
     lsb-release \
+    unzip \
     \
     # Ruby build dependencies
     autoconf \
@@ -51,23 +56,23 @@ RUN apt-get update && apt-get install -y \
     # Clean up
     && rm -rf /var/lib/apt/lists/*
 
-# Install Ruby 3.4.8 from source
+# Install Ruby from source
 RUN cd /tmp && \
-    wget https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.8.tar.gz && \
-    tar -xzf ruby-3.4.8.tar.gz && \
-    cd ruby-3.4.8 && \
+    wget https://cache.ruby-lang.org/pub/ruby/${ruby_version}/ruby-${ruby_version}.${ruby_version_patch}.tar.gz && \
+    tar -xzf ruby-${ruby_version}.${ruby_version_patch}.tar.gz && \
+    cd ruby-${ruby_version}.${ruby_version_patch} && \
     ./configure --disable-install-doc && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /tmp/ruby-3.4.8*
+    rm -rf /tmp/ruby-${ruby_version}.${ruby_version_patch}*
 
-# Install Bundler 4
-RUN gem install bundler -v 4.0.0
+# Install Bundler
+RUN gem install bundler -v ${bundler_version}
 
 # Download and install libTorch
-RUN wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip && \
-    unzip libtorch-shared-with-deps-2.9.1+cpu.zip -d /opt/libtorch && \
-    rm libtorch-shared-with-deps-2.9.1+cpu.zip && \
+RUN wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-${libtorch_version}%2Bcpu.zip && \
+    unzip libtorch-shared-with-deps-${libtorch_version}+cpu.zip -d /opt/libtorch && \
+    rm libtorch-shared-with-deps-${libtorch_version}+cpu.zip && \
     echo "LIBTORCH_PATH=/opt/libtorch/libtorch" >> /etc/environment
 
 # Clone and modify torchvision-ruby repository

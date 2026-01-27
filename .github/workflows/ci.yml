@@ -17,7 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-
     - name: Configure bundle for torch-rb
       run: bundle config set --local build.torch-rb "--with-torch-dir=${{ env.LIBTORCH_PATH }}"
 
@@ -27,7 +26,4 @@ jobs:
         bundle install
 
     - name: Run tests
-      run: |
-        ls -la /usr/lib/x86_64-linux-gnu/libvips.*
-        nm -gD /usr/lib/x86_64-linux-gnu/libvips.so.42
-        bundle exec rspec --format documentation
+      run: bundle exec rspec --format documentation
