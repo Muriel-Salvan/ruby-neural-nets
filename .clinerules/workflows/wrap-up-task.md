@@ -1,3 +1,5 @@
+ALWAYS start by telling the user "WORKFLOW: I WILL WRAP UP MY TASK".
+
 1. **ALWAYS make sure that tests are all running without failures**. Use the running-tests skill to do so.
 2. ALWAYS fix all the failures that you see in the tests output. In this case don't mark the task as completed, and get back to working on the task.
 3. Check what should be changed in the README in the scope of your task. Check the updating-readme skill to do so.

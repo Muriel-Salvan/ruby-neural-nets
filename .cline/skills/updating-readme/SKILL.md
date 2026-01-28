@@ -5,6 +5,8 @@ description: Provide rules on how to update the documentation tracked by the REA
 
 # updating-readme
 
+ALWAYS start by telling the user "SKILL: I WILL UPDATE README".
+
 1. ALWAYS keep the README.md file up-to-date with the new options or architecture changes that are made. Any section of the README should be checked if the content needs to be adapted with any code or test change.
 2. ALWAYS keep the table of content of the README.md file up-to-date: any section of the file should be mentioned, as a link and following the precise hierarchy of sections with indentation.
 3. ALWAYS document the CLI arguments in the Usage section of the README.md file.

@@ -1,4 +1,4 @@
-ALWAYS start by telling the user "I WILL COMMIT CHANGES".
+ALWAYS start by telling the user "WORKFLOW: I WILL COMMIT CHANGES".
 
 1. Identify all the files that make sense to commit altogether as part of 1 commit.
 2. Add those identified files using `git add <file1> <file2> ... <fileN>`.

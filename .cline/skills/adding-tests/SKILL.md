@@ -5,7 +5,7 @@ description: Provide rules applicable to any tests modification, creation or del
 
 # adding-tests
 
-ALWAYS start by telling the user "I WILL ALTER TESTS".
+ALWAYS start by telling the user "SKILL: I WILL ALTER TESTS".
 
 1. Add any platform-agnostic test scenarios under the spec/scenarios directory.
 2. Add any platform-specific test scenarios under the spec/scenarios.#{RUBY_PLATFORM} directory.

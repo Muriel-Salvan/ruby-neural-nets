@@ -1,3 +1,5 @@
+ALWAYS start by telling the user "WORKFLOW: I WILL ADDRESS PR COMMENTS".
+
 1. Use the command line `bundle exec ruby ./tools/github/check_unresolved_pr_comments` to know about all the unresolved PR comments.
 2. Every unresolved comment that starts with the string "/cline" and that has no direct reply from you yet should be addressed by you.
 3. A comment can invite you to perform a code change. If that is the case, you should work on the task again to implement what is asked by the user.
