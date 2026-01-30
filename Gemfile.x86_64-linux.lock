@@ -1,5 +1,5 @@
 PATH
-  remote: /mnt/f/Studies/AI/torchvision-ruby
+  remote: /mnt/e/Studies/AI/torchvision-ruby
   specs:
     torchvision (0.4.1)
       numo-narray-alt
@@ -201,4 +201,4 @@ CHECKSUMS
   unicode-emoji (4.2.0) sha256=519e69150f75652e40bf736106cfbc8f0f73aa3fb6a65afe62fefa7f80b0f80f
 
 BUNDLED WITH
-  4.0.3
+  4.0.5

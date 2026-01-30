@@ -1,21 +1,22 @@
 ---
 name: running-tests
-description: Provide rules on how to run tests
+description: Run tests. Use when any test (single ones or all) needs to be run.
 ---
 
-# running-tests
+# Running tests
 
-ALWAYS start by telling the user "SKILL: I WILL RUN TESTS".
+When running any test scenario, follow this workflow:
 
-1. ALWAYS run tests using the WSL-wrapped RSpec CLI command: `./tools/wsl/bash.cmd bundle exec rspec`
-2. If you want to select specific tests or change RSpec run, you can use any normal rspec CLI argument, like this: `./tools/wsl/bash.cmd bundle exec rspec -e "tracks progress and reports correct cost and accuracy"`
-3. ALWAYS check for the output of the tests run. Successful tests run should output "0 failures" at the end. If this string is not found then it means tests are failing.
+## 1. Find out which tests need to be run
 
-## Usage
+- Identify the names of the test scenarios that need to be run. By default all tests are run.
 
-Use this skill every time you need to run tests.
+## 2. Run tests using WSL only
 
-## Steps
+- ALWAYS use the `.\tools\wsl\bash.cmd bundle exec rspec` CLI to run tests. NEVER use another command.
+- Add all necessary CLI arguments that you need to select some test scenarios, using RSpec CLI arguments.
+- For example, running all tests named "tracks progress and reports correct cost and accuracy" is done by using the CLI `.\tools\wsl\bash.cmd bundle exec rspec -e "tracks progress and reports correct cost and accuracy"`.
 
-1. Run tests from WSL using `./tools/wsl/bash.cmd bundle exec rspec`
-2. Analyze the output to understand if tests are failing or not.
+## 3. Check the output of the tests run
+
+- ALWAYS check for the output of the tests run. Successful tests run should output "0 failures" at the end. If this string is not found then it means tests are failing.
