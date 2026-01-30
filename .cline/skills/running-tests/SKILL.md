@@ -7,6 +7,8 @@ description: Run tests. Use when any test (single ones or all) needs to be run.
 
 When running any test scenario, follow this workflow:
 
+- ALWAYS start by informing the user that you are running this skill, saying "SKILL: I AM RUNNING TESTS".
+
 ## 1. Find out which tests need to be run
 
 - Identify the names of the test scenarios that need to be run. By default all tests are run.

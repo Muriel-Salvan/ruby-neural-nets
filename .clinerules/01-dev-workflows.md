@@ -1,5 +1,7 @@
 # Development workflow rules
 
+- ALWAYS start by informing the user that you have read those rules, saying "RULES: I HAVE READ THE DEVELOPMENT WORKFLOW RULES".
+
 ## Git
 
 - ALWAYS stay in the branch that is checked out. NEVER checkout another git branch than the one already checked out.

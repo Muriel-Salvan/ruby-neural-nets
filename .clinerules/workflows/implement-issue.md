@@ -7,6 +7,8 @@ Implement all the requirements defined in a given Github issue, while following 
 <detailed_sequence_steps>
 # Implement issue Process - Detailed Sequence of Steps
 
+- ALWAYS start by informing the user that you are running this workflow, saying "WORKFLOW: I AM IMPLEMENTING AN ISSUE".
+
 ## 1. Get issue requirements
 
 1. Use the `ask_followup_question` command to ask the USER which Github issue should be implemented.
