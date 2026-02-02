@@ -21,12 +21,6 @@ Implement all the requirements defined in a given Github issue, while following 
 
 2. Analyze all the rules that you should adhere to when implementing a task.
 
-3. Inform the USER of your implementation plan, taking into consideration the issue requirements, the current code, all the rules to be respected and possible USER inputs.
-
-4. Use the `ask_followup_question` command to ask the USER if this plan is valid.
-
-5. If the USER agrees with this plan, go on to section 3. Otherwise correct your implementation plan by repeating the steps of this section 2.
-
 ## 3. Implement the issue following the implementation plan
 
 1. Perform all the agreed steps in the implementation plan to implement the issue.
