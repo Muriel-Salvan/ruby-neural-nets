@@ -1,7 +1,7 @@
 <task name="Create Pull Request">
 
 <task_objective>
-Create a meaningful commit of current changes, push it to Github and create a Pull Request if needed.
+Create a Pull Request on Github for the current branch.
 </task_objective>
 
 <detailed_sequence_steps>

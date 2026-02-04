@@ -2,6 +2,10 @@
 
 - ALWAYS start by informing the user that you have read those rules, saying "RULES: I HAVE READ THE DEVELOPMENT WORKFLOW RULES".
 
+## Task
+
+- ALWAYS run the workflow /wrap-up-task.md just before you complete the task.
+
 ## Git
 
 - ALWAYS stay in the branch that is checked out. NEVER checkout another git branch than the one already checked out.
