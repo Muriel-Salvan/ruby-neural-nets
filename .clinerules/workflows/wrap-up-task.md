@@ -13,7 +13,7 @@ Perform all needed checks before attempting a task's completion.
 
 ## 2. Check that documentation is up-to-date
 
-1. Check what should be changed in the README in the scope of your task. Check the updating-readme skill to do so.
+1. ALWAYS use the Skill updating-readme to check what should be changed in the README in the scope of your task.
 
 ## 3. Make sure all modifications are pushed
 
