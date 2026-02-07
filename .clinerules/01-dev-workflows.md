@@ -4,12 +4,13 @@
 
 ## Task
 
-- ALWAYS run the workflow /wrap-up-task.md just before you complete the task.
+- ALWAYS use the Skill `wrap-up-task` just before you complete the task.
 
 ## Git
 
 - ALWAYS stay in the branch that is checked out. NEVER checkout another git branch than the one already checked out.
-- When working on a task, identify commits that make sense functionnally. When you decide a commit is needed, then use the workflow /commit-changes.md.
+- When working on a task, identify commits that make sense functionnally.
+- ALWAYS use the Skill `commit-changes` to commit changes that you deem appropriate.
 - Use the Github CLI tool (`gh`) to get information about Github Pull Requests, comments and workflows, but NEVER use this tool to post new information or modify information.
 
 ## Testing
