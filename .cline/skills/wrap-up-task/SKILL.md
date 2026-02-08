@@ -16,9 +16,9 @@ When wrapping up a task before attempting completion, follow this workflow:
 
 ## 2. Check that documentation is up-to-date
 
-- Update the README file if needed.
+- ALWAYS check the content of the README file, and update it if your changes should be documented there.
 
 ## 3. Make sure all modifications are pushed
 
 - ALWAYS commit all your changes in the current branch.
-- ALWAYS check that the git history of your branch is semi-linear (you should not have any merge commit between your branch and main), and that it is based on the latest main branch. If that is not the case, rebase the branch on main
+- ALWAYS check that the git history of your branch is semi-linear (you should not have any merge commit between your branch and main), and that it is based on the latest main branch. If that is not the case, rebase the current branch on main.
