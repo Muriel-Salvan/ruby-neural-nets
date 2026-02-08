@@ -1,17 +1,17 @@
 #!/usr/bin/env ruby
 
-# Usage: commit <comment>
+# Usage: commit <description_file>
 
 require 'tmpdir'
 require_relative '../helpers'
 
-comment = ARGV[0]
+description_file = ARGV[0]
 
-raise 'Missing comment' if comment.nil?
+raise 'Missing description file' if description_file.nil?
 
 Dir.mktmpdir do |temp_dir|
   comment_file = "#{temp_dir}/comment.txt"
-  File.write(comment_file, comment.gsub('\\n', "\n") + RubyNeuralNetsTools.agent_signature)
+  File.write(comment_file, File.read(description_file) + RubyNeuralNetsTools.agent_signature)
   system "git commit --file \"#{comment_file}\"", exception: true
 end
 
