@@ -31,4 +31,4 @@ When committing changes, follow this workflow:
 ## 5. Make sure a Pull Request is created for the current branch
 
 - Check on the Github project if there is already a Pull Request created for the current branch.
-- If there isn't any Pull Request for the current branch, ALWAYS create a Pull Request using the Skill `create-pull-request`.
+- If there isn't any Pull Request for the current branch, create one.
