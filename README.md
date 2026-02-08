@@ -633,6 +633,21 @@ bundle exec rspec
 
 This will execute all tests in the `spec/` directory.
 
+##### Debug Output During Tests
+
+To enable debug logging output during test runs, set the `TEST_DEBUG` environment variable to `1`:
+
+```bash
+TEST_DEBUG=1 bundle exec rspec
+```
+
+When enabled:
+- Debug mode is activated in the Logger (showing detailed debug messages from model operations)
+- Log output is displayed on STDOUT for real-time visibility while still being captured for test assertions
+- This is useful for debugging test failures without modifying test code
+
+By default (without `TEST_DEBUG`), logs are captured silently to a StringIO for test assertions only.
+
 #### Test Structure
 
 The test suite follows a structured organization:
