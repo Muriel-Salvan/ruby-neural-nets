@@ -13,7 +13,9 @@ When committing changes, follow this workflow:
 
 - Identify all the files that make sense to commit altogether as part of 1 commit.
 - Add those identified files using `git add <file1> <file2> ... <fileN>`.
-- ALWAYS create a git commit using `bundle exec ruby ./tools/git/commit "<Meaningful git commit comment>"`. **New lines in the comment should be given using \n and not real new lines, like this: `bundle exec ruby ./tools/git/commit "Line 1\nLine 2\nLine 3"`**.
+- Devise your commit comment
+- ALWAYS create a git commit using `bundle exec ruby ./tools/git/commit "<Meaningful git commit comment>"`.
+- ALWAYS replace new lines with \n in your git commit comment. This ensures the CLI argument does not have real new lines, like this: `bundle exec ruby ./tools/git/commit "Line 1\nLine 2\nLine 3"`.
 - NEVER use `git commit` directly.
 
 ## 2. Push this commit on Github

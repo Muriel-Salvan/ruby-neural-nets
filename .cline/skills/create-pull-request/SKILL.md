@@ -16,5 +16,6 @@ When creating a Pull Request changes, follow this workflow:
 
 ## 2. Create the Pull Request between the current branch and main
 
-- ALWAYS create a Pull Request using the command `bundle exec ruby ./tools/github/create_pr <title> <description>`. Use a meaningful title and the description you devised previously for this Pull Request. **New lines in the description should be given using \n and not real new lines, like this: `bundle exec ruby ./tools/github/create_pr "Pull Request Title" "Line 1\nLine 2\nLine 3"`**.
+- ALWAYS create a Pull Request using the command `bundle exec ruby ./tools/github/create_pr <title> <description>`. Use a meaningful title and the description you devised previously for this Pull Request.
+- ALWAYS replace new lines with \n in your PR description. This ensures the CLI argument does not have real new lines, like this: `bundle exec ruby ./tools/github/create_pr "Pull Request Title" "Line 1\nLine 2\nLine 3"`.
 - NEVER use the `gh` CLI to create Pull Requests.
