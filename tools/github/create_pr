@@ -1,19 +1,19 @@
 #!/usr/bin/env ruby
 
-# Usage: create_pr <title> <description>
+# Usage: create_pr <title> <pr_description_file>
 
 require 'tmpdir'
 require_relative '../helpers'
 
 title = ARGV[0]
-description = ARGV[1]
+pr_description_file = ARGV[1]
 
-raise 'Missing title' if title.nil?
-raise 'Missing description' if description.nil?
+raise 'Missing Pull Request title' if title.nil?
+raise 'Missing Pull Request description file' if pr_description_file.nil?
 
 Dir.mktmpdir do |temp_dir|
   description_file = "#{temp_dir}/description.txt"
-  File.write(description_file, description.gsub('\\n', "\n") + RubyNeuralNetsTools.agent_signature)
+  File.write(description_file, File.read(pr_description_file) + RubyNeuralNetsTools.agent_signature)
   system "gh pr create --title \"#{title}\" --body-file \"#{description_file}\"", exception: true
 end
 

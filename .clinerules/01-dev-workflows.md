@@ -9,8 +9,8 @@
 ## Git
 
 - ALWAYS stay in the branch that is checked out. NEVER checkout another git branch than the one already checked out.
-- When working on a task, identify commits that make sense functionnally.
-- ALWAYS use the Skill `commit-changes` to commit changes that you deem appropriate.
+- When working on a task, identify commits that make sense functionnally and ALWAYS use the Skill `commit-changes` to commit them.
+- NEVER use `git commit` directly.
 - Use the Github CLI tool (`gh`) to get information about Github Pull Requests, comments and workflows, but NEVER use this tool to post new information or modify information.
 
 ## Testing
