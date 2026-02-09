@@ -1,9 +1,9 @@
 ---
-name: running-tests
+name: run-tests
 description: Run tests. Use when any test (single ones or all) needs to be run.
 ---
 
-# Running tests
+# Run tests
 
 When running any test scenario, follow this workflow:
 

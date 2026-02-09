@@ -11,8 +11,8 @@
 - ALWAYS use the Skill `commit-changes` to commit changes. NEVER use `git commit` directly.
 - ALWAYS use the Skill `create-pull-request` to create a Pull Request on Github. NEVER use the `gh` CLI to create a Pull Request.
 - ALWAYS use the Skill `rebase-branch` to rebase the current branch on main. NEVER use `git merge`.
-- ALWAYS use the Skill `running-tests` to run tests for this project. NEVER run tests using other commands.
-- ALWAYS use the Skill `updating-readme` to update the README file in the scope of your task.
+- ALWAYS use the Skill `run-tests` to run tests for this project. NEVER run tests using other commands.
+- ALWAYS use the Skill `update-doc` to update the project documentation in the scope of your task.
 
 ## Git
 

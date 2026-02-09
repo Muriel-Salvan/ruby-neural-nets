@@ -16,7 +16,7 @@ When wrapping up a task before attempting completion, follow this workflow:
 
 ## 2. Check that documentation is up-to-date
 
-- ALWAYS check the content of the README file, and update it if your changes should be documented there.
+- ALWAYS update the project documentation along with your new development.
 
 ## 3. Make sure all modifications are pushed
 
