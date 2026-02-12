@@ -583,8 +583,6 @@ This is a playground project for experimenting with neural networks in Ruby. Fee
 - Experiment with different datasets
 - Improve performance or add features
 
-Development rules that should be followed are documented in the [rules](rules/all.md) file.
-
 ### Code Structure
 
 - `lib/ruby_neural_nets/accuracy.rb`: Base accuracy measurement class
@@ -715,6 +713,16 @@ docker tag ruby-neural-nets-builder:ubuntu25.10 ghcr.io/muriel-salvan/ruby-neura
 
 ```bash
 docker push ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
+```
+
+### Coding agents
+
+This project follows conventions and development rules that are enforced by [X-Aeon Agents Skills](https://github.com/Muriel-Salvan/x-aeon_agents_skills).
+
+Those skills can be installed by using [OpenSkills](https://github.com/numman-ali/openskills) this way:
+
+```bash
+npx openskills install Muriel-Salvan/x-aeon_agents_skills
 ```
 
 ## License
