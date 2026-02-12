@@ -631,6 +631,28 @@ bundle exec rspec
 
 This will execute all tests in the `spec/` directory.
 
+##### Debug Mode
+
+When debugging tests, you can enable verbose debug output by setting the `TEST_DEBUG` environment variable to `1`:
+
+```bash
+TEST_DEBUG=1 bundle exec rspec
+```
+
+When `TEST_DEBUG=1` is set:
+- Debug mode is enabled, showing detailed debug messages from the code
+- Log output is printed to **both** STDOUT (for visibility during test runs) and captured internally (for test assertions)
+- This helps identify issues during test execution while still allowing tests to verify log output
+
+Example usage:
+```bash
+# Run a specific test with debug output visible
+TEST_DEBUG=1 bundle exec rspec spec/scenarios/models/one_layer_spec.rb
+
+# Run all tests with debug logging to STDOUT
+TEST_DEBUG=1 bundle exec rspec
+```
+
 #### Test Structure
 
 The test suite follows a structured organization:
