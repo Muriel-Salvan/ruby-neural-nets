@@ -40,6 +40,7 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
   - [Code Structure](#code-structure)
   - [Testing](#testing)
     - [Running Tests](#running-tests)
+    - [Debug Output During Tests](#debug-output-during-tests)
     - [Test Structure](#test-structure)
     - [Test Features](#test-features)
     - [Writing Tests](#writing-tests)
@@ -630,6 +631,21 @@ bundle exec rspec
 ```
 
 This will execute all tests in the `spec/` directory.
+
+##### Debug Output During Tests
+
+To enable debug logging output during test runs, set the `TEST_DEBUG` environment variable to `1`:
+
+```bash
+TEST_DEBUG=1 bundle exec rspec
+```
+
+When enabled, this will:
+- Activate debug mode in the Logger mixin, displaying detailed debug messages
+- Output log messages to both the test's StringIO capture (for assertions) and STDOUT (for real-time debugging)
+- Help diagnose issues by showing internal operations during test execution
+
+This is useful for debugging test failures without modifying test code.
 
 #### Test Structure
 

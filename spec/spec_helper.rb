@@ -20,7 +20,29 @@ RSpec.configure do |config|
   config.before(:each) do
     # Create a StringIO to capture log output
     @test_log_stringio = StringIO.new
-    # Replace the global logger with our test logger
-    RubyNeuralNets::Logger.logger = ::Logger.new(@test_log_stringio)
+
+    if ENV['TEST_DEBUG'] == '1'
+      # Enable debug mode when TEST_DEBUG is set
+      RubyNeuralNets::Logger.debug_mode = true
+      # Create a logger that writes to both StringIO (for assertions) and STDOUT (for debugging)
+      RubyNeuralNets::Logger.logger = ::Logger.new(@test_log_stringio).tap do |logger|
+        # Add a second log device that writes to STDOUT
+        original_add = logger.method(:add)
+        logger.define_singleton_method(:add) do |severity, message = nil, progname = nil, &block|
+          result = original_add.call(severity, message, progname, &block)
+          # Also output to STDOUT for debugging
+          formatted_message = if message.nil?
+                                block ? block.call : progname
+                              else
+                                message
+                              end
+          puts "[#{severity}] #{formatted_message}" if formatted_message
+          result
+        end
+      end
+    else
+      # Normal test mode: only capture to StringIO
+      RubyNeuralNets::Logger.logger = ::Logger.new(@test_log_stringio)
+    end
   end
 end
