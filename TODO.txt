@@ -1,6 +1,1 @@
-* Cline rules are not followed properly.
-  - Add the Co-Authored information in a template. Use templates everywhere.
-  - Make it clear to never git commit amend or change history.
-  - Make rules more concise: NEVER use --no-verify. ALWAYS fix pre-commit hook failures directly.
-  - Use memory bank: https://docs.cline.bot/prompting/cline-memory-bank
-* Remove read-rules workflow when https://github.com/cline/cline/issues/7414 will be solved.
+* Use Cline memory bank: https://docs.cline.bot/prompting/cline-memory-bank
