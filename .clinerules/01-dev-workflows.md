@@ -17,3 +17,7 @@
 
 - ALWAYS stay in the branch that is checked out.
 - NEVER checkout another git branch than the one already checked out.
+
+## Ruby
+
+- NEVER add frozen_string_literal comment in files.

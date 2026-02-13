@@ -1,1 +1,2 @@
 * Use Cline memory bank: https://docs.cline.bot/prompting/cline-memory-bank
+* Use https://github.com/forrestchang/andrej-karpathy-skills?tab=readme-ov-file
