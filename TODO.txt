@@ -1,2 +1,3 @@
-* Use Cline memory bank: https://docs.cline.bot/prompting/cline-memory-bank
-* Use https://github.com/forrestchang/andrej-karpathy-skills?tab=readme-ov-file
+* Check why running 1 spec file executes all tests
+* Add in the rules that we are operating under a Windows environment
+* Use Cline memory bank (https://docs.cline.bot/prompting/cline-memory-bank) or skillkit memory.

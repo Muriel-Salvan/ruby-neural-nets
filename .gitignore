@@ -7,3 +7,6 @@
 
 # Don't include the generated minibatches
 /minibatches
+
+# Local generated skills should not be committed
+/skills

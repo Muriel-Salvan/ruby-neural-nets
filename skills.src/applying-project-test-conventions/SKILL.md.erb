@@ -1,0 +1,88 @@
+<%= frontmatter(
+  description: 'Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario.',
+  metadata: {
+    dependencies: %w[
+      Muriel-Salvan/x-aeon_agents_skills:running-cli-in-wsl-portable
+      Muriel-Salvan/x-aeon_agents_skills:applying-test-conventions
+    ]
+  }
+) %>
+
+# <%= skill_goal 'Applying project test conventions' %>
+
+## Inform the user
+
+- <%= announce_skill %>
+
+## Conventions on running tests
+
+<%= rule(
+  'Always use `skill: running-cli-in-wsl-portable` when you want to run any test',
+  description: <<~EO_Markdown,
+    - Always use `skill: running-cli-in-wsl-portable` when you want to run any test.
+    - Always run tests in a WSL Portable environment.
+    - ⚠️ **CRITICAL REMINDER**: Before running any test, you must use `skill: running-cli-in-wsl-portable`. 
+    - Direct test execution is prohibited.
+  EO_Markdown
+  type: :bash,
+  bad: <<~EO_Example,
+    rspec
+    bundle exec rspec
+    bundle exec rspec -e"My test scenario"
+  EO_Example
+  good: <<~EO_Example,
+    C:\\my-repo\\.cline\\skills\\running-cli-in-wsl-portable\\scripts\\wsl_portable_bash.cmd "bundle exec rspec"
+    C:\\my-repo\\.cline\\skills\\running-cli-in-wsl-portable\\scripts\\wsl_portable_bash.cmd "bundle exec rspec -e'My test scenario'"
+  EO_Example
+  rationale: 'Some unit tests can\'t be run under Windows platform. The WSL Portable environment will always enable all test scenarios.' 
+) %>
+
+## Conventions on test files layout
+
+<%= rule(
+  'Add any platform-agnostic test scenarios under the `spec/scenarios` directory',
+  rationale: 'Unit tests from spec/scenarios should always be run on any platform.'
+) %>
+
+<%= rule(
+  'Add any platform-specific test scenarios under the `spec/scenarios.\#{RUBY_PLATFORM}` directory',
+  rationale: 'Platform-specific unit tests can be easily identified and will be selected when run on a given platform.'
+) %>
+
+<%= rule(
+  'Define common test helpers and framework under the `spec/ruby_neural_nets_test` directory',
+  rationale: 'Reusable helpers and test frameworks components should be defined separately from scenarios. They also follow standard Ruby module names and files layouts.'
+) %>
+
+<%= rule(
+  'Group test scenarios per interface kind',
+  description: <<~EO_Markdown,
+    Only the following interface kinds are tested:
+      * Data loaders are under `spec/scenarios/data_loaders`.
+      * Models are under `spec/scenarios/models`.
+      * Trainers are under `spec/scenarios/trainers`.
+  EO_Markdown
+  rationale: 'Separating test scenarios per interface gives a simple way to organize and select test scenarios to be run.'
+) %>
+
+<%= rule(
+  'Name the test file `spec/{scenarios_kind}/{interface_kind}/{class_name}_spec.rb` inside its scenarios directory',
+  rationale: 'This follows standard RSpec best practices.'
+) %>
+
+<%= rule(
+  'Split big test scenarios files',
+  description: 'In the case too many scenarios have to be tested for a single class, then split the scenarios among different files, all part of the same directory, named `spec/{scenarios_kind}/{interface_kind}/{class_name}/{scenarios_group_meaning}_spec.rb` inside their scenarios directory.',
+  rationale: 'This follows standard RSpec best practices and provides a way to better organize big test suites.'
+) %>
+
+<%= rule(
+  'Define shared scenarios in `spec/scenarios/{interface_kind}/shared/`',
+  description: 'Add any shared test scenarios (shared between different spec files) in files named `spec/scenarios/{interface_kind}/shared/{common_functionality}_scenarios.rb`. Include the shared scenarios in all spec files that have this common functionality, using RSpec\'s `include_examples` method.',
+  rationale: 'This reduces duplication in common features to be tests between various test suites. It keeps our test scenarios DRY.'
+) %>
+
+## Apply common test conventions
+
+- Always use `skill: applying-test-convention` skill to also understand common test conventions.
+- Project's conventions from this skill should always be preferred if they conflict with conventions from the `applying-test-convention` skill.

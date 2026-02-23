@@ -1,0 +1,22 @@
+version: 1
+skills:
+  - source: .
+    skills:
+      - applying-project-test-conventions
+      - enforcing-global-standards
+    enabled: true
+  - source: forrestchang/andrej-karpathy-skills
+    skills:
+      - karpathy-guidelines
+    enabled: true
+  - source: Muriel-Salvan/x-aeon_agents_skills
+    skills:
+      - implementing-github-issue
+      - addressing-pull-request-comments
+      - improving-agent-reflection
+    enabled: true
+  - source: anthropics/skills
+    skills:
+      - skill-creator
+    enabled: true
+updatedAt: 2026-02-23T16:36:19.435Z

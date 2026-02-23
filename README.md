@@ -44,6 +44,10 @@ A Ruby playground for implementing, coding, benchmarking, and comparing neural n
     - [Test Features](#test-features)
     - [Writing Tests](#writing-tests)
     - [Regenerating onnx_pb.rb](#regenerating-onnx_pbrb)
+  - [Coding agents](#coding-agents)
+    - [Tools installation](#tools-installation)
+    - [Generating local project skills](#generating-local-project-skills)
+    - [Skills installation](#skills-installation)
 - [Building the Docker build image](#building-the-docker-build-image)
 - [License](#license)
 
@@ -719,10 +723,37 @@ docker push ghcr.io/muriel-salvan/ruby-neural-nets-builder:ubuntu25.10
 
 This project follows conventions and development rules that are enforced by [X-Aeon Agents Skills](https://github.com/Muriel-Salvan/x-aeon_agents_skills).
 
-Those skills can be installed by using [OpenSkills](https://github.com/numman-ali/openskills) this way:
+It is not necessary to use coding agents to contribute to this repository.
 
+To develop using coding agents, this project follows the rules defined in [AGENTS.md](AGENTS.md) file.
+
+#### Tools installation
+
+The setup of agents skills is done using [skillkit](https://github.com/rohitg00/skillkit) and [X-Aeon Agents Skills](https://github.com/Muriel-Salvan/x-aeon_agents_skills).
+
+To install them once, follow those commands:
 ```bash
-npx openskills install Muriel-Salvan/x-aeon_agents_skills
+npm install -g skillkit@latest
+gem install x-aeon_agents_skills
+```
+
+#### Generating local project skills
+
+To generate the local skills from `skills.src` to `skills`, use the following command from the x-aeon_agents_skills Rubygem:
+```bash
+generate_skills
+```
+
+Don't forget to run the commands of the [Skills installation](#skills-installation) section to install the new version of the local and remote skills for your agent.
+
+#### Skills installation
+
+Here are the steps to setup necessary skills for the cline agent:
+```bash
+# 1. Install skills from the Manifest
+skillkit_manifest_install --agent cline
+# 2. Update AGENTS.md with the installed skills' description
+skillkit sync --agent cline --yes
 ```
 
 ## License
