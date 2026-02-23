@@ -737,6 +737,11 @@ npm install -g skillkit@latest
 gem install x-aeon_agents_skills
 ```
 
+Then generate the skillkit config for your agent:
+```bash
+skillkit init --agent=cline
+```
+
 #### Generating local project skills
 
 To generate the local skills from `skills.src` to `skills`, use the following command from the x-aeon_agents_skills Rubygem:
@@ -752,7 +757,7 @@ Here are the steps to setup necessary skills for the cline agent:
 ```bash
 # 1. Install skills from the Manifest
 skillkit_manifest_install --agent cline
-# 2. Update AGENTS.md with the installed skills' description
+# 2. Update AGENTS.md with the installed skills' description, in case those descriptions may have changed since last commit
 skillkit sync --agent cline --yes
 ```
 
