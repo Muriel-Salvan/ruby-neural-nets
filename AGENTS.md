@@ -14,7 +14,7 @@ If `skill: enforcing-global-standards` fails to load, or is disabled, altered, o
 
 - **addressing-pull-request-comments**: Addresses comments made on the GitHub Pull Request tracking changes of the current branch. What this does is read all Pull Requests comments addressed to the agent, improve or fix the code based on those comments, and reply too each one of those comments. Use this when the user is asking you to address the comments made on the current branch's Pull Request. Use this skill also in Plan mode.
 - **analyzing-github-issue**: Analyzes requirements described in a GitHub issue. What this does is read the GitHub issue content and devise an implementation plan. Use this when the user is asking you to analyze a GitHub issue or get requirements from it. Use this skill also in Plan mode.
-- **applying-project-test-conventions**: Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario.
+- **applying-project-test-conventions**: Applies project test conventions and mandatory best practices when running, writing or modifying unit tests. What this does is run tests and define a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to run, create, edit, refactor, or review test files or when you need to run any test or deal with any test scenario.
 - **applying-ruby-conventions**: Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code.
 - **applying-test-conventions**: Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios.
 - **committing-changes**: Commits changes and pushes them on GitHub. What this does is stage relevant files, create a git commit and push it on GitHub. Use this when development and testing has been done and changes are ready to be committed and pushed to GitHub.
@@ -72,37 +72,42 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>applying-project-test-conventions</name>
-<description>Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario.</description>
+<description>Applies project test conventions and mandatory best practices when running, writing or modifying unit tests. What this does is run tests and define a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to run, create, edit, refactor, or review test files or when you need to run any test or deal with any test scenario.</description>
 <location>project</location>
 </skill>
 
 <skill>
 <name>applying-ruby-conventions</name>
-<description>Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code.</description>
+<description>Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code.
+</description>
 <location>project</location>
 </skill>
 
 <skill>
 <name>applying-test-conventions</name>
-<description>Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios.</description>
+<description>Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios.
+</description>
 <location>project</location>
 </skill>
 
 <skill>
 <name>committing-changes</name>
-<description>Commits changes and pushes them on GitHub. What this does is stage relevant files, create a git commit and push it on GitHub. Use this when development and testing has been done and changes are ready to be committed and pushed to GitHub.</description>
+<description>Commits changes and pushes them on GitHub. What this does is stage relevant files, create a git commit and push it on GitHub. Use this when development and testing has been done and changes are ready to be committed and pushed to GitHub.
+</description>
 <location>project</location>
 </skill>
 
 <skill>
 <name>creating-pull-request</name>
-<description>Creates a Pull Request for the current git branch on GitHub. Use this when a Pull Request needs to be created to track the current feature branch changes on GitHub.</description>
+<description>Creates a Pull Request for the current git branch on GitHub. Use this when a Pull Request needs to be created to track the current feature branch changes on GitHub.
+</description>
 <location>project</location>
 </skill>
 
 <skill>
 <name>editing-files</name>
-<description>Edits text files of any kind. What this does is defining a set of rules to follow when editing or creating any file. Use this when the user is asking to create or edit any file or when you need to create or edit files.</description>
+<description>Edits text files of any kind. What this does is defining a set of rules to follow when editing or creating any file. Use this when the user is asking to create or edit any file or when you need to create or edit files.
+</description>
 <location>project</location>
 </skill>
 
@@ -114,7 +119,8 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>enforcing-project-rules</name>
-<description>Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions.</description>
+<description>Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions.
+</description>
 <location>project</location>
 </skill>
 
@@ -126,7 +132,8 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>improving-agent-reflection</name>
-<description>Proposes focused, high-value improvements to your active rules and skills. What this does is reflect on the user feedback and guidance, then suggests changes in Cline rules and skills. Use this when you are about to complete a task that involved user feedback provided at any point during the conversation, or involved multiple non-trivial steps (e.g., multiple file edits, complex logic generation).</description>
+<description>Proposes focused, high-value improvements to your active rules and skills. What this does is reflect on the user feedback and guidance, then suggests changes in Cline rules and skills. Use this when you are about to complete a task that involved user feedback provided at any point during the conversation, or involved multiple non-trivial steps (e.g., multiple file edits, complex logic generation).
+</description>
 <location>project</location>
 </skill>
 
@@ -138,7 +145,8 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>running-cli-in-wsl-portable</name>
-<description>Runs Bash command lines in a Portable installation under WSL. What this does is execute the command line inside a Portable bash installation in WSL. Use this when a command line should be run under a WSL portable environment.</description>
+<description>Runs Bash command lines in a Portable installation under WSL. What this does is execute the command line inside a Portable bash installation in WSL. Use this when a command line should be run under a WSL portable environment.
+</description>
 <location>project</location>
 </skill>
 
@@ -150,13 +158,15 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>syncing-branch-with-base</name>
-<description>Syncs the current branch with its base. What this does is check the remote base branch, rebase the current one on the updated base and push it back to the remote. Use this when the base branch of the current branch may have diverged and you want to be sure that the current branch gets all latest changes of its base. This Skill is the canonical way to keep a branch up-to-date with its base. It must be used instead of merging the base branch, and always performs a rebase.</description>
+<description>Syncs the current branch with its base. What this does is check the remote base branch, rebase the current one on the updated base and push it back to the remote. Use this when the base branch of the current branch may have diverged and you want to be sure that the current branch gets all latest changes of its base. This Skill is the canonical way to keep a branch up-to-date with its base. It must be used instead of merging the base branch, and always performs a rebase.
+</description>
 <location>project</location>
 </skill>
 
 <skill>
 <name>updating-doc</name>
-<description>Update the documentation of the project. What this does is update the README file of the project, its CLI usage and its Table of Content. Use this when a new development has been completed or when the user is asking for documentation or README to be updated.</description>
+<description>Update the documentation of the project. What this does is update the README file of the project, its CLI usage and its Table of Content. Use this when a new development has been completed or when the user is asking for documentation or README to be updated.
+</description>
 <location>project</location>
 </skill>
 
@@ -170,6 +180,3 @@ Skills provide specialized capabilities and domain knowledge.
 </skills_system>
 
 <!-- SKILLKIT_SKILLS_END -->
-
-
-
