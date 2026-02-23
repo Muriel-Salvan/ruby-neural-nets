@@ -1,5 +1,5 @@
 <%= frontmatter(
-  description: 'Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario.',
+  description: 'Applies project test conventions and mandatory best practices when running, writing or modifying unit tests. What this does is run tests and define a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to run, create, edit, refactor, or review test files or when you need to run any test or deal with any test scenario.',
   metadata: {
     dependencies: %w[
       Muriel-Salvan/x-aeon_agents_skills:running-cli-in-wsl-portable
@@ -14,7 +14,7 @@
 
 - <%= announce_skill %>
 
-## Conventions on running tests
+## Running tests
 
 <%= rule(
   'Always use `skill: running-cli-in-wsl-portable` when you want to run any test',
@@ -37,7 +37,7 @@
   rationale: 'Some unit tests can\'t be run under Windows platform. The WSL Portable environment will always enable all test scenarios.' 
 ) %>
 
-## Conventions on test files layout
+## Test files layout
 
 <%= rule(
   'Add any platform-agnostic test scenarios under the `spec/scenarios` directory',
