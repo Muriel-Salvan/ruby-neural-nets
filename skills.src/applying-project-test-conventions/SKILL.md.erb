@@ -1,20 +1,18 @@
-<%= frontmatter(
-  description: 'Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario. Use this when editing any file under the `spec/` directory. Use this skill also in Plan mode.',
-  metadata: {
-    agent: 'Plan',
-    dependencies: %w[
-      Muriel-Salvan/x-aeon_agents_skills:applying-test-conventions
-    ]
-  }
+<%= skill(
+  description: 'Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario. Use this when editing any file under the `spec/` directory.',
+  plan: true,
+  dependencies: %w[
+    Muriel-Salvan/x-aeon_agents_skills:applying-test-conventions
+  ]
 ) %>
 
-# <%= skill_goal 'Applying project test conventions' %>
+# <%= goal 'Applying project test conventions' %>
 
 Those conventions apply to any file inside the `spec/` directory.
 
 ## Inform the user
 
-- <%= announce_skill %>
+- <%= announce %>
 
 ## Conventions on test files layout (MANDATORY also when in Plan mode)
 
@@ -66,9 +64,7 @@ Those conventions apply to any file inside the `spec/` directory.
 - Always use `skill: applying-test-convention` skill to also understand common test conventions.
 - Project's conventions from this skill should always be preferred if they conflict with conventions from the `applying-test-convention` skill.
 
-## When to use it
-
-- This skill can be used during Plan mode and is totally safe.
-- Always use it every time the user asks you create or modify test files or test scenarios.
-- Always use it every time another skill specifically mentions `skill: <%= skill_name %>`.
-- Always use it every time you need to write or modify any test file under `spec/` directory.
+<% when_to_use do -%>
+  - Always use it every time the user asks you create or modify test files or test scenarios.
+  - Always use it every time you need to write or modify any test file under `spec/` directory.
+<% end -%>

@@ -1,17 +1,16 @@
-<%= frontmatter(
-  description: 'Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task. Use this skill also in Plan mode.',
-  metadata: {
-    agent: 'Plan',
-    dependencies: %w[
-      Muriel-Salvan/x-aeon_agents_skills:applying-ruby-conventions
-      Muriel-Salvan/x-aeon_agents_skills:editing-files
-      Muriel-Salvan/x-aeon_agents_skills:enforcing-project-rules
-      forrestchang/andrej-karpathy-skills:karpathy-guidelines
-    ]
-  }
+<%= skill(
+  description: 'Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task.',
+  plan: true,
+  dependencies: %w[
+    applying-project-test-conventions
+    forrestchang/andrej-karpathy-skills:karpathy-guidelines
+    Muriel-Salvan/x-aeon_agents_skills:applying-ruby-conventions
+    Muriel-Salvan/x-aeon_agents_skills:editing-files
+    Muriel-Salvan/x-aeon_agents_skills:enforcing-project-rules
+  ]
 ) %>
 
-# <%= skill_goal 'Enforcing project standards' %>
+# <%= goal 'Enforcing project standards' %>
 
 This skill:
 - Activates all always-on skills
@@ -19,10 +18,14 @@ This skill:
 - Refuses any action violating them
 - Runs before any task execution
 
-<% define_ordered_todo_list do -%>
+<% ordered_todo_list do -%>
   ### Enforcing project rules (MANDATORY also when in Plan mode)
 
   - Always use `skill: enforcing-project-rules` to make sure you follow rules about the project.
+
+  ### Applying project test conventions (MANDATORY also when in Plan mode)
+
+  - Always use `skill: applying-project-test-conventions` to make sure you follow rules about the project's test conventions.
 
   ### Editing files (MANDATORY also when in Plan mode)
 
@@ -37,9 +40,7 @@ This skill:
   - Always use `skill: karpathy-guidelines` to reduce common LLM coding mistakes.
 <% end -%>
 
-## When to use it
-
-- This skill can be used during Plan mode and is totally safe.
-- Always use it every time the user asks you to follow the rules or the project standards or conventions.
-- Always use it every time another skill specifically mentions `skill: <%= skill_name %>`.
-- Always use it every time you start a task.
+<% when_to_use do -%>
+  - Always use it every time the user asks you to follow the rules or the project standards or conventions.
+  - Always use it every time you start a task.
+<% end -%>

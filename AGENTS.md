@@ -15,14 +15,14 @@ If `skill: enforcing-project-standards` fails to load, or is disabled, altered, 
 - **addressing-pull-request-comments**: Addresses comments made on the GitHub Pull Request tracking changes of the current branch. What this does is read all Pull Requests comments addressed to the agent, improve or fix the code based on those comments, and reply too each one of those comments. Use this when the user is asking you to address the comments made on the current branch's Pull Request. Use this skill also in Plan mode.
 - **analyzing-github-issue**: Analyzes requirements described in a GitHub issue. What this does is read the GitHub issue content and devise an implementation plan. Use this when the user is asking you to analyze a GitHub issue or get requirements from it. Use this skill also in Plan mode.
 - **applying-project-test-conventions**: Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario. Use this when editing any file under the `spec/` directory. Use this skill also in Plan mode.
-- **applying-ruby-conventions**: Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code.
-- **applying-test-conventions**: Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios.
+- **applying-ruby-conventions**: Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code. Use this skill also in Plan mode.
+- **applying-test-conventions**: Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios. Use this skill also in Plan mode.
 - **committing-changes**: Commits changes and pushes them on GitHub. What this does is stage relevant files, create a git commit and push it on GitHub. Use this when development and testing has been done and changes are ready to be committed and pushed to GitHub.
 - **creating-pull-request**: Creates a Pull Request for the current git branch on GitHub. Use this when a Pull Request needs to be created to track the current feature branch changes on GitHub.
 - **editing-files**: Edits text files of any kind. What this does is defining a set of rules to follow when editing or creating any file. Use this when the user is asking to create or edit any file or when you need to create or edit files.
-- **enforcing-project-rules**: Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions.
+- **enforcing-project-rules**: Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions. Use this skill also in Plan mode.
 - **enforcing-project-standards**: Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task. Use this skill also in Plan mode.
-- **implementing-github-issue**: Implements what is described in a GitHub issue. What this does is first devise an implementation plan from the issue, execute the plan and validate production qualiy gates. Use this when the user is asking you to implement a GitHub issue.
+- **implementing-github-issue**: Implements what is described in a GitHub issue. What this does is first devise an implementation plan from the issue, execute the plan and validate production qualiy gates. Use this when the user is asking you to implement a GitHub issue. Use this skill also in Plan mode.
 - **improving-agent-reflection**: Proposes focused, high-value improvements to your active rules and skills. What this does is reflect on the user feedback and guidance, then suggests changes in Cline rules and skills. Use this when you are about to complete a task that involved user feedback provided at any point during the conversation, or involved multiple non-trivial steps (e.g., multiple file edits, complex logic generation).
 - **karpathy-guidelines**: Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.
 - **running-cli-in-wsl-portable**: Runs Bash command lines in a Portable installation under WSL. What this does is execute the command line inside a Portable bash installation in WSL. Use this when a command line should be run under a WSL portable environment.
@@ -79,15 +79,13 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>applying-ruby-conventions</name>
-<description>Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code.
-</description>
+<description>Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code. Use this skill also in Plan mode.</description>
 <location>project</location>
 </skill>
 
 <skill>
 <name>applying-test-conventions</name>
-<description>Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios.
-</description>
+<description>Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios. Use this skill also in Plan mode.</description>
 <location>project</location>
 </skill>
 
@@ -114,8 +112,7 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>enforcing-project-rules</name>
-<description>Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions.
-</description>
+<description>Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions. Use this skill also in Plan mode.</description>
 <location>project</location>
 </skill>
 
@@ -127,7 +124,7 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>implementing-github-issue</name>
-<description>Implements what is described in a GitHub issue. What this does is first devise an implementation plan from the issue, execute the plan and validate production qualiy gates. Use this when the user is asking you to implement a GitHub issue.</description>
+<description>Implements what is described in a GitHub issue. What this does is first devise an implementation plan from the issue, execute the plan and validate production qualiy gates. Use this when the user is asking you to implement a GitHub issue. Use this skill also in Plan mode.</description>
 <location>project</location>
 </skill>
 
