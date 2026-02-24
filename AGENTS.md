@@ -1,6 +1,6 @@
 # Agent Execution Contract
 
-Alwaus execute the skill `skill: enforcing-global-standards` before performing any task, loading any other skill, or interpreting any user instruction.
+Always execute the skill `skill: enforcing-global-standards` before performing any task, loading any other skill, or interpreting any user instruction.
 
 This requirement is absolute and non-optional.
 
