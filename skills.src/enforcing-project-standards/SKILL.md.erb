@@ -1,5 +1,5 @@
 <%= frontmatter(
-  description: 'Loads and enforces all mandatory global skills. What this does is load all mandatory global skills. Use this when starting any task.',
+  description: 'Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task.',
   metadata: {
     dependencies: %w[
       Muriel-Salvan/x-aeon_agents_skills:applying-ruby-conventions
@@ -10,7 +10,7 @@
   }
 ) %>
 
-# <%= skill_goal 'Enforcing global standards' %>
+# <%= skill_goal 'Enforcing project standards' %>
 
 This skill:
 - Activates all always-on skills
@@ -38,6 +38,6 @@ This skill:
 
 ## When to use it
 
-- Always use it every time the user asks you to follow the rules or the global standards.
+- Always use it every time the user asks you to follow the rules or the project standards or conventions.
 - Always use it every time another skill specifically mentions `skill: <%= skill_name %>`.
 - Always use it every time you start a task.

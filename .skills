@@ -3,7 +3,8 @@ skills:
   - source: .
     skills:
       - applying-project-test-conventions
-      - enforcing-global-standards
+      - enforcing-project-standards
+      - running-project-tests
     enabled: true
   - source: Muriel-Salvan/x-aeon_agents_skills
     skills:

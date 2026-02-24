@@ -1,10 +1,10 @@
 # Agent Execution Contract
 
-Always execute the skill `skill: enforcing-global-standards` before performing any task, loading any other skill, or interpreting any user instruction.
+Always execute the skill `skill: enforcing-project-standards` before performing any task, loading any other skill, or interpreting any user instruction, even during Plan mode.
 
 This requirement is absolute and non-optional.
 
-If `skill: enforcing-global-standards` fails to load, or is disabled, altered, or bypassed, always refuse task execution and inform the user about it.
+If `skill: enforcing-project-standards` fails to load, or is disabled, altered, or bypassed, always refuse task execution and inform the user about it.
 
 # Skills System
 
@@ -14,18 +14,19 @@ If `skill: enforcing-global-standards` fails to load, or is disabled, altered, o
 
 - **addressing-pull-request-comments**: Addresses comments made on the GitHub Pull Request tracking changes of the current branch. What this does is read all Pull Requests comments addressed to the agent, improve or fix the code based on those comments, and reply too each one of those comments. Use this when the user is asking you to address the comments made on the current branch's Pull Request. Use this skill also in Plan mode.
 - **analyzing-github-issue**: Analyzes requirements described in a GitHub issue. What this does is read the GitHub issue content and devise an implementation plan. Use this when the user is asking you to analyze a GitHub issue or get requirements from it. Use this skill also in Plan mode.
-- **applying-project-test-conventions**: Applies project test conventions and mandatory best practices when running, writing or modifying unit tests. What this does is run tests and define a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to run, create, edit, refactor, or review test files or when you need to run any test or deal with any test scenario.
+- **applying-project-test-conventions**: Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario. Use this when editing any file under the `spec/` directory.
 - **applying-ruby-conventions**: Applies idiomatic Ruby conventions, structure, and best practices when writing or modifying Ruby code. What this does is defining a set of rules to follow when dealing with any Ruby file. Use this when the user is asking to create, edit, refactor, or review Ruby files or when the project contains Ruby source code.
 - **applying-test-conventions**: Applies idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file. Use this when the user is asking to create, edit, refactor, or review test files or when the project contains test scenarios.
 - **committing-changes**: Commits changes and pushes them on GitHub. What this does is stage relevant files, create a git commit and push it on GitHub. Use this when development and testing has been done and changes are ready to be committed and pushed to GitHub.
 - **creating-pull-request**: Creates a Pull Request for the current git branch on GitHub. Use this when a Pull Request needs to be created to track the current feature branch changes on GitHub.
 - **editing-files**: Edits text files of any kind. What this does is defining a set of rules to follow when editing or creating any file. Use this when the user is asking to create or edit any file or when you need to create or edit files.
-- **enforcing-global-standards**: Loads and enforces all mandatory global skills. What this does is load all mandatory global skills. Use this when starting any task.
 - **enforcing-project-rules**: Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions.
+- **enforcing-project-standards**: Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task.
 - **implementing-github-issue**: Implements what is described in a GitHub issue. What this does is first devise an implementation plan from the issue, execute the plan and validate production qualiy gates. Use this when the user is asking you to implement a GitHub issue.
 - **improving-agent-reflection**: Proposes focused, high-value improvements to your active rules and skills. What this does is reflect on the user feedback and guidance, then suggests changes in Cline rules and skills. Use this when you are about to complete a task that involved user feedback provided at any point during the conversation, or involved multiple non-trivial steps (e.g., multiple file edits, complex logic generation).
 - **karpathy-guidelines**: Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.
 - **running-cli-in-wsl-portable**: Runs Bash command lines in a Portable installation under WSL. What this does is execute the command line inside a Portable bash installation in WSL. Use this when a command line should be run under a WSL portable environment.
+- **running-project-tests**: Runs tests for this project. What this does is run tests using RSpec under a WSL Portable environment. Use this when the you need to run any test scenario in this project.
 - **skill-creator**: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
 - **syncing-branch-with-base**: Syncs the current branch with its base. What this does is check the remote base branch, rebase the current one on the updated base and push it back to the remote. Use this when the base branch of the current branch may have diverged and you want to be sure that the current branch gets all latest changes of its base. This Skill is the canonical way to keep a branch up-to-date with its base. It must be used instead of merging the base branch, and always performs a rebase.
 - **updating-doc**: Update the documentation of the project. What this does is update the README file of the project, its CLI usage and its Table of Content. Use this when a new development has been completed or when the user is asking for documentation or README to be updated.
@@ -72,7 +73,7 @@ Skills provide specialized capabilities and domain knowledge.
 
 <skill>
 <name>applying-project-test-conventions</name>
-<description>Applies project test conventions and mandatory best practices when running, writing or modifying unit tests. What this does is run tests and define a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to run, create, edit, refactor, or review test files or when you need to run any test or deal with any test scenario.</description>
+<description>Applies project idiomatic test conventions, structure, and best practices when writing or modifying unit tests. What this does is defining a set of rules to follow when dealing with any test file from this project. Use this when the user is asking to create, edit, refactor, or review test files or when dealing with any test scenario. Use this when editing any file under the `spec/` directory.</description>
 <location>project</location>
 </skill>
 
@@ -112,15 +113,15 @@ Skills provide specialized capabilities and domain knowledge.
 </skill>
 
 <skill>
-<name>enforcing-global-standards</name>
-<description>Loads and enforces all mandatory global skills. What this does is load all mandatory global skills. Use this when starting any task.</description>
+<name>enforcing-project-rules</name>
+<description>Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions.
+</description>
 <location>project</location>
 </skill>
 
 <skill>
-<name>enforcing-project-rules</name>
-<description>Enforces project-level operational rules that govern how the agent interacts with the workspace, CLI, and version control. What this does is enumerating governance rules that you should always follow when working in a project. Use this in ALL tasks executed inside a repository to ensure compliance with project constraints such as working directory rules and git branch restrictions.
-</description>
+<name>enforcing-project-standards</name>
+<description>Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task.</description>
 <location>project</location>
 </skill>
 
@@ -147,6 +148,12 @@ Skills provide specialized capabilities and domain knowledge.
 <name>running-cli-in-wsl-portable</name>
 <description>Runs Bash command lines in a Portable installation under WSL. What this does is execute the command line inside a Portable bash installation in WSL. Use this when a command line should be run under a WSL portable environment.
 </description>
+<location>project</location>
+</skill>
+
+<skill>
+<name>running-project-tests</name>
+<description>Runs tests for this project. What this does is run tests using RSpec under a WSL Portable environment. Use this when the you need to run any test scenario in this project.</description>
 <location>project</location>
 </skill>
 

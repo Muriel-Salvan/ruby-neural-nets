@@ -1,0 +1,43 @@
+<%= frontmatter(
+  description: 'Runs tests for this project. What this does is run tests using RSpec under a WSL Portable environment. Use this when the you need to run any test scenario in this project.',
+  metadata: {
+    dependencies: %w[
+      Muriel-Salvan/x-aeon_agents_skills:running-cli-in-wsl-portable
+    ]
+  }
+) %>
+
+# <%= skill_goal 'Running tests' %>
+
+## Inform the user
+
+- <%= announce_skill %>
+
+## Running tests
+
+<%= rule(
+  'Always use `skill: running-cli-in-wsl-portable` when you want to run any test',
+  description: <<~EO_Markdown,
+    - Always use `skill: running-cli-in-wsl-portable` when you want to run any test.
+    - Always run tests in a WSL Portable environment.
+    - ⚠️ **CRITICAL REMINDER**: Before running any test, you must use `skill: running-cli-in-wsl-portable`. 
+    - Direct test execution is prohibited.
+  EO_Markdown
+  type: :bash,
+  bad: <<~EO_Example,
+    rspec
+    bundle exec rspec
+    bundle exec rspec -e"My test scenario"
+  EO_Example
+  good: <<~EO_Example,
+    C:\\my-repo\\.cline\\skills\\running-cli-in-wsl-portable\\scripts\\wsl_portable_bash.cmd "bundle exec rspec"
+    C:\\my-repo\\.cline\\skills\\running-cli-in-wsl-portable\\scripts\\wsl_portable_bash.cmd "bundle exec rspec -e'My test scenario'"
+  EO_Example
+  rationale: 'Some unit tests can\'t be run under Windows platform. The WSL Portable environment will always enable all test scenarios.' 
+) %>
+
+## When to use it
+
+- Always use it every time the user asks you run any test.
+- Always use it every time another skill specifically mentions `skill: <%= skill_name %>`.
+- Always use it every time you need to run any test.
