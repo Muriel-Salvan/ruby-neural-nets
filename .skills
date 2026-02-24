@@ -5,10 +5,6 @@ skills:
       - applying-project-test-conventions
       - enforcing-global-standards
     enabled: true
-  - source: forrestchang/andrej-karpathy-skills
-    skills:
-      - karpathy-guidelines
-    enabled: true
   - source: Muriel-Salvan/x-aeon_agents_skills
     skills:
       - implementing-github-issue
