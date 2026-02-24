@@ -1,6 +1,7 @@
 <%= frontmatter(
-  description: 'Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task.',
+  description: 'Loads and enforces all mandatory project skills. What this does is load all mandatory skills. Use this when starting any task. Use this skill also in Plan mode.',
   metadata: {
+    agent: 'Plan',
     dependencies: %w[
       Muriel-Salvan/x-aeon_agents_skills:applying-ruby-conventions
       Muriel-Salvan/x-aeon_agents_skills:editing-files
@@ -19,25 +20,26 @@ This skill:
 - Runs before any task execution
 
 <% define_ordered_todo_list do -%>
-  ### Enforcing project rules (MANDATORY)
+  ### Enforcing project rules (MANDATORY also when in Plan mode)
 
   - Always use `skill: enforcing-project-rules` to make sure you follow rules about the project.
 
-  ### Editing files (MANDATORY)
+  ### Editing files (MANDATORY also when in Plan mode)
 
   - Always use `skill: editing-files` to make sure you follow rules about editing files.
 
-  ### Applying Ruby conventions (MANDATORY)
+  ### Applying Ruby conventions (MANDATORY also when in Plan mode)
 
   - Always use `skill: applying-ruby-conventions` to make sure you follow rules about Ruby conventions.
 
-  ### Applying behavioral quidelines (MANDATORY)
+  ### Applying behavioral quidelines (MANDATORY also when in Plan mode)
   
   - Always use `skill: karpathy-guidelines` to reduce common LLM coding mistakes.
 <% end -%>
 
 ## When to use it
 
+- This skill can be used during Plan mode and is totally safe.
 - Always use it every time the user asks you to follow the rules or the project standards or conventions.
 - Always use it every time another skill specifically mentions `skill: <%= skill_name %>`.
 - Always use it every time you start a task.
