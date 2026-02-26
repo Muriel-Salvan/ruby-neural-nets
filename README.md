@@ -635,6 +635,12 @@ bundle exec rspec
 
 This will execute all tests in the `spec/` directory.
 
+To run with debug logging enabled (outputs all log and debug messages to STDOUT):
+
+```bash
+TEST_DEBUG=1 bundle exec rspec
+```
+
 #### Test Structure
 
 The test suite follows a structured organization:
@@ -656,6 +662,7 @@ The test suite follows a structured organization:
 - **Synthetic Data**: Generates deterministic PNG image files with pixel data based on class labels for consistent test results
 - **Progress Validation**: Ensures training progress is properly tracked and reported
 - **Component Integration**: Tests the integration between Trainer, ProgressTracker, and Experiment classes
+- **Debug Logging**: Set `TEST_DEBUG=1` to enable debug mode and tee all log output (including debug messages) to both the test StringIO buffer and STDOUT for easy troubleshooting
 
 #### Writing Tests
 
